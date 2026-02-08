@@ -8,7 +8,7 @@ Vue.use(VueRouter)
 
 export default new VueRouter({
 	mode: 'history',
-	base: generateUrl('apps/diary'),
+	base: generateUrl('apps/nextdiary'),
 	routes: [
 		{
 			path: '/date/:date',

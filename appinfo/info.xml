@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
-    <id>diary</id>
+    <id>nextdiary</id>
     <name>Diary</name>
     <summary>A simple diary for Nextcloud - Alpha release</summary>
     <description><![CDATA[Keep your diary in your Nextcloud. Write entries for each day in
@@ -11,12 +11,12 @@ Warning! This is a very early alpha release and things are still pretty rough ar
     <version>0.0.11</version>
     <licence>agpl</licence>
     <author mail="mail@danielroehrig.de" homepage="https://www.a-broad-view.com/">Daniel Röhrig</author>
-    <namespace>Diary</namespace>
+    <namespace>NextDiary</namespace>
     <category>office</category>
     <category>tools</category>
-    <website>https://github.com/danielroehrig/diary</website>
-    <bugs>https://github.com/danielroehrig/diary/issues</bugs>
-    <repository type="git">https://github.com/danielroehrig/diary.git</repository>
+    <website>ssh://git@gitlab.malcador.ru:8022/89simpson/nextdiary.git</website>
+    <bugs>ssh://git@gitlab.malcador.ru:8022/89simpson/nextdiary/issues</bugs>
+    <repository type="git">ssh://git@gitlab.malcador.ru:8022/89simpson/nextdiary.git</repository>
     <screenshot>https://raw.githubusercontent.com/danielroehrig/diary/main/screenshots/01-markdown-editor.png</screenshot>
     <dependencies>
         <php min-version="8.0" max-version="8.3" />
@@ -24,9 +24,9 @@ Warning! This is a very early alpha release and things are still pretty rough ar
     </dependencies>
     <navigations>
         <navigation>
-            <id>diary</id>
+            <id>nextdiary</id>
             <name>Diary</name>
-            <route>diary.page.index</route>
+            <route>nextdiary.page.index</route>
             <icon>diary.svg</icon>
         </navigation>
     </navigations>

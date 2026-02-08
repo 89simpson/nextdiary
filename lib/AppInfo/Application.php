@@ -12,7 +12,7 @@ use OCP\User\Events\UserDeletedEvent;
 class Application extends App implements IBootstrap
 {
     /** @var string */
-    public const APP_ID = 'diary';
+    public const APP_ID = 'nextdiary';
 
     public function __construct()
     {

@@ -47,9 +47,9 @@ class PageController extends Controller
      */
     public function index(): TemplateResponse
     {
-        Util::addScript($this->appName, 'diary-main');
+        Util::addScript($this->appName, 'nextdiary-main');
 
-        return new TemplateResponse('diary', 'index');  // templates/index.php
+        return new TemplateResponse('nextdiary', 'index');  // templates/index.php
     }
 
     /**

@@ -1,4 +1,4 @@
-import '../css/diary.scss'
+import '../css/nextdiary.scss'
 
 import Vue from 'vue'
 import App from './App.vue'

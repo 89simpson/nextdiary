@@ -14,14 +14,14 @@ class AppInstalledTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $app = new App('diary');
+        $app = new App('nextdiary');
         $this->container = $app->getContainer();
     }
 
     public function testAppInstalled()
     {
         $appManager = $this->container->query('OCP\App\IAppManager');
-        $this->assertTrue($appManager->isInstalled('diary'));
+        $this->assertTrue($appManager->isInstalled('nextdiary'));
     }
 
 }

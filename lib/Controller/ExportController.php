@@ -45,7 +45,7 @@ class ExportController extends Controller
         $entries = $this->mapper->findAll($this->userId);
         $markdownString = $this->exportService->entriesToMarkdown($entries);
 
-        return new DataDownloadResponse($markdownString, 'diary.md', 'text/plain');
+        return new DataDownloadResponse($markdownString, 'nextdiary.md', 'text/plain');
     }
 
     /**
@@ -61,6 +61,6 @@ class ExportController extends Controller
         $entries = $this->mapper->findAll($this->userId);
         $pdfString = $this->exportService->entriesToPdf($entries);
 
-        return new DataDownloadResponse($pdfString, 'diary.pdf', 'text/plain');
+        return new DataDownloadResponse($pdfString, 'nextdiary.pdf', 'text/plain');
     }
 }

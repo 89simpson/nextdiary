@@ -32,7 +32,7 @@ class PageControllerTest extends TestCase
             ->getMock();
 
         $this->controller = new PageController(
-            'diary', $request, $this->userId, $this->mapper, $logger
+            'nextdiary', $request, $this->userId, $this->mapper, $logger
         );
     }
 

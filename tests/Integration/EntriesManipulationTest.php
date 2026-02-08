@@ -18,7 +18,7 @@ class EntriesManipulationTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $app = new App('diary');
+        $app = new App('nextdiary');
         $container = $app->getContainer();
 
         $container->registerService('UserId', function ($c) {

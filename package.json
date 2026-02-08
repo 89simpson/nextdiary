@@ -1,5 +1,5 @@
 {
-  "name": "diary",
+  "name": "nextdiary",
   "version": "0.0.12",
   "description": "A simple diary for the nextcloud",
   "main": "js/index.js",
