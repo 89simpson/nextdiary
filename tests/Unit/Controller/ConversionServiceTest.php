@@ -1,9 +1,9 @@
 <?php
 
-namespace OCA\Diary\Tests\Unit\Controller;
+namespace OCA\NextDiary\Tests\Unit\Controller;
 
-use OCA\Diary\Db\Entry;
-use OCA\Diary\Service\ConversionService;
+use OCA\NextDiary\Db\Entry;
+use OCA\NextDiary\Service\ConversionService;
 use PHPUnit\Framework\TestCase;
 
 class ConversionServiceTest extends TestCase

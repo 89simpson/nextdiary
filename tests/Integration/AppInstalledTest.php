@@ -1,6 +1,6 @@
 <?php
 
-namespace OCA\Diary\Tests\Integration\Controller;
+namespace OCA\NextDiary\Tests\Integration\Controller;
 
 use OCP\AppFramework\App;
 use PHPUnit\Framework\TestCase;

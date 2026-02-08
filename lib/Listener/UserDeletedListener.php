@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\Diary\Listener;
+namespace OCA\NextDiary\Listener;
 
-use OCA\Diary\Db\EntryMapper;
+use OCA\NextDiary\Db\EntryMapper;
 use OCP\DB\Exception;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;

@@ -1,9 +1,9 @@
 <?php
 
-namespace OCA\Diary\Tests\Integration\Controller;
+namespace OCA\NextDiary\Tests\Integration\Controller;
 
-use OCA\Diary\Db\Entry;
-use OCA\Diary\Db\EntryMapper;
+use OCA\NextDiary\Db\Entry;
+use OCA\NextDiary\Db\EntryMapper;
 use OCP\AppFramework\App;
 use PHPUnit\Framework\TestCase;
 

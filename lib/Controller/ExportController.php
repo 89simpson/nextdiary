@@ -1,9 +1,9 @@
 <?php
 
-namespace OCA\Diary\Controller;
+namespace OCA\NextDiary\Controller;
 
-use OCA\Diary\Db\EntryMapper;
-use OCA\Diary\Service\ConversionService;
+use OCA\NextDiary\Db\EntryMapper;
+use OCA\NextDiary\Service\ConversionService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\DB\Exception;

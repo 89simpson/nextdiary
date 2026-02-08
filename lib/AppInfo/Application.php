@@ -1,8 +1,8 @@
 <?php
 
-namespace OCA\Diary\AppInfo;
+namespace OCA\NextDiary\AppInfo;
 
-use OCA\Diary\Listener\UserDeletedListener;
+use OCA\NextDiary\Listener\UserDeletedListener;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;

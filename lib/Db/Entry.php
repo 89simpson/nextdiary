@@ -1,6 +1,6 @@
 <?php
 
-namespace OCA\Diary\Db;
+namespace OCA\NextDiary\Db;
 
 use JsonSerializable;
 use OCP\AppFramework\Db\Entity;

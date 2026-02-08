@@ -1,11 +1,11 @@
 <?php
 
-namespace OCA\Diary\Service;
+namespace OCA\NextDiary\Service;
 
 use Dompdf\Dompdf;
 use iio\libmergepdf\Merger;
 use League\CommonMark\CommonMarkConverter;
-use OCA\Diary\Db\Entry;
+use OCA\NextDiary\Db\Entry;
 
 /**
  * Convert entries into multiple formats.

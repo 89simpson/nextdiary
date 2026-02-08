@@ -1,10 +1,10 @@
 <?php
 
-namespace OCA\Diary\Tests\Unit\Controller;
+namespace OCA\NextDiary\Tests\Unit\Controller;
 
-use OCA\Diary\Controller\PageController;
-use OCA\Diary\Db\Entry;
-use OCA\Diary\Db\EntryMapper;
+use OCA\NextDiary\Controller\PageController;
+use OCA\NextDiary\Db\Entry;
+use OCA\NextDiary\Db\EntryMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\AppFramework\Http;

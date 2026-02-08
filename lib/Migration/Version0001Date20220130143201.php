@@ -1,6 +1,6 @@
 <?php
 
-namespace OCA\Diary\Migration;
+namespace OCA\NextDiary\Migration;
 
 use Closure;
 use OCP\DB\ISchemaWrapper;
