@@ -84,7 +84,12 @@ class PageController extends Controller
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
         $response = array_map(static function ($entry) {
-            $content = mb_convert_encoding($entry->getEntryContent(), 'UTF-8', 'UTF-8');
+            // Агрессивная очистка невалидных UTF-8 символов из базы данных
+            $content = $entry->getEntryContent();
+            // Метод 1: удаляем управляющие символы
+            $content = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/u', '', $content);
+            // Метод 2: конвертируем и игнорируем невалидные байты
+            $content = iconv('UTF-8', 'UTF-8//IGNORE', $content);
             return ['date' => $entry->getEntryDate(), 'excerpt' => substr($content, 0, 40)];
         }, $entries);
 
