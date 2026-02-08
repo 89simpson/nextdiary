@@ -84,7 +84,7 @@ export default {
 					content: newContent,
 				}
 				// Send content to backend
-				axios.put(generateUrl('apps/diary/entry/' + this.date), payload)
+				axios.put(generateUrl('apps/nextdiary/entry/' + this.date), payload)
 					.then(response => {
 						this.unSavedChanges = false
 						this.$emit('entry-edit', this.date, response.data.isEmpty ? false : response.data.entryContent)
@@ -101,7 +101,7 @@ export default {
 	methods: {
 		fetchEntry() {
 			this.status = 'loading'
-			axios.get(generateUrl('apps/diary/entry/' + this.$route.params.date))
+			axios.get(generateUrl('apps/nextdiary/entry/' + this.$route.params.date))
 				.then(response => {
 					if (response.data.entryContent) {
 						this.content = response.data.entryContent

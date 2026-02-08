@@ -1,5 +1,5 @@
 <template>
-	<NcContent id="diary-content" app-name="diary">
+	<NcContent id="diary-content" app-name="nextdiary">
 		<NcAppNavigation>
 			<div class="navigation-wrapper">
 				<NcButton class="icon icon-view-previous"
@@ -103,7 +103,7 @@ export default {
 		},
 	},
 	data() {
-		const baseUrl = generateUrl('apps/diary')
+		const baseUrl = generateUrl('apps/nextdiary')
 		return {
 			selectedDate: null,
 			calendarOpen: false,
@@ -169,7 +169,7 @@ export default {
 			return moment(date).format('LL')
 		},
 		fetchPastEntries() {
-			axios.get(generateUrl('apps/diary/entries/' + this.pastEntriesAmount))
+			axios.get(generateUrl('apps/nextdiary/entries/' + this.pastEntriesAmount))
 				.then(response => {
 					if (response.data) {
 						this.lastEntries = response.data
