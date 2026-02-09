@@ -213,26 +213,34 @@ export default {
 				})
 		},
 		fetchEntryDates() {
+			console.log('[NextDiary] Fetching entry dates from API...')
 			axios.get(generateUrl('apps/nextdiary/entry-dates'))
 				.then(response => {
+					console.log('[NextDiary] API Response:', response.data)
 					if (response.data) {
 						this.entryDates = response.data
+						console.log('[NextDiary] Entry dates loaded:', this.entryDates)
 						this.updateCalendarHighlights()
 					}
 				})
 				.catch(error => {
 					// eslint-disable-next-line no-console
-					console.log(error)
+					console.error('[NextDiary] Error fetching entry dates:', error)
 				})
 		},
 		updateCalendarHighlights() {
 			// Wait for DOM to be ready
 			this.$nextTick(() => {
 				setTimeout(() => {
+					console.log('[NextDiary] updateCalendarHighlights called')
 					const entryDatesSet = new Set(this.entryDates)
 					const calendarCells = document.querySelectorAll('.mx-calendar-content .cell')
 
+					console.log('[NextDiary] Calendar cells found:', calendarCells.length)
+					console.log('[NextDiary] Entry dates to highlight:', Array.from(entryDatesSet))
+
 					if (calendarCells.length === 0) {
+						console.warn('[NextDiary] No calendar cells found, skipping highlight')
 						return
 					}
 
@@ -241,6 +249,9 @@ export default {
 					const displayYear = displayDate.getFullYear()
 					const displayMonth = displayDate.getMonth() // 0-indexed
 
+					console.log('[NextDiary] Display date:', displayYear, 'year,', displayMonth + 1, 'month')
+
+					let highlightedCount = 0
 					calendarCells.forEach(cell => {
 						// Remove previous highlighting
 						cell.classList.remove('has-diary-entry')
@@ -266,8 +277,12 @@ export default {
 						// Check if this date has an entry
 						if (entryDatesSet.has(dateStr)) {
 							cell.classList.add('has-diary-entry')
+							highlightedCount++
+							console.log('[NextDiary] Highlighted date:', dateStr, 'for day cell:', dayNumber)
 						}
 					})
+
+					console.log('[NextDiary] Total dates highlighted:', highlightedCount)
 				}, 100)
 			})
 		},
