@@ -1,5 +1,5 @@
 <template>
-	<NcContent id="diary-content" app-name="nextdiary">
+	<NcContent id="nextdiary-content" app-name="nextdiary">
 		<NcAppNavigation>
 			<div class="navigation-wrapper">
 				<NcButton class="icon icon-view-previous"
@@ -37,18 +37,18 @@
 				</ul>
 			</template>
 			<template #footer>
-				<NcAppNavigationItem class="export" :title="t('diary', 'Export')" icon="icon-download">
+				<NcAppNavigationItem class="export" :title="t('nextdiary', 'Export')" icon="icon-download">
 					<template #actions>
 						<NcActionLink :href="pdfDownloadLink">
 							<template #icon>
 								<FilePdfBox :size="20" />
-								{{ t('diary', 'as PDF') }}
+								{{ t('nextdiary', 'as PDF') }}
 							</template>
 						</NcActionLink>
 						<NcActionLink :href="markdownDownloadLink">
 							<template #icon>
 								<Markdown :size="20" />
-								{{ t('diary', 'as Markdown') }}
+								{{ t('nextdiary', 'as Markdown') }}
 							</template>
 						</NcActionLink>
 					</template>
@@ -188,7 +188,7 @@ export default {
 </script>
 
 <style lang="scss">
-#diary-content {
+#nextdiary-content {
 	margin: 0;
 	height: calc(100% - 50px);
 	width: inherit;

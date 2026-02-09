@@ -2,15 +2,15 @@
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>nextdiary</id>
-    <name>Diary</name>
+    <name>NextDiary</name>
     <summary>A simple diary for Nextcloud - Alpha release</summary>
     <description><![CDATA[Keep your diary in your Nextcloud. Write entries for each day in
 a Markdown editor. Use the calendar to jump to any date and edit your entries.
 
 Warning! This is a very early alpha release and things are still pretty rough around the edges.]]></description>
-    <version>0.0.11</version>
+    <version>0.0.1</version>
     <licence>agpl</licence>
-    <author mail="mail@danielroehrig.de" homepage="https://www.a-broad-view.com/">Daniel Röhrig</author>
+    <author mail="2-89simpson@users.noreply.gitlab.malcador.ru" homepage="ssh://git@gitlab.malcador.ru:8022/89simpson/nextdiary.git">89simpson (Homer Jay Simpson)</author>
     <namespace>NextDiary</namespace>
     <category>office</category>
     <category>tools</category>
@@ -25,7 +25,7 @@ Warning! This is a very early alpha release and things are still pretty rough ar
     <navigations>
         <navigation>
             <id>nextdiary</id>
-            <name>Diary</name>
+            <name>NextDiary</name>
             <route>nextdiary.page.index</route>
             <icon>diary.svg</icon>
         </navigation>

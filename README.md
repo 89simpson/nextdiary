@@ -2,6 +2,17 @@
 
 A (currently) very simple diary for Nextcloud
 
+## About This Fork
+
+This is a fork of the original [Diary](https://github.com/danielroehrig/diary) application by Daniel Röhrig.
+
+**Original Repository:** https://github.com/danielroehrig/diary
+**Fork Repository:** ssh://git@gitlab.malcador.ru:8022/89simpson/nextdiary.git
+**Author:** 89simpson (Homer Jay Simpson)
+**Version:** 0.0.1 (starting fresh from fork)
+
+This fork maintains full backward compatibility with existing diary installations, including the same database table structure.
+
 ## Building Locally
 
 1. Install PHP 8 as well as the `xml` and `mbstring` extensions e.g. with `sudo apt install php php-xml php-mbstring` if
@@ -9,12 +20,12 @@ A (currently) very simple diary for Nextcloud
 2. Install Node via [nvm](https://github.com/nvm-sh/nvm)
 3. Install dependencies and run app build with `make`
 4. Mount this repo in the Nextcloud docker image
-   with `docker run --rm -p 8080:80 -v ~/path/to/diary:/var/www/html/apps/nextdiary ghcr.io/juliushaertl/nextcloud-dev-php80:latest`.
+   with `docker run --rm -p 8080:80 -v ~/path/to/nextdiary:/var/www/html/apps/nextdiary ghcr.io/juliushaertl/nextcloud-dev-php80:latest`.
    Make sure to update the first path to the root of this repo.
 
 * You can set a specific version with `-e SERVER_BRANCH=version`, where `version` is a branch or tag. For example, to
   run it on NextCloud 24,
-  run `docker run --rm -p 8080:80 -e SERVER_BRANCH=stable24 -v ~/path/to/diary:/var/www/html/apps/nextdiary ghcr.io/juliushaertl/nextcloud-dev-php80:latest`
+  run `docker run --rm -p 8080:80 -e SERVER_BRANCH=stable24 -v ~/path/to/nextdiary:/var/www/html/apps/nextdiary ghcr.io/juliushaertl/nextcloud-dev-php80:latest`
 
 5. In another terminal process, enable continuous builds by running `npm run watch`
 6. Navigate to the app in your browser at `localhost:8080`

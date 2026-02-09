@@ -1,5 +1,5 @@
 <template>
-	<div id="diary-editor">
+	<div id="nextdiary-editor">
 		<div id="entry-title">
 			<i v-if="isLoading" class="fa fa-spinner fa-spin" />
 			{{ unSavedMarker }}{{ title }}
@@ -38,7 +38,7 @@ export default {
 			configs: {
 				toolbar: ['bold', 'italic', 'strikethrough', 'heading', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'link', '|', 'preview', '|', 'guide'],
 				autoDownloadFontAwesome: false,
-				placeholder: t('diary', 'Write your entry here'),
+				placeholder: t('nextdiary', 'Write your entry here'),
 				spellChecker: false,
 				status: false,
 			},
@@ -128,7 +128,7 @@ export default {
 @import '~simplemde/dist/simplemde.min.css';
 @import '~github-markdown-css';
 
-#diary-editor {
+#nextdiary-editor {
 	position: relative;
 	height: 100%;
 
