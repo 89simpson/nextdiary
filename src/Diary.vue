@@ -320,27 +320,29 @@ export default {
 }
 
 // Highlight dates with diary entries
-.mx-calendar-content {
+#nextdiary-content .mx-calendar-content {
 	.cell.has-diary-entry {
-		position: relative;
+		position: relative !important;
 
 		&::before {
-			content: '';
-			position: absolute;
-			bottom: 2px;
-			left: 50%;
-			transform: translateX(-50%);
-			width: 6px;
-			height: 6px;
-			background-color: #46ba61;
-			border-radius: 50%;
+			content: '' !important;
+			position: absolute !important;
+			bottom: 2px !important;
+			left: 50% !important;
+			transform: translateX(-50%) !important;
+			width: 6px !important;
+			height: 6px !important;
+			background-color: #46ba61 !important;
+			border-radius: 50% !important;
+			display: block !important;
+			z-index: 10 !important;
 		}
 	}
 
 	// Make sure the highlight is visible on active/hover states
 	.cell.has-diary-entry.active::before,
 	.cell.has-diary-entry:hover::before {
-		background-color: #46ba61;
+		background-color: #46ba61 !important;
 	}
 }
 </style>
