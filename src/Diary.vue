@@ -320,7 +320,7 @@ export default {
 }
 
 // Highlight dates with diary entries
-::v-deep(.mx-calendar-content) {
+.mx-calendar-content {
 	.cell.has-diary-entry {
 		position: relative;
 
