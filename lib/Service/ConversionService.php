@@ -82,7 +82,35 @@ class ConversionService
     {
         $pdf = new Dompdf();
         $pdf->setPaper('A4', 'portrait');
-        $pdf->loadHtml($html);
+
+        // Add CSS for Unicode font support (DejaVu Sans supports Cyrillic)
+        $styledHtml = '
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                <style>
+                    body {
+                        font-family: DejaVu Sans, sans-serif;
+                        font-size: 12pt;
+                        line-height: 1.6;
+                    }
+                    h1 {
+                        font-size: 18pt;
+                        margin-bottom: 10pt;
+                    }
+                    p {
+                        margin-bottom: 8pt;
+                    }
+                </style>
+            </head>
+            <body>
+                ' . $html . '
+            </body>
+            </html>
+        ';
+
+        $pdf->loadHtml($styledHtml);
         $pdf->render();
 
         return $pdf->output();
