@@ -120,4 +120,19 @@ class PageController extends Controller
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Get all dates that have diary entries
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getEntryDates(): DataResponse
+    {
+        try {
+            $dates = $this->mapper->findAllDates($this->userId);
+            return new DataResponse($dates);
+        } catch (Exception $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

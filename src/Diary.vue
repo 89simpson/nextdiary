@@ -110,6 +110,7 @@ export default {
 			baseUrl,
 			pastEntriesAmount: 10,
 			lastEntries: [],
+			entryDates: [],
 		}
 	},
 	computed: {
@@ -130,6 +131,7 @@ export default {
 	},
 	mounted() {
 		this.fetchPastEntries()
+		this.fetchEntryDates()
 	},
 	methods: {
 		onDateChange(date) {
@@ -142,6 +144,14 @@ export default {
 		},
 		openCalendar() {
 			this.calendarOpen = !this.calendarOpen
+			if (this.calendarOpen) {
+				// Update highlights when calendar is opened
+				this.$nextTick(() => {
+					setTimeout(() => {
+						this.updateCalendarHighlights()
+					}, 100)
+				})
+			}
 		},
 		goPrevDay() {
 			const yesterday = moment(this.date).subtract(1, 'day')
@@ -164,6 +174,8 @@ export default {
 					this.lastEntries.splice(entryIndex, 1)
 				}
 			}
+			// Update entry dates when an entry is added or deleted
+			this.fetchEntryDates()
 		},
 		formatDate(date) {
 			return moment(date).format('LL')
@@ -182,6 +194,34 @@ export default {
 					console.log(error)
 					this.status = 'error'
 				})
+		},
+		fetchEntryDates() {
+			axios.get(generateUrl('apps/nextdiary/entry-dates'))
+				.then(response => {
+					if (response.data) {
+						this.entryDates = response.data
+						this.updateCalendarHighlights()
+					}
+				})
+				.catch(error => {
+					// eslint-disable-next-line no-console
+					console.log(error)
+				})
+		},
+		updateCalendarHighlights() {
+			// Wait for next tick to ensure DOM is updated
+			this.$nextTick(() => {
+				const entryDatesSet = new Set(this.entryDates)
+				const calendarCells = document.querySelectorAll('.mx-calendar-content .cell')
+				calendarCells.forEach(cell => {
+					const dateAttr = cell.getAttribute('title')
+					if (dateAttr && entryDatesSet.has(dateAttr)) {
+						cell.classList.add('has-diary-entry')
+					} else {
+						cell.classList.remove('has-diary-entry')
+					}
+				})
+			})
 		},
 	},
 }
@@ -213,6 +253,31 @@ export default {
 
 	.export {
 		padding: 12px;
+	}
+}
+
+// Highlight dates with diary entries
+::v-deep .mx-calendar-content {
+	.cell.has-diary-entry {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			bottom: 2px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 6px;
+			height: 6px;
+			background-color: #46ba61;
+			border-radius: 50%;
+		}
+	}
+
+	// Make sure the highlight is visible on active/hover states
+	.cell.has-diary-entry.active::before,
+	.cell.has-diary-entry:hover::before {
+		background-color: #46ba61;
 	}
 }
 </style>

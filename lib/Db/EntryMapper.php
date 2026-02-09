@@ -96,4 +96,31 @@ class EntryMapper extends QBMapper
 
         return $qb->executeStatement();
     }
+
+    /**
+     * Find all dates that have entries for the given user.
+     *
+     * @return array Array of date strings
+     *
+     * @throws Exception
+     */
+    public function findAllDates(string $uid): array
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('entry_date')
+            ->from($this->getTableName())
+            ->where(
+                $qb->expr()->eq('uid', $qb->createNamedParameter($uid))
+            )
+            ->orderBy('entry_date', 'ASC');
+
+        $result = $qb->executeQuery();
+        $dates = [];
+        while ($row = $result->fetch()) {
+            $dates[] = $row['entry_date'];
+        }
+        $result->closeCursor();
+
+        return $dates;
+    }
 }
