@@ -111,6 +111,7 @@ export default {
 			pastEntriesAmount: 10,
 			lastEntries: [],
 			entryDates: [],
+			highlightInterval: null,
 		}
 	},
 	computed: {
@@ -133,6 +134,12 @@ export default {
 		this.fetchPastEntries()
 		this.fetchEntryDates()
 	},
+	beforeDestroy() {
+		// Clean up interval when component is destroyed
+		if (this.highlightInterval) {
+			clearInterval(this.highlightInterval)
+		}
+	},
 	methods: {
 		onDateChange(date) {
 			this.$router.push({ name: 'date', params: { date: moment(date).format('YYYY-MM-DD') } })
@@ -151,6 +158,16 @@ export default {
 						this.updateCalendarHighlights()
 					}, 100)
 				})
+				// Continuously update highlights while calendar is open (handles month navigation)
+				this.highlightInterval = setInterval(() => {
+					this.updateCalendarHighlights()
+				}, 300)
+			} else {
+				// Clear interval when calendar closes
+				if (this.highlightInterval) {
+					clearInterval(this.highlightInterval)
+					this.highlightInterval = null
+				}
 			}
 		},
 		goPrevDay() {
@@ -209,18 +226,49 @@ export default {
 				})
 		},
 		updateCalendarHighlights() {
-			// Wait for next tick to ensure DOM is updated
+			// Wait for DOM to be ready
 			this.$nextTick(() => {
-				const entryDatesSet = new Set(this.entryDates)
-				const calendarCells = document.querySelectorAll('.mx-calendar-content .cell')
-				calendarCells.forEach(cell => {
-					const dateAttr = cell.getAttribute('title')
-					if (dateAttr && entryDatesSet.has(dateAttr)) {
-						cell.classList.add('has-diary-entry')
-					} else {
-						cell.classList.remove('has-diary-entry')
+				setTimeout(() => {
+					const entryDatesSet = new Set(this.entryDates)
+					const calendarCells = document.querySelectorAll('.mx-calendar-content .cell')
+
+					if (calendarCells.length === 0) {
+						return
 					}
-				})
+
+					// Get the currently displayed month/year from selectedDate or current date
+					const displayDate = this.selectedDate ? new Date(this.selectedDate) : new Date(this.date)
+					const displayYear = displayDate.getFullYear()
+					const displayMonth = displayDate.getMonth() // 0-indexed
+
+					calendarCells.forEach(cell => {
+						// Remove previous highlighting
+						cell.classList.remove('has-diary-entry')
+
+						// Get day number from cell text
+						const dayText = cell.textContent.trim()
+						const dayNumber = parseInt(dayText, 10)
+
+						if (isNaN(dayNumber)) {
+							return
+						}
+
+						// Skip cells that are not in the current month (grayed out dates)
+						if (cell.classList.contains('not-current-month')) {
+							return
+						}
+
+						// Construct the date string in YYYY-MM-DD format
+						const monthStr = String(displayMonth + 1).padStart(2, '0')
+						const dayStr = String(dayNumber).padStart(2, '0')
+						const dateStr = `${displayYear}-${monthStr}-${dayStr}`
+
+						// Check if this date has an entry
+						if (entryDatesSet.has(dateStr)) {
+							cell.classList.add('has-diary-entry')
+						}
+					})
+				}, 100)
 			})
 		},
 	},
