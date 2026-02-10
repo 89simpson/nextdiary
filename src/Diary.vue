@@ -359,6 +359,10 @@ export default {
 	height: calc(100% - 50px);
 	width: inherit;
 
+	.app-content {
+		max-width: none !important;
+	}
+
 	.navigation-wrapper {
 		display: flex;
 		justify-content: space-around;

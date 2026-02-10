@@ -155,6 +155,7 @@ export default {
 #nextdiary-editor {
 	position: relative;
 	height: 100%;
+	width: 100%;
 
 	#entry-title {
 		display: flex;
