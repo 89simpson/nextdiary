@@ -4,11 +4,14 @@
 			<div class="navigation-wrapper">
 				<NcButton class="icon icon-view-previous"
 					@click="goPrevDay" />
-				<NcDatetimePicker v-model="selectedDate"
+				<NcDatetimePicker ref="datepicker"
+					v-model="selectedDate"
 					class="diary-datetimepicker"
 					type="date"
 					:open="calendarOpen"
-					@change="onDateChange" />
+					@change="onDateChange"
+					@calendar-change="onCalendarPanelUpdate"
+					@panel-change="onCalendarPanelUpdate" />
 				<NcButton class="open-calendar"
 					@click="openCalendar">
 					{{ formattedDate }}
@@ -166,10 +169,18 @@ export default {
 					setTimeout(() => {
 						this.applyHighlights()
 						this.observeCalendar()
-					}, 100)
+					}, 150)
 				})
 			} else {
 				this.disconnectObserver()
+			}
+		},
+		onCalendarPanelUpdate() {
+			// Fired by calendar-change (month navigation) and panel-change (date/month/year switch)
+			if (this.calendarOpen) {
+				this.$nextTick(() => {
+					this.applyHighlights()
+				})
 			}
 		},
 		goPrevDay() {
@@ -220,7 +231,7 @@ export default {
 					if (response.data) {
 						this.entryDates = response.data
 						if (this.calendarOpen) {
-							this.applyHighlights()
+							this.$nextTick(() => this.applyHighlights())
 						}
 					}
 				})
@@ -229,16 +240,20 @@ export default {
 					console.error('[NextDiary] Error fetching entry dates:', error)
 				})
 		},
+		findCalendarPopup() {
+			// Body-appended popup (appendToBody: true) or inline content
+			return document.querySelector('.mx-datepicker-main.mx-datepicker-popup')
+				|| document.querySelector('.mx-datepicker-content')
+		},
 		observeCalendar() {
 			this.disconnectObserver()
-			const popup = document.querySelector('.mx-datepicker-popup')
+			const popup = this.findCalendarPopup()
 			if (!popup) return
 
+			let debounce = null
 			this.calendarObserver = new MutationObserver(() => {
-				clearTimeout(this._highlightDebounce)
-				this._highlightDebounce = setTimeout(() => {
-					this.applyHighlights()
-				}, 50)
+				clearTimeout(debounce)
+				debounce = setTimeout(() => this.applyHighlights(), 80)
 			})
 			this.calendarObserver.observe(popup, {
 				childList: true,
@@ -246,86 +261,71 @@ export default {
 			})
 		},
 		disconnectObserver() {
-			clearTimeout(this._highlightDebounce)
 			if (this.calendarObserver) {
 				this.calendarObserver.disconnect()
 				this.calendarObserver = null
 			}
 		},
 		applyHighlights() {
-			const observer = this.calendarObserver
-			const popup = document.querySelector('.mx-datepicker-popup')
-
-			// Pause observer to avoid self-triggering from class changes
-			if (observer) {
-				observer.disconnect()
+			// Pause observer to avoid self-triggering from our class changes
+			if (this.calendarObserver) {
+				this.calendarObserver.disconnect()
 			}
 
-			// Detect view by checking for month/year tables first, default to date
-			const monthTable = document.querySelector('.mx-table-month')
-			const yearTable = document.querySelector('.mx-table-year')
-
-			if (monthTable) {
-				this.highlightMonths()
-			} else if (yearTable) {
-				this.highlightYears()
-			} else {
-				this.highlightDates()
+			// Detect current panel type via panel class on .mx-calendar element
+			const panel = document.querySelector('.mx-calendar')
+			if (panel) {
+				if (panel.classList.contains('mx-calendar-panel-month')) {
+					this.highlightMonths()
+				} else if (panel.classList.contains('mx-calendar-panel-year')) {
+					this.highlightYears()
+				} else {
+					this.highlightDates()
+				}
 			}
 
 			// Resume observer
-			if (observer && popup) {
-				observer.observe(popup, {
+			const popup = this.findCalendarPopup()
+			if (this.calendarObserver && popup) {
+				this.calendarObserver.observe(popup, {
 					childList: true,
 					subtree: true,
 				})
 			}
 		},
-		parseHeaderYear() {
-			// Try multiple selectors for header buttons
-			let buttons = document.querySelectorAll('.mx-calendar-header-label button')
-			if (!buttons.length) {
-				buttons = document.querySelectorAll('.mx-calendar-header-label .mx-btn')
-			}
-			const labels = Array.from(buttons).map(b => b.textContent.trim())
-			const yearStr = labels.find(t => /^\d{4}$/.test(t))
-			return yearStr ? parseInt(yearStr) : null
-		},
-		parseHeaderMonth() {
-			let buttons = document.querySelectorAll('.mx-calendar-header-label button')
-			if (!buttons.length) {
-				buttons = document.querySelectorAll('.mx-calendar-header-label .mx-btn')
-			}
-			const labels = Array.from(buttons).map(b => b.textContent.trim())
-			const monthName = labels.find(t => !/^\d+$/.test(t) && t.length > 1)
-			if (!monthName) return -1
+		highlightDates() {
+			// Read year and month from header buttons (exact vue2-datepicker classes)
+			const yearBtn = document.querySelector('.mx-btn-current-year')
+			const monthBtn = document.querySelector('.mx-btn-current-month')
 
-			const lowerMonth = monthName.toLowerCase()
+			let year, monthIndex
 
-			// Try standalone month names
-			let idx = moment.months().findIndex(m => m.toLowerCase() === lowerMonth)
-			if (idx !== -1) return idx
+			if (yearBtn && monthBtn) {
+				year = parseInt(yearBtn.textContent.trim())
+				const monthName = monthBtn.textContent.trim().toLowerCase()
 
-			// Try format-context month names (different grammatical form in some locales)
-			for (let i = 0; i < 12; i++) {
-				if (moment().month(i).format('MMMM').toLowerCase() === lowerMonth) {
-					return i
+				// Match against moment locale month names (standalone form)
+				monthIndex = moment.months().findIndex(m => m.toLowerCase() === monthName)
+
+				// Try format-context form (e.g. Russian genitive)
+				if (monthIndex === -1) {
+					for (let i = 0; i < 12; i++) {
+						if (moment().month(i).format('MMMM').toLowerCase() === monthName) {
+							monthIndex = i
+							break
+						}
+					}
+				}
+
+				// Try short month names
+				if (monthIndex === -1) {
+					monthIndex = moment.monthsShort().findIndex(m => m.toLowerCase() === monthName)
 				}
 			}
 
-			// Try short month names
-			idx = moment.monthsShort().findIndex(m => m.toLowerCase() === lowerMonth)
-			return idx
-		},
-		highlightDates() {
-			let year = this.parseHeaderYear()
-			let monthIndex = this.parseHeaderMonth()
-
-			// Fallback: use selectedDate or current route date
-			if (year === null || monthIndex === -1) {
-				const fallback = this.selectedDate
-					? new Date(this.selectedDate)
-					: new Date(this.date)
+			// Fallback to route date if header parsing failed
+			if (year === undefined || monthIndex === undefined || monthIndex === -1) {
+				const fallback = this.selectedDate ? new Date(this.selectedDate) : new Date(this.date)
 				year = fallback.getFullYear()
 				monthIndex = fallback.getMonth()
 			}
@@ -346,11 +346,15 @@ export default {
 			})
 		},
 		highlightMonths() {
-			let year = this.parseHeaderYear()
-			if (year === null) {
-				const fallback = this.selectedDate
-					? new Date(this.selectedDate)
-					: new Date(this.date)
+			// In month panel the header label button has just the year (no specific class)
+			const headerBtns = document.querySelectorAll('.mx-calendar-header-label button')
+			let year = null
+			Array.from(headerBtns).forEach(btn => {
+				const val = parseInt(btn.textContent.trim())
+				if (!isNaN(val) && val > 1900) year = val
+			})
+			if (!year) {
+				const fallback = this.selectedDate ? new Date(this.selectedDate) : new Date(this.date)
 				year = fallback.getFullYear()
 			}
 
@@ -406,30 +410,27 @@ export default {
 	}
 }
 
-// Highlight dates with diary entries
-#nextdiary-content .mx-calendar-content {
-	.cell.has-diary-entry {
-		position: relative !important;
+// Highlight calendar cells with diary entries (works both inside component and body-appended popup)
+.mx-calendar-content .cell.has-diary-entry {
+	position: relative !important;
 
-		&::before {
-			content: '' !important;
-			position: absolute !important;
-			bottom: 2px !important;
-			left: 50% !important;
-			transform: translateX(-50%) !important;
-			width: 6px !important;
-			height: 6px !important;
-			background-color: #46ba61 !important;
-			border-radius: 50% !important;
-			display: block !important;
-			z-index: 10 !important;
-		}
-	}
-
-	// Make sure the highlight is visible on active/hover states
-	.cell.has-diary-entry.active::before,
-	.cell.has-diary-entry:hover::before {
+	&::before {
+		content: '' !important;
+		position: absolute !important;
+		bottom: 2px !important;
+		left: 50% !important;
+		transform: translateX(-50%) !important;
+		width: 6px !important;
+		height: 6px !important;
 		background-color: #46ba61 !important;
+		border-radius: 50% !important;
+		display: block !important;
+		z-index: 10 !important;
 	}
+}
+
+.mx-calendar-content .cell.has-diary-entry.active::before,
+.mx-calendar-content .cell.has-diary-entry:hover::before {
+	background-color: #46ba61 !important;
 }
 </style>
