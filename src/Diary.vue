@@ -261,16 +261,16 @@ export default {
 				observer.disconnect()
 			}
 
-			const dateTable = document.querySelector('.mx-table-date')
+			// Detect view by checking for month/year tables first, default to date
 			const monthTable = document.querySelector('.mx-table-month')
 			const yearTable = document.querySelector('.mx-table-year')
 
-			if (dateTable) {
-				this.highlightDates()
-			} else if (monthTable) {
+			if (monthTable) {
 				this.highlightMonths()
 			} else if (yearTable) {
 				this.highlightYears()
+			} else {
+				this.highlightDates()
 			}
 
 			// Resume observer
@@ -281,23 +281,56 @@ export default {
 				})
 			}
 		},
-		highlightDates() {
-			const labels = Array.from(
-				document.querySelectorAll('.mx-calendar-header-label button'),
-			).map(b => b.textContent.trim())
-
+		parseHeaderYear() {
+			// Try multiple selectors for header buttons
+			let buttons = document.querySelectorAll('.mx-calendar-header-label button')
+			if (!buttons.length) {
+				buttons = document.querySelectorAll('.mx-calendar-header-label .mx-btn')
+			}
+			const labels = Array.from(buttons).map(b => b.textContent.trim())
 			const yearStr = labels.find(t => /^\d{4}$/.test(t))
-			const monthName = labels.find(t => !/^\d+$/.test(t))
-			if (!yearStr || !monthName) return
+			return yearStr ? parseInt(yearStr) : null
+		},
+		parseHeaderMonth() {
+			let buttons = document.querySelectorAll('.mx-calendar-header-label button')
+			if (!buttons.length) {
+				buttons = document.querySelectorAll('.mx-calendar-header-label .mx-btn')
+			}
+			const labels = Array.from(buttons).map(b => b.textContent.trim())
+			const monthName = labels.find(t => !/^\d+$/.test(t) && t.length > 1)
+			if (!monthName) return -1
 
-			const year = parseInt(yearStr)
-			const monthNames = moment.months()
-			const monthIndex = monthNames.findIndex(
-				m => m.toLowerCase() === monthName.toLowerCase(),
-			)
-			if (monthIndex === -1) return
+			const lowerMonth = monthName.toLowerCase()
 
-			const cells = document.querySelectorAll('.mx-table-date .cell')
+			// Try standalone month names
+			let idx = moment.months().findIndex(m => m.toLowerCase() === lowerMonth)
+			if (idx !== -1) return idx
+
+			// Try format-context month names (different grammatical form in some locales)
+			for (let i = 0; i < 12; i++) {
+				if (moment().month(i).format('MMMM').toLowerCase() === lowerMonth) {
+					return i
+				}
+			}
+
+			// Try short month names
+			idx = moment.monthsShort().findIndex(m => m.toLowerCase() === lowerMonth)
+			return idx
+		},
+		highlightDates() {
+			let year = this.parseHeaderYear()
+			let monthIndex = this.parseHeaderMonth()
+
+			// Fallback: use selectedDate or current route date
+			if (year === null || monthIndex === -1) {
+				const fallback = this.selectedDate
+					? new Date(this.selectedDate)
+					: new Date(this.date)
+				year = fallback.getFullYear()
+				monthIndex = fallback.getMonth()
+			}
+
+			const cells = document.querySelectorAll('.mx-calendar-content .cell')
 			cells.forEach(cell => {
 				cell.classList.remove('has-diary-entry')
 				if (cell.classList.contains('not-current-month')) return
@@ -313,18 +346,19 @@ export default {
 			})
 		},
 		highlightMonths() {
-			const labels = Array.from(
-				document.querySelectorAll('.mx-calendar-header-label button'),
-			).map(b => b.textContent.trim())
-
-			const yearStr = labels.find(t => /^\d{4}$/.test(t))
-			if (!yearStr) return
+			let year = this.parseHeaderYear()
+			if (year === null) {
+				const fallback = this.selectedDate
+					? new Date(this.selectedDate)
+					: new Date(this.date)
+				year = fallback.getFullYear()
+			}
 
 			const cells = document.querySelectorAll('.mx-table-month .cell')
 			cells.forEach((cell, index) => {
 				cell.classList.remove('has-diary-entry')
 				const mm = String(index + 1).padStart(2, '0')
-				if (this.entryMonthsSet.has(`${yearStr}-${mm}`)) {
+				if (this.entryMonthsSet.has(`${year}-${mm}`)) {
 					cell.classList.add('has-diary-entry')
 				}
 			})
