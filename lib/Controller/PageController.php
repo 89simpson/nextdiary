@@ -35,6 +35,11 @@ class PageController extends Controller
         $this->logger = $logger;
     }
 
+    private function sanitizeUtf8(string $text): string
+    {
+        return mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+    }
+
     /**
      * CAUTION: the @Stuff turns off security checks; for this page no admin is
      *          required and no CSRF check. If you don't know what CSRF is, read
@@ -66,6 +71,8 @@ class PageController extends Controller
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
+        $entry->setEntryContent($this->sanitizeUtf8((string) $entry->getEntryContent()));
+
         return new DataResponse($entry);
     }
 
@@ -78,8 +85,9 @@ class PageController extends Controller
     {
         try {
             $entries = $this->mapper->findLast($this->userId, $amount);
-            $response = array_map(static function ($entry) {
-                return ['date' => $entry->getEntryDate(), 'excerpt' => substr((string) $entry->getEntryContent(), 0, 40)];
+            $response = array_map(function ($entry) {
+                $content = $this->sanitizeUtf8((string) $entry->getEntryContent());
+                return ['date' => $entry->getEntryDate(), 'excerpt' => mb_substr($content, 0, 40)];
             }, $entries);
 
             return new DataResponse($response);
@@ -110,7 +118,7 @@ class PageController extends Controller
                 return new DataResponse(['isEmpty' => true]);
             }
         }
-        $content = strip_tags($content);
+        $content = $this->sanitizeUtf8(strip_tags($content));
         $entry = new Entry();
         $entry->setId($this->userId.$date);
         $entry->setUid($this->userId);
