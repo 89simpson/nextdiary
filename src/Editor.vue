@@ -162,7 +162,7 @@ export default {
 		gap: 8px;
 		font-weight: 700;
 		font-size: 18px;
-		padding-left: 16px;
+		padding-left: 52px;
 		padding-top: 16px;
 	}
 
