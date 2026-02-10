@@ -111,7 +111,7 @@ export default {
 			pastEntriesAmount: 10,
 			lastEntries: [],
 			entryDates: [],
-			highlightInterval: null,
+			calendarObserver: null,
 		}
 	},
 	computed: {
@@ -129,16 +129,26 @@ export default {
 		pdfDownloadLink() {
 			return this.baseUrl + '/export/pdf'
 		},
+		entryDatesSet() {
+			return new Set(this.entryDates)
+		},
+		entryMonthsSet() {
+			const months = new Set()
+			this.entryDates.forEach(d => months.add(d.substring(0, 7)))
+			return months
+		},
+		entryYearsSet() {
+			const years = new Set()
+			this.entryDates.forEach(d => years.add(d.substring(0, 4)))
+			return years
+		},
 	},
 	mounted() {
 		this.fetchPastEntries()
 		this.fetchEntryDates()
 	},
 	beforeDestroy() {
-		// Clean up interval when component is destroyed
-		if (this.highlightInterval) {
-			clearInterval(this.highlightInterval)
-		}
+		this.disconnectObserver()
 	},
 	methods: {
 		onDateChange(date) {
@@ -152,22 +162,14 @@ export default {
 		openCalendar() {
 			this.calendarOpen = !this.calendarOpen
 			if (this.calendarOpen) {
-				// Update highlights when calendar is opened
 				this.$nextTick(() => {
 					setTimeout(() => {
-						this.updateCalendarHighlights()
+						this.applyHighlights()
+						this.observeCalendar()
 					}, 100)
 				})
-				// Continuously update highlights while calendar is open (handles month navigation)
-				this.highlightInterval = setInterval(() => {
-					this.updateCalendarHighlights()
-				}, 300)
 			} else {
-				// Clear interval when calendar closes
-				if (this.highlightInterval) {
-					clearInterval(this.highlightInterval)
-					this.highlightInterval = null
-				}
+				this.disconnectObserver()
 			}
 		},
 		goPrevDay() {
@@ -213,14 +215,13 @@ export default {
 				})
 		},
 		fetchEntryDates() {
-			console.log('[NextDiary] Fetching entry dates from API...')
 			axios.get(generateUrl('apps/nextdiary/entry-dates'))
 				.then(response => {
-					console.log('[NextDiary] API Response:', response.data)
 					if (response.data) {
 						this.entryDates = response.data
-						console.log('[NextDiary] Entry dates loaded:', this.entryDates)
-						this.updateCalendarHighlights()
+						if (this.calendarOpen) {
+							this.applyHighlights()
+						}
 					}
 				})
 				.catch(error => {
@@ -228,62 +229,114 @@ export default {
 					console.error('[NextDiary] Error fetching entry dates:', error)
 				})
 		},
-		updateCalendarHighlights() {
-			// Wait for DOM to be ready
-			this.$nextTick(() => {
-				setTimeout(() => {
-					console.log('[NextDiary] updateCalendarHighlights called')
-					const entryDatesSet = new Set(this.entryDates)
-					const calendarCells = document.querySelectorAll('.mx-calendar-content .cell')
+		observeCalendar() {
+			this.disconnectObserver()
+			const popup = document.querySelector('.mx-datepicker-popup')
+			if (!popup) return
 
-					console.log('[NextDiary] Calendar cells found:', calendarCells.length)
-					console.log('[NextDiary] Entry dates to highlight:', Array.from(entryDatesSet))
+			this.calendarObserver = new MutationObserver(() => {
+				clearTimeout(this._highlightDebounce)
+				this._highlightDebounce = setTimeout(() => {
+					this.applyHighlights()
+				}, 50)
+			})
+			this.calendarObserver.observe(popup, {
+				childList: true,
+				subtree: true,
+			})
+		},
+		disconnectObserver() {
+			clearTimeout(this._highlightDebounce)
+			if (this.calendarObserver) {
+				this.calendarObserver.disconnect()
+				this.calendarObserver = null
+			}
+		},
+		applyHighlights() {
+			const observer = this.calendarObserver
+			const popup = document.querySelector('.mx-datepicker-popup')
 
-					if (calendarCells.length === 0) {
-						console.warn('[NextDiary] No calendar cells found, skipping highlight')
-						return
-					}
+			// Pause observer to avoid self-triggering from class changes
+			if (observer) {
+				observer.disconnect()
+			}
 
-					// Get the currently displayed month/year from selectedDate or current date
-					const displayDate = this.selectedDate ? new Date(this.selectedDate) : new Date(this.date)
-					const displayYear = displayDate.getFullYear()
-					const displayMonth = displayDate.getMonth() // 0-indexed
+			const dateTable = document.querySelector('.mx-table-date')
+			const monthTable = document.querySelector('.mx-table-month')
+			const yearTable = document.querySelector('.mx-table-year')
 
-					console.log('[NextDiary] Display date:', displayYear, 'year,', displayMonth + 1, 'month')
+			if (dateTable) {
+				this.highlightDates()
+			} else if (monthTable) {
+				this.highlightMonths()
+			} else if (yearTable) {
+				this.highlightYears()
+			}
 
-					let highlightedCount = 0
-					calendarCells.forEach(cell => {
-						// Remove previous highlighting
-						cell.classList.remove('has-diary-entry')
+			// Resume observer
+			if (observer && popup) {
+				observer.observe(popup, {
+					childList: true,
+					subtree: true,
+				})
+			}
+		},
+		highlightDates() {
+			const labels = Array.from(
+				document.querySelectorAll('.mx-calendar-header-label button'),
+			).map(b => b.textContent.trim())
 
-						// Get day number from cell text
-						const dayText = cell.textContent.trim()
-						const dayNumber = parseInt(dayText, 10)
+			const yearStr = labels.find(t => /^\d{4}$/.test(t))
+			const monthName = labels.find(t => !/^\d+$/.test(t))
+			if (!yearStr || !monthName) return
 
-						if (isNaN(dayNumber)) {
-							return
-						}
+			const year = parseInt(yearStr)
+			const monthNames = moment.months()
+			const monthIndex = monthNames.findIndex(
+				m => m.toLowerCase() === monthName.toLowerCase(),
+			)
+			if (monthIndex === -1) return
 
-						// Skip cells that are not in the current month (grayed out dates)
-						if (cell.classList.contains('not-current-month')) {
-							return
-						}
+			const cells = document.querySelectorAll('.mx-table-date .cell')
+			cells.forEach(cell => {
+				cell.classList.remove('has-diary-entry')
+				if (cell.classList.contains('not-current-month')) return
 
-						// Construct the date string in YYYY-MM-DD format
-						const monthStr = String(displayMonth + 1).padStart(2, '0')
-						const dayStr = String(dayNumber).padStart(2, '0')
-						const dateStr = `${displayYear}-${monthStr}-${dayStr}`
+				const day = parseInt(cell.textContent.trim())
+				if (isNaN(day)) return
 
-						// Check if this date has an entry
-						if (entryDatesSet.has(dateStr)) {
-							cell.classList.add('has-diary-entry')
-							highlightedCount++
-							console.log('[NextDiary] Highlighted date:', dateStr, 'for day cell:', dayNumber)
-						}
-					})
+				const mm = String(monthIndex + 1).padStart(2, '0')
+				const dd = String(day).padStart(2, '0')
+				if (this.entryDatesSet.has(`${year}-${mm}-${dd}`)) {
+					cell.classList.add('has-diary-entry')
+				}
+			})
+		},
+		highlightMonths() {
+			const labels = Array.from(
+				document.querySelectorAll('.mx-calendar-header-label button'),
+			).map(b => b.textContent.trim())
 
-					console.log('[NextDiary] Total dates highlighted:', highlightedCount)
-				}, 100)
+			const yearStr = labels.find(t => /^\d{4}$/.test(t))
+			if (!yearStr) return
+
+			const cells = document.querySelectorAll('.mx-table-month .cell')
+			cells.forEach((cell, index) => {
+				cell.classList.remove('has-diary-entry')
+				const mm = String(index + 1).padStart(2, '0')
+				if (this.entryMonthsSet.has(`${yearStr}-${mm}`)) {
+					cell.classList.add('has-diary-entry')
+				}
+			})
+		},
+		highlightYears() {
+			const cells = document.querySelectorAll('.mx-table-year .cell')
+			cells.forEach(cell => {
+				cell.classList.remove('has-diary-entry')
+				const year = cell.textContent.trim()
+				if (this.entryYearsSet.has(year)) {
+					cell.classList.add('has-diary-entry')
+				}
 			})
 		},
 	},
