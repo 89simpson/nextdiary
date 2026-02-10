@@ -18,13 +18,9 @@ use Psr\Log\LoggerInterface;
 class PageController extends Controller
 {
     private $userId;
-    /**
-     * @var EntryMapper
-     */
+    /** @var EntryMapper */
     private $mapper;
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface */
     private $logger;
 
     public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, LoggerInterface $logger)
@@ -41,23 +37,153 @@ class PageController extends Controller
     }
 
     /**
-     * CAUTION: the @Stuff turns off security checks; for this page no admin is
-     *          required and no CSRF check. If you don't know what CSRF is, read
-     *          it up in the docs or you might create a security hole. This is
-     *          basically the only required method to add this exemption, don't
-     *          add it to any other method if you don't exactly know what it does.
-     *
      * @NoAdminRequired
      * @NoCSRFRequired
      */
     public function index(): TemplateResponse
     {
         Util::addScript($this->appName, 'nextdiary-main');
+        return new TemplateResponse('nextdiary', 'index');
+    }
 
-        return new TemplateResponse('nextdiary', 'index');  // templates/index.php
+    // ─── New API endpoints (v0.0.2) ───
+
+    /**
+     * Get all entries for a specific date.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getEntriesByDate(string $date): DataResponse
+    {
+        try {
+            $entries = $this->mapper->findByDate($this->userId, $date);
+            foreach ($entries as $entry) {
+                $entry->setEntryContent($this->sanitizeUtf8((string) $entry->getEntryContent()));
+            }
+            return new DataResponse($entries);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getEntriesByDate failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'date' => $date,
+            ]);
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
+     * Get a single entry by ID.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getEntryById(int $id): DataResponse
+    {
+        try {
+            $entry = $this->mapper->findById($id);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Entry not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+
+        if ($entry->getUid() !== $this->userId) {
+            return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
+        }
+
+        $entry->setEntryContent($this->sanitizeUtf8((string) $entry->getEntryContent()));
+        return new DataResponse($entry);
+    }
+
+    /**
+     * Create a new entry for a given date.
+     *
+     * @NoAdminRequired
+     */
+    public function createEntry(string $date, string $content = ''): DataResponse
+    {
+        $content = $this->sanitizeUtf8(strip_tags($content));
+        $now = new \DateTime();
+
+        $entry = new Entry();
+        $entry->setUid($this->userId);
+        $entry->setEntryDate($date);
+        $entry->setEntryContent($content);
+        $entry->setCreatedAt($now);
+        $entry->setUpdatedAt($now);
+
+        try {
+            $inserted = $this->mapper->insert($entry);
+            return new DataResponse($inserted, Http::STATUS_CREATED);
+        } catch (Exception $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Update an existing entry by ID.
+     *
+     * @NoAdminRequired
+     */
+    public function updateEntryById(int $id, string $content): DataResponse
+    {
+        try {
+            $entry = $this->mapper->findById($id);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Entry not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+
+        if ($entry->getUid() !== $this->userId) {
+            return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
+        }
+
+        $content = $this->sanitizeUtf8(strip_tags($content));
+        $entry->setEntryContent($content);
+        $entry->setUpdatedAt(new \DateTime());
+
+        try {
+            $updated = $this->mapper->update($entry);
+            return new DataResponse($updated);
+        } catch (Exception $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Delete an entry by ID.
+     *
+     * @NoAdminRequired
+     */
+    public function deleteEntry(int $id): DataResponse
+    {
+        try {
+            $entry = $this->mapper->findById($id);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Entry not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+
+        if ($entry->getUid() !== $this->userId) {
+            return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
+        }
+
+        try {
+            $this->mapper->delete($entry);
+            return new DataResponse(null, Http::STATUS_NO_CONTENT);
+        } catch (Exception $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // ─── Legacy API endpoints (backward compatible) ───
+
+    /**
+     * Get first entry for a date (legacy).
+     *
      * @NoAdminRequired
      * @NoCSRFRequired
      */
@@ -72,12 +198,12 @@ class PageController extends Controller
         }
 
         $entry->setEntryContent($this->sanitizeUtf8((string) $entry->getEntryContent()));
-
         return new DataResponse($entry);
     }
 
     /**
-     * @param int $amount Number of past entries to fetch
+     * Get last N entries with excerpts.
+     *
      * @NoAdminRequired
      * @NoCSRFRequired
      */
@@ -87,7 +213,12 @@ class PageController extends Controller
             $entries = $this->mapper->findLast($this->userId, $amount);
             $response = array_map(function ($entry) {
                 $content = $this->sanitizeUtf8((string) $entry->getEntryContent());
-                return ['date' => $entry->getEntryDate(), 'excerpt' => mb_substr($content, 0, 40)];
+                return [
+                    'id' => $entry->getId(),
+                    'date' => $entry->getEntryDate(),
+                    'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
+                    'excerpt' => mb_substr($content, 0, 40),
+                ];
             }, $entries);
 
             return new DataResponse($response);
@@ -102,38 +233,48 @@ class PageController extends Controller
     }
 
     /**
-     * @param string $date    ISO date as identifier
-     * @param string $content Diary entry to save
+     * Legacy upsert: create or update entry by date.
+     *
      * @NoAdminRequired
      */
     public function updateEntry(string $date, string $content): DataResponse
     {
         if ('' === $content) {
             try {
-                $entry = $this->mapper->find($this->userId, $date);
-                $this->mapper->delete($entry);
+                $entries = $this->mapper->findByDate($this->userId, $date);
+                foreach ($entries as $entry) {
+                    $this->mapper->delete($entry);
+                }
             } catch (\Exception $e) {
-                $this->logger->notice('Could not delete diary entry: '.$e->getMessage());
-            } finally {
-                return new DataResponse(['isEmpty' => true]);
+                $this->logger->notice('Could not delete diary entries: ' . $e->getMessage());
             }
+            return new DataResponse(['isEmpty' => true]);
         }
+
         $content = $this->sanitizeUtf8(strip_tags($content));
-        $entry = new Entry();
-        $entry->setId($this->userId.$date);
-        $entry->setUid($this->userId);
-        $entry->setEntryDate($date);
-        $entry->setEntryContent($content);
+        $now = new \DateTime();
 
         try {
-            return new DataResponse($this->mapper->insertOrUpdate($entry));
-        } catch (Exception $e) {
+            $entry = $this->mapper->find($this->userId, $date);
+            $entry->setEntryContent($content);
+            $entry->setUpdatedAt($now);
+            return new DataResponse($this->mapper->update($entry));
+        } catch (DoesNotExistException $e) {
+            $entry = new Entry();
+            $entry->setUid($this->userId);
+            $entry->setEntryDate($date);
+            $entry->setEntryContent($content);
+            $entry->setCreatedAt($now);
+            $entry->setUpdatedAt($now);
+            return new DataResponse($this->mapper->insert($entry));
+        } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
-     * Get all dates that have diary entries
+     * Get all dates that have diary entries.
+     *
      * @NoAdminRequired
      * @NoCSRFRequired
      */

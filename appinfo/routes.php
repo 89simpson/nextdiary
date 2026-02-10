@@ -9,12 +9,28 @@
  */
 return [
     'routes' => [
+        // Page routes
         ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
+        ['name' => 'page#index', 'url' => '/day/{date}', 'verb' => 'GET', 'postfix' => 'day'],
+        ['name' => 'page#index', 'url' => '/entry/{id}', 'verb' => 'GET', 'postfix' => 'entryPage'],
         ['name' => 'page#index', 'url' => '/date/{date}', 'verb' => 'GET', 'postfix' => 'catchAll'],
-        ['name' => 'page#get_entry', 'url' => '/entry/{date}', 'verb' => 'GET'],
-        ['name' => 'page#get_last_entries', 'url' => '/entries/{amount}', 'verb' => 'GET'],
-        ['name' => 'page#get_entry_dates', 'url' => '/entry-dates', 'verb' => 'GET'],
+
+        // New API (v0.0.2): multiple entries per day
+        ['name' => 'page#get_entries_by_date', 'url' => '/api/entries/{date}', 'verb' => 'GET'],
+        ['name' => 'page#get_entry_by_id', 'url' => '/api/entry/{id}', 'verb' => 'GET'],
+        ['name' => 'page#create_entry', 'url' => '/api/entry/{date}', 'verb' => 'POST'],
+        ['name' => 'page#update_entry_by_id', 'url' => '/api/entry/{id}', 'verb' => 'PUT'],
+        ['name' => 'page#delete_entry', 'url' => '/api/entry/{id}', 'verb' => 'DELETE'],
+        ['name' => 'page#get_last_entries', 'url' => '/api/last-entries/{amount}', 'verb' => 'GET'],
+        ['name' => 'page#get_entry_dates', 'url' => '/api/entry-dates', 'verb' => 'GET'],
+
+        // Legacy API (backward compatible)
+        ['name' => 'page#get_entry', 'url' => '/entry/{date}', 'verb' => 'GET', 'postfix' => 'legacy'],
+        ['name' => 'page#get_last_entries', 'url' => '/entries/{amount}', 'verb' => 'GET', 'postfix' => 'legacy'],
+        ['name' => 'page#get_entry_dates', 'url' => '/entry-dates', 'verb' => 'GET', 'postfix' => 'legacy'],
         ['name' => 'page#update_entry', 'url' => '/entry/{date}', 'verb' => 'PUT'],
+
+        // Export
         ['name' => 'export#get_markdown', 'url' => '/export/markdown', 'verb' => 'GET'],
         ['name' => 'export#get_pdf', 'url' => '/export/pdf', 'verb' => 'GET'],
     ]

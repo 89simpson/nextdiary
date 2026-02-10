@@ -17,15 +17,31 @@ class EntryMapper extends QBMapper
     }
 
     /**
-     * Find the diary entry for the given user or date.
-     *
-     * @return mixed|Entity
+     * Find a single entry by integer ID.
      *
      * @throws DoesNotExistException
      * @throws MultipleObjectsReturnedException
      * @throws Exception
      */
-    public function find(string $uid, string $date)
+    public function findById(int $id): Entry
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where(
+                $qb->expr()->eq('id', $qb->createNamedParameter($id))
+            );
+
+        return $this->findEntity($qb);
+    }
+
+    /**
+     * Find all entries for a given user and date.
+     *
+     * @return Entry[]
+     * @throws Exception
+     */
+    public function findByDate(string $uid, string $date): array
     {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -34,7 +50,31 @@ class EntryMapper extends QBMapper
                 $qb->expr()->eq('uid', $qb->createNamedParameter($uid))
             )->andWhere(
                 $qb->expr()->eq('entry_date', $qb->createNamedParameter($date))
-            );
+            )
+            ->orderBy('created_at', 'ASC');
+
+        return $this->findEntities($qb);
+    }
+
+    /**
+     * Find the first entry for user+date (legacy compatibility).
+     *
+     * @throws DoesNotExistException
+     * @throws MultipleObjectsReturnedException
+     * @throws Exception
+     */
+    public function find(string $uid, string $date): Entry
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where(
+                $qb->expr()->eq('uid', $qb->createNamedParameter($uid))
+            )->andWhere(
+                $qb->expr()->eq('entry_date', $qb->createNamedParameter($date))
+            )
+            ->orderBy('created_at', 'ASC')
+            ->setMaxResults(1);
 
         return $this->findEntity($qb);
     }
@@ -42,8 +82,7 @@ class EntryMapper extends QBMapper
     /**
      * Find all diary entries for the given user id, ordered by date ascending.
      *
-     * @return array|Entity[]
-     *
+     * @return Entry[]
      * @throws Exception
      */
     public function findAll(string $uid): array
@@ -54,16 +93,16 @@ class EntryMapper extends QBMapper
             ->where(
                 $qb->expr()->eq('uid', $qb->createNamedParameter($uid))
             )
-            ->orderBy('entry_date', 'ASC');
+            ->orderBy('entry_date', 'ASC')
+            ->addOrderBy('created_at', 'ASC');
 
         return $this->findEntities($qb);
     }
 
     /**
-     * Find the last $amount number of entries ordered by date descending.
+     * Find the last $amount entries ordered by creation time descending.
      *
-     * @return array|Entity[]
-     *
+     * @return Entry[]
      * @throws Exception
      */
     public function findLast(string $uid, int $amount): array
@@ -75,7 +114,7 @@ class EntryMapper extends QBMapper
                 $qb->expr()->eq('uid', $qb->createNamedParameter($uid))
             )
             ->setMaxResults($amount)
-            ->orderBy('entry_date', 'DESC');
+            ->orderBy('created_at', 'DESC');
 
         return $this->findEntities($qb);
     }
@@ -84,7 +123,6 @@ class EntryMapper extends QBMapper
      * Delete all entries for the given user.
      *
      * @throws Exception
-     * @returns int Number of deleted entries
      */
     public function deleteAllEntriesForUser(string $uid): int
     {
@@ -98,16 +136,15 @@ class EntryMapper extends QBMapper
     }
 
     /**
-     * Find all dates that have entries for the given user.
+     * Find all distinct dates that have entries for the given user.
      *
-     * @return array Array of date strings
-     *
+     * @return string[]
      * @throws Exception
      */
     public function findAllDates(string $uid): array
     {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('entry_date')
+        $qb->selectDistinct('entry_date')
             ->from($this->getTableName())
             ->where(
                 $qb->expr()->eq('uid', $qb->createNamedParameter($uid))

@@ -1,8 +1,17 @@
 <template>
 	<div id="nextdiary-editor">
 		<div id="entry-title">
-			<i v-if="isLoading" class="fa fa-spinner fa-spin" />
-			{{ unSavedMarker }}{{ title }}
+			<NcButton type="tertiary"
+				:aria-label="t('nextdiary', 'Back to day')"
+				@click="goBack">
+				<template #icon>
+					<ArrowLeft :size="20" />
+				</template>
+			</NcButton>
+			<span>
+				<i v-if="isLoading" class="fa fa-spinner fa-spin" />
+				{{ unSavedMarker }}{{ title }}
+			</span>
 		</div>
 		<VueSimplemde ref="markdownEditor"
 			:model-value="content"
@@ -15,16 +24,18 @@
 </template>
 <script>
 import VueSimplemde from 'vue-simplemde'
+import { NcButton } from '@nextcloud/vue'
+import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
 
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import moment from '@nextcloud/moment'
 
 export default {
-	name: 'Editor',
-	components: { VueSimplemde },
+	name: 'EntryEditor',
+	components: { VueSimplemde, NcButton, ArrowLeft },
 	props: {
-		date: {
+		id: {
 			type: String,
 			required: true,
 		},
@@ -33,8 +44,9 @@ export default {
 		return {
 			status: null,
 			unSavedChanges: false,
-			editor: null,
 			content: '',
+			entryDate: null,
+			createdAt: null,
 			configs: {
 				toolbar: ['bold', 'italic', 'strikethrough', 'heading', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'link', '|', 'preview', '|', 'guide'],
 				autoDownloadFontAwesome: false,
@@ -49,8 +61,13 @@ export default {
 			return this.$refs.markdownEditor.simplemde
 		},
 		title() {
-			const day = moment(this.date)
-			return day.format('dddd') + ' - ' + day.format('LL')
+			if (!this.entryDate) return ''
+			const day = moment(this.entryDate)
+			let title = day.format('dddd') + ' - ' + day.format('LL')
+			if (this.createdAt) {
+				title += ' ' + moment(this.createdAt).format('HH:mm')
+			}
+			return title
 		},
 		unSavedMarker() {
 			return this.unSavedChanges ? '*' : ''
@@ -59,40 +76,35 @@ export default {
 			return this.status === 'loading'
 		},
 	},
+	watch: {
+		id() {
+			this.fetchEntry()
+		},
+	},
 	created() {
-		this.$watch(() => this.$route.params, () => this.fetchEntry(), { immediate: true })
+		this.fetchEntry()
 	},
 	mounted() {
 		this.simplemde.codemirror.on('change', () => {
-			// A load is a change, so we need to catch this.
-			// We compare the content because switching to a page will trigger the change event TWICE! (Or not at all, if
-			// we don't set the value of the editor to the content). So whenever these values are equal, we did not reach
-			// the other workaround where we manually set the content to the value of the editor.
 			if (this.status === 'loaded' || this.content === this.simplemde.value()) {
 				this.status = 'writing'
 				return
 			}
-			// This line here is SUPER important! Because although simplemde has the model set to this.content, changing
-			// the content in the editor WON'T change the content of the content property. How long did it take me to find
-			// this out? Like two days.
 			this.content = this.simplemde.value()
 			this.unSavedChanges = true
 			clearTimeout(this.timeout)
 			const saveFunction = () => {
 				const newContent = this.simplemde.value()
-				const payload = {
+				axios.put(generateUrl('apps/nextdiary/api/entry/' + this.id), {
 					content: newContent,
-				}
-				// Send content to backend
-				axios.put(generateUrl('apps/nextdiary/entry/' + this.date), payload)
-					.then(response => {
+				})
+					.then(() => {
 						this.unSavedChanges = false
-						this.$emit('entry-edit', this.date, response.data.isEmpty ? false : response.data.entryContent)
+						this.$emit('entry-changed')
 					})
 					.catch(error => {
-						// TODO Show alert box with error
 						// eslint-disable-next-line no-console
-						console.log(error)
+						console.error('[NextDiary] Error saving entry:', error)
 					})
 			}
 			this.timeout = setTimeout(saveFunction, 500)
@@ -101,23 +113,27 @@ export default {
 	methods: {
 		fetchEntry() {
 			this.status = 'loading'
-			axios.get(generateUrl('apps/nextdiary/entry/' + this.$route.params.date))
+			axios.get(generateUrl('apps/nextdiary/api/entry/' + this.id))
 				.then(response => {
-					if (response.data.entryContent) {
-						this.content = response.data.entryContent
-					} else {
-						this.content = ''
-					}
+					const data = response.data
+					this.content = data.entryContent || ''
+					this.entryDate = data.entryDate
+					this.createdAt = data.createdAt
 					this.status = 'loaded'
-					// This ensures, that the right content is immediately shown. Actually, the model should force the editor to
-					// update, but that doesn't seem to happen when moving between dates
 					this.simplemde.value(this.content)
 				})
 				.catch(error => {
 					// eslint-disable-next-line no-console
-					console.log(error)
+					console.error('[NextDiary] Error fetching entry:', error)
 					this.status = 'error'
 				})
+		},
+		goBack() {
+			if (this.entryDate) {
+				this.$router.push({ name: 'day', params: { date: this.entryDate } })
+			} else {
+				this.$router.push({ name: 'day', params: { date: moment().format('YYYY-MM-DD') } })
+			}
 		},
 	},
 }
@@ -133,9 +149,12 @@ export default {
 	height: 100%;
 
 	#entry-title {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 		font-weight: 700;
 		font-size: 18px;
-		padding-left: 50px;
+		padding-left: 16px;
 		padding-top: 16px;
 	}
 

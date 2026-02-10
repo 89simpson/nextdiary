@@ -25,14 +25,14 @@
 			<template #list>
 				<ul>
 					<NcListItem v-for="entry in lastEntries"
-						:key="entry.date"
-						:title="formatDate(entry.date)"
+						:key="entry.id"
+						:title="formatEntryTitle(entry)"
 						:bold="false"
 						:compact="true"
 						counter-type="highlighted"
-						@click="!isCurrentDate(entry.date) ? onDateChange(entry.date) : null">
+						@click="goToEntry(entry)">
 						<template #icon>
-							<NcAppNavigationIconBullet v-if="isCurrentDate(entry.date)" color="0082c9" />
+							<NcAppNavigationIconBullet v-if="isActiveEntry(entry)" color="0082c9" />
 							<NcAppNavigationIconBullet v-else color="FFFFFF" />
 						</template>
 						<template #subtitle>
@@ -61,7 +61,9 @@
 			</template>
 		</NcAppNavigation>
 		<NcAppContent>
-			<Editor :date="date" @entry-edit="onEdit" />
+			<router-view
+				@entry-changed="onEntryChanged"
+				@navigate-date="onDateChange" />
 		</NcAppContent>
 	</NcContent>
 </template>
@@ -78,7 +80,6 @@ import {
 	NcAppNavigationIconBullet,
 	NcListItem,
 } from '@nextcloud/vue'
-import Editor from './Editor'
 import moment from '@nextcloud/moment'
 import FilePdfBox from 'vue-material-design-icons/FilePdfBox'
 import Markdown from 'vue-material-design-icons/LanguageMarkdown'
@@ -90,7 +91,6 @@ export default {
 	components: {
 		NcAppNavigation,
 		NcContent,
-		Editor,
 		NcAppContent,
 		NcAppNavigationItem,
 		NcDatetimePicker,
@@ -100,12 +100,6 @@ export default {
 		NcActionLink,
 		NcAppNavigationIconBullet,
 		NcListItem,
-	},
-	props: {
-		date: {
-			type: String,
-			required: true,
-		},
 	},
 	data() {
 		const baseUrl = generateUrl('apps/nextdiary')
@@ -121,11 +115,18 @@ export default {
 		}
 	},
 	computed: {
+		currentDate() {
+			// Extract date from current route
+			if (this.$route.name === 'day') {
+				return this.$route.params.date
+			}
+			return moment().format('YYYY-MM-DD')
+		},
 		formattedDate() {
-			return this.formatDate(this.date)
+			return moment(this.currentDate).format('LL')
 		},
 		showNextDayButton() {
-			const nextDay = moment(this.date).add(1, 'day')
+			const nextDay = moment(this.currentDate).add(1, 'day')
 			const today = moment()
 			return nextDay.isBefore(today)
 		},
@@ -149,6 +150,11 @@ export default {
 			return years
 		},
 	},
+	watch: {
+		'$route.params'() {
+			this.fetchPastEntries()
+		},
+	},
 	mounted() {
 		this.fetchPastEntries()
 		this.fetchEntryDates()
@@ -159,14 +165,22 @@ export default {
 	methods: {
 		onDateChange(date) {
 			const targetDate = moment(date).format('YYYY-MM-DD')
-			if (this.date !== targetDate) {
-				this.$router.push({ name: 'date', params: { date: targetDate } })
+			if (this.currentDate !== targetDate || this.$route.name !== 'day') {
+				this.$router.push({ name: 'day', params: { date: targetDate } })
 			}
 			this.calendarOpen = false
-			this.fetchPastEntries()
 		},
-		isCurrentDate(date) {
-			return this.date === date
+		goToEntry(entry) {
+			this.$router.push({ name: 'entry', params: { id: String(entry.id) } })
+		},
+		isActiveEntry(entry) {
+			if (this.$route.name === 'entry') {
+				return String(entry.id) === this.$route.params.id
+			}
+			if (this.$route.name === 'day') {
+				return entry.date === this.$route.params.date
+			}
+			return false
 		},
 		openCalendar() {
 			this.calendarOpen = !this.calendarOpen
@@ -182,7 +196,6 @@ export default {
 			}
 		},
 		onCalendarChange(date) {
-			// calendar-change emits a native Date object for the currently displayed month
 			this.calendarViewDate = date
 			if (this.calendarOpen) {
 				this.$nextTick(() => {
@@ -191,7 +204,6 @@ export default {
 			}
 		},
 		onCalendarPanelUpdate() {
-			// Fired by panel-change (date/month/year switch)
 			if (this.calendarOpen) {
 				this.$nextTick(() => {
 					this.applyHighlights()
@@ -199,49 +211,39 @@ export default {
 			}
 		},
 		goPrevDay() {
-			const yesterday = moment(this.date).subtract(1, 'day')
-			this.$router.push({ name: 'date', params: { date: yesterday.format('YYYY-MM-DD') } })
-			this.fetchPastEntries()
+			const yesterday = moment(this.currentDate).subtract(1, 'day')
+			this.$router.push({ name: 'day', params: { date: yesterday.format('YYYY-MM-DD') } })
 		},
 		goNextDay() {
-			const tomorrow = moment(this.date).add(1, 'day')
-			this.$router.push({ name: 'date', params: { date: tomorrow.format('YYYY-MM-DD') } })
-			this.fetchPastEntries()
+			const tomorrow = moment(this.currentDate).add(1, 'day')
+			this.$router.push({ name: 'day', params: { date: tomorrow.format('YYYY-MM-DD') } })
 		},
-		onEdit(date, content) {
-			const entryIndex = this.lastEntries.findIndex((e) => e.date === date)
-			if (entryIndex === -1) {
-				this.lastEntries.unshift({ date, excerpt: content })
-			} else {
-				if (content) {
-					this.lastEntries[entryIndex].excerpt = content.substring(0, 40)
-				} else {
-					this.lastEntries.splice(entryIndex, 1)
-				}
-			}
-			// Update entry dates when an entry is added or deleted
+		onEntryChanged() {
+			this.fetchPastEntries()
 			this.fetchEntryDates()
 		},
-		formatDate(date) {
-			return moment(date).format('LL')
+		formatEntryTitle(entry) {
+			const date = moment(entry.date).format('D MMM')
+			if (entry.createdAt) {
+				const time = moment(entry.createdAt).format('HH:mm')
+				return `${date} ${time}`
+			}
+			return date
 		},
 		fetchPastEntries() {
-			axios.get(generateUrl('apps/nextdiary/entries/' + this.pastEntriesAmount))
+			axios.get(generateUrl('apps/nextdiary/api/last-entries/' + this.pastEntriesAmount))
 				.then(response => {
 					if (response.data) {
 						this.lastEntries = response.data
-					} else {
-						this.content = ''
 					}
 				})
 				.catch(error => {
 					// eslint-disable-next-line no-console
 					console.log(error)
-					this.status = 'error'
 				})
 		},
 		fetchEntryDates() {
-			axios.get(generateUrl('apps/nextdiary/entry-dates'))
+			axios.get(generateUrl('apps/nextdiary/api/entry-dates'))
 				.then(response => {
 					if (response.data) {
 						this.entryDates = response.data
@@ -256,7 +258,6 @@ export default {
 				})
 		},
 		findCalendarPopup() {
-			// Body-appended popup (appendToBody: true) or inline content
 			return document.querySelector('.mx-datepicker-main.mx-datepicker-popup')
 				|| document.querySelector('.mx-datepicker-content')
 		},
@@ -282,12 +283,10 @@ export default {
 			}
 		},
 		applyHighlights() {
-			// Pause observer to avoid self-triggering from our class changes
 			if (this.calendarObserver) {
 				this.calendarObserver.disconnect()
 			}
 
-			// Detect current panel type via panel class on .mx-calendar element
 			const panel = document.querySelector('.mx-calendar')
 			if (panel) {
 				if (panel.classList.contains('mx-calendar-panel-month')) {
@@ -299,7 +298,6 @@ export default {
 				}
 			}
 
-			// Resume observer
 			const popup = this.findCalendarPopup()
 			if (this.calendarObserver && popup) {
 				this.calendarObserver.observe(popup, {
@@ -309,8 +307,7 @@ export default {
 			}
 		},
 		highlightDates() {
-			// Use the Date object captured from calendar-change event
-			const viewDate = this.calendarViewDate || new Date(this.date)
+			const viewDate = this.calendarViewDate || new Date(this.currentDate)
 			const year = viewDate.getFullYear()
 			const monthIndex = viewDate.getMonth()
 
@@ -330,7 +327,7 @@ export default {
 			})
 		},
 		highlightMonths() {
-			const viewDate = this.calendarViewDate || new Date(this.date)
+			const viewDate = this.calendarViewDate || new Date(this.currentDate)
 			const year = viewDate.getFullYear()
 
 			const cells = document.querySelectorAll('.mx-table-month .cell')
@@ -368,7 +365,7 @@ export default {
 		padding: 12px;
 
 		.diary-datetimepicker {
-			width: 0; // Hides drop-down
+			width: 0;
 			.mx-input-wrapper {
 				display: none;
 			}
@@ -385,7 +382,6 @@ export default {
 	}
 }
 
-// Highlight calendar cells with diary entries (works both inside component and body-appended popup)
 .mx-calendar-content .cell.has-diary-entry {
 	position: relative !important;
 
