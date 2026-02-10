@@ -10,7 +10,6 @@
 					class="diary-datetimepicker"
 					type="date"
 					:open="calendarOpen"
-					:append-to-body="false"
 					@change="onDateChange"
 					@calendar-change="onCalendarChange"
 					@panel-change="onCalendarPanelUpdate" />
@@ -390,13 +389,12 @@ export default {
 	.export {
 		padding: 12px;
 	}
+}
 
-	.mx-datepicker-popup {
-		left: 0 !important;
-		right: 0 !important;
-		width: 100% !important;
-		box-sizing: border-box;
-	}
+.mx-datepicker-main.mx-datepicker-popup {
+	left: 0 !important;
+	width: 300px !important;
+	box-sizing: border-box !important;
 }
 
 .mx-calendar-content .cell.has-diary-entry {
