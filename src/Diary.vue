@@ -10,6 +10,7 @@
 					class="diary-datetimepicker"
 					type="date"
 					:open="calendarOpen"
+					:append-to-body="false"
 					@change="onDateChange"
 					@calendar-change="onCalendarChange"
 					@panel-change="onCalendarPanelUpdate" />
@@ -371,20 +372,12 @@ export default {
 		position: relative;
 
 		.diary-datetimepicker {
-			position: absolute;
-			left: 0;
-			right: 0;
-			width: 100%;
-			top: 100%;
+			position: static;
+			width: 0;
+			overflow: visible;
 
 			.mx-input-wrapper {
 				display: none;
-			}
-
-			.mx-datepicker-popup {
-				left: 0 !important;
-				right: 0 !important;
-				width: 100% !important;
 			}
 		}
 
@@ -396,6 +389,13 @@ export default {
 
 	.export {
 		padding: 12px;
+	}
+
+	.mx-datepicker-popup {
+		left: 0 !important;
+		right: 0 !important;
+		width: 100% !important;
+		box-sizing: border-box;
 	}
 }
 
