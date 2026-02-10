@@ -150,7 +150,6 @@ export default {
 <style lang="scss" scoped>
 .day-view {
 	padding: 20px 50px;
-	max-width: 900px;
 
 	.day-header {
 		display: flex;
