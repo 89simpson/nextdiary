@@ -168,7 +168,6 @@ export default {
 
 	.vue-simplemde {
 		padding-left: 32px;
-		max-width: 800px;
 		@media (max-width: 500px) {
 			padding-left: 0;
 		}
