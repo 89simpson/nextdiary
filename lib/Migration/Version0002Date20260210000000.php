@@ -30,7 +30,14 @@ class Version0002Date20260210000000 extends SimpleMigrationStep
             return;
         }
 
-        // Save all existing entries before dropping the table
+        // Check if already migrated (new schema has created_at column)
+        $table = $schema->getTable('diary');
+        if ($table->hasColumn('created_at')) {
+            $output->info('NextDiary: table already has new schema, skipping data migration');
+            return;
+        }
+
+        // Save all existing entries from old table
         $qb = $this->db->getQueryBuilder();
         $qb->select('uid', 'entry_date', 'entry_content')
             ->from('diary')
@@ -42,6 +49,12 @@ class Version0002Date20260210000000 extends SimpleMigrationStep
         $result->closeCursor();
 
         $output->info('NextDiary: saved ' . count($this->savedEntries) . ' entries for migration');
+
+        // Drop old table via raw SQL to force CREATE TABLE instead of ALTER TABLE.
+        // Doctrine's schema diff treats dropTable()+createTable() with same name as ALTER,
+        // which fails when converting string ID to auto-increment integer.
+        $this->db->executeStatement('DROP TABLE IF EXISTS `*PREFIX*diary`');
+        $output->info('NextDiary: dropped old table');
     }
 
     public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ISchemaWrapper
@@ -49,8 +62,13 @@ class Version0002Date20260210000000 extends SimpleMigrationStep
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
 
-        // Drop old table
         if ($schema->hasTable('diary')) {
+            $table = $schema->getTable('diary');
+            // If already new schema, no changes needed
+            if ($table->hasColumn('created_at')) {
+                return $schema;
+            }
+            // Remove old table definition from cached schema object
             $schema->dropTable('diary');
         }
 
@@ -106,7 +124,6 @@ class Version0002Date20260210000000 extends SimpleMigrationStep
             ]);
 
         $count = 0;
-        $now = date('Y-m-d H:i:s');
         foreach ($this->savedEntries as $row) {
             $entryDate = $row['entry_date'] ?? '';
 
