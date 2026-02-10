@@ -141,9 +141,6 @@ export default {
 		},
 		getExcerpt(entry) {
 			const content = (entry.entryContent || '').trim()
-			if (content.length > 200) {
-				return content.substring(0, 200) + '...'
-			}
 			return content || t('nextdiary', 'Empty entry')
 		},
 	},
@@ -207,6 +204,10 @@ export default {
 			color: var(--color-text-lighter);
 			word-break: break-word;
 			line-height: 1.4;
+			display: -webkit-box;
+			-webkit-line-clamp: 3;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
 		}
 	}
 }
