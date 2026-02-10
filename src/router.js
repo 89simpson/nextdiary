@@ -3,6 +3,8 @@ import VueRouter from 'vue-router'
 import { generateUrl } from '@nextcloud/router'
 import moment from '@nextcloud/moment'
 import Diary from './Diary.vue'
+import DayView from './DayView.vue'
+import EntryEditor from './Editor.vue'
 
 Vue.use(VueRouter)
 
@@ -11,19 +13,28 @@ export default new VueRouter({
 	base: generateUrl('apps/nextdiary'),
 	routes: [
 		{
-			path: '/date/:date',
-			name: 'date',
-			props: true,
+			path: '/',
 			component: Diary,
+			redirect: { name: 'day', params: { date: moment().format('YYYY-MM-DD') } },
+			children: [
+				{
+					path: 'day/:date',
+					name: 'day',
+					component: DayView,
+					props: true,
+				},
+				{
+					path: 'entry/:id',
+					name: 'entry',
+					component: EntryEditor,
+					props: true,
+				},
+			],
 		},
 		{
-			path: '/',
-			redirect: {
-				name: 'date',
-				params: {
-					date: moment().format('YYYY-MM-DD'),
-				},
-			},
+			// Legacy redirect
+			path: '/date/:date',
+			redirect: to => ({ name: 'day', params: { date: to.params.date } }),
 		},
 	],
 })
