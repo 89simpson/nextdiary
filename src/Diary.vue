@@ -10,7 +10,7 @@
 					type="date"
 					:open="calendarOpen"
 					@change="onDateChange"
-					@calendar-change="onCalendarPanelUpdate"
+					@calendar-change="onCalendarChange"
 					@panel-change="onCalendarPanelUpdate" />
 				<NcButton class="open-calendar"
 					@click="openCalendar">
@@ -115,6 +115,7 @@ export default {
 			lastEntries: [],
 			entryDates: [],
 			calendarObserver: null,
+			calendarViewDate: null,
 		}
 	},
 	computed: {
@@ -175,8 +176,17 @@ export default {
 				this.disconnectObserver()
 			}
 		},
+		onCalendarChange(date) {
+			// calendar-change emits a native Date object for the currently displayed month
+			this.calendarViewDate = date
+			if (this.calendarOpen) {
+				this.$nextTick(() => {
+					this.applyHighlights()
+				})
+			}
+		},
 		onCalendarPanelUpdate() {
-			// Fired by calendar-change (month navigation) and panel-change (date/month/year switch)
+			// Fired by panel-change (date/month/year switch)
 			if (this.calendarOpen) {
 				this.$nextTick(() => {
 					this.applyHighlights()
@@ -294,41 +304,10 @@ export default {
 			}
 		},
 		highlightDates() {
-			// Read year and month from header buttons (exact vue2-datepicker classes)
-			const yearBtn = document.querySelector('.mx-btn-current-year')
-			const monthBtn = document.querySelector('.mx-btn-current-month')
-
-			let year, monthIndex
-
-			if (yearBtn && monthBtn) {
-				year = parseInt(yearBtn.textContent.trim())
-				const monthName = monthBtn.textContent.trim().toLowerCase()
-
-				// Match against moment locale month names (standalone form)
-				monthIndex = moment.months().findIndex(m => m.toLowerCase() === monthName)
-
-				// Try format-context form (e.g. Russian genitive)
-				if (monthIndex === -1) {
-					for (let i = 0; i < 12; i++) {
-						if (moment().month(i).format('MMMM').toLowerCase() === monthName) {
-							monthIndex = i
-							break
-						}
-					}
-				}
-
-				// Try short month names
-				if (monthIndex === -1) {
-					monthIndex = moment.monthsShort().findIndex(m => m.toLowerCase() === monthName)
-				}
-			}
-
-			// Fallback to route date if header parsing failed
-			if (year === undefined || monthIndex === undefined || monthIndex === -1) {
-				const fallback = this.selectedDate ? new Date(this.selectedDate) : new Date(this.date)
-				year = fallback.getFullYear()
-				monthIndex = fallback.getMonth()
-			}
+			// Use the Date object captured from calendar-change event
+			const viewDate = this.calendarViewDate || new Date(this.date)
+			const year = viewDate.getFullYear()
+			const monthIndex = viewDate.getMonth()
 
 			const cells = document.querySelectorAll('.mx-calendar-content .cell')
 			cells.forEach(cell => {
@@ -346,17 +325,8 @@ export default {
 			})
 		},
 		highlightMonths() {
-			// In month panel the header label button has just the year (no specific class)
-			const headerBtns = document.querySelectorAll('.mx-calendar-header-label button')
-			let year = null
-			Array.from(headerBtns).forEach(btn => {
-				const val = parseInt(btn.textContent.trim())
-				if (!isNaN(val) && val > 1900) year = val
-			})
-			if (!year) {
-				const fallback = this.selectedDate ? new Date(this.selectedDate) : new Date(this.date)
-				year = fallback.getFullYear()
-			}
+			const viewDate = this.calendarViewDate || new Date(this.date)
+			const year = viewDate.getFullYear()
 
 			const cells = document.querySelectorAll('.mx-table-month .cell')
 			cells.forEach((cell, index) => {
