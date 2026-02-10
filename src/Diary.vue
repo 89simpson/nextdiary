@@ -65,6 +65,10 @@
 				@entry-changed="onEntryChanged"
 				@navigate-date="onDateChange" />
 		</NcAppContent>
+		<div id="nextdiary-right-sidebar">
+			<TagSearch :value="tagSearchQuery" @input="tagSearchQuery = $event" />
+			<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="selectTag" />
+		</div>
 	</NcContent>
 </template>
 
@@ -84,6 +88,8 @@ import moment from '@nextcloud/moment'
 import FilePdfBox from 'vue-material-design-icons/FilePdfBox'
 import Markdown from 'vue-material-design-icons/LanguageMarkdown'
 import { generateUrl } from '@nextcloud/router'
+import TagCloud from './TagCloud.vue'
+import TagSearch from './TagSearch.vue'
 import axios from '@nextcloud/axios'
 
 export default {
@@ -100,6 +106,8 @@ export default {
 		NcActionLink,
 		NcAppNavigationIconBullet,
 		NcListItem,
+		TagCloud,
+		TagSearch,
 	},
 	data() {
 		const baseUrl = generateUrl('apps/nextdiary')
@@ -112,6 +120,8 @@ export default {
 			entryDates: [],
 			calendarObserver: null,
 			calendarViewDate: null,
+			tags: [],
+			tagSearchQuery: '',
 		}
 	},
 	computed: {
@@ -136,6 +146,17 @@ export default {
 		pdfDownloadLink() {
 			return this.baseUrl + '/export/pdf'
 		},
+		filteredTags() {
+			if (!this.tagSearchQuery) return this.tags
+			const q = this.tagSearchQuery.toLowerCase()
+			return this.tags.filter(tag => tag.name.includes(q))
+		},
+		activeTagId() {
+			if (this.$route.name === 'tag-entries') {
+				return parseInt(this.$route.params.tagId)
+			}
+			return null
+		},
 		entryDatesSet() {
 			return new Set(this.entryDates)
 		},
@@ -158,6 +179,7 @@ export default {
 	mounted() {
 		this.fetchPastEntries()
 		this.fetchEntryDates()
+		this.fetchTags()
 	},
 	beforeDestroy() {
 		this.disconnectObserver()
@@ -221,6 +243,10 @@ export default {
 		onEntryChanged() {
 			this.fetchPastEntries()
 			this.fetchEntryDates()
+			this.fetchTags()
+		},
+		selectTag(tagId) {
+			this.$router.push({ name: 'tag-entries', params: { tagId: String(tagId) } })
 		},
 		formatEntryTitle(entry) {
 			const date = moment(entry.date).format('D MMM')
@@ -240,6 +266,16 @@ export default {
 				.catch(error => {
 					// eslint-disable-next-line no-console
 					console.log(error)
+				})
+		},
+		fetchTags() {
+			axios.get(generateUrl('apps/nextdiary/api/tags'))
+				.then(response => {
+					this.tags = response.data || []
+				})
+				.catch(error => {
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error fetching tags:', error)
 				})
 		},
 		fetchEntryDates() {
@@ -361,6 +397,14 @@ export default {
 
 	.app-content {
 		max-width: none !important;
+	}
+
+	#nextdiary-right-sidebar {
+		width: 250px;
+		min-width: 250px;
+		border-left: 1px solid var(--color-border);
+		overflow-y: auto;
+		height: 100%;
 	}
 
 	.navigation-wrapper {

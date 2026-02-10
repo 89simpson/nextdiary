@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Controller;
 
 use OCA\NextDiary\Db\Entry;
 use OCA\NextDiary\Db\EntryMapper;
+use OCA\NextDiary\Service\TagService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
@@ -20,14 +21,17 @@ class PageController extends Controller
     private $userId;
     /** @var EntryMapper */
     private $mapper;
+    /** @var TagService */
+    private $tagService;
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, LoggerInterface $logger)
+    public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, TagService $tagService, LoggerInterface $logger)
     {
         parent::__construct($AppName, $request);
         $this->userId = $UserId;
         $this->mapper = $mapper;
+        $this->tagService = $tagService;
         $this->logger = $logger;
     }
 
@@ -65,6 +69,7 @@ class PageController extends Controller
                     'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
                     'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
                     'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
+                    'tags' => $this->tagService->getTagsForEntry($entry->getId()),
                 ];
             }, $entries);
             return new DataResponse($response);
@@ -104,6 +109,7 @@ class PageController extends Controller
             'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
             'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
             'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
+            'tags' => $this->tagService->getTagsForEntry($entry->getId()),
         ]);
     }
 
@@ -156,8 +162,16 @@ class PageController extends Controller
         $entry->setUpdatedAt(new \DateTime());
 
         try {
-            $updated = $this->mapper->update($entry);
-            return new DataResponse($updated);
+            $this->mapper->update($entry);
+            $tags = $this->tagService->syncTagsForEntry($this->userId, $id, $content);
+            return new DataResponse([
+                'id' => $entry->getId(),
+                'entryDate' => $entry->getEntryDate(),
+                'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
+                'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
+                'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
+                'tags' => $tags,
+            ]);
         } catch (Exception $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
@@ -183,9 +197,73 @@ class PageController extends Controller
         }
 
         try {
+            $this->tagService->removeTagsFromEntry($this->userId, $entry->getId());
             $this->mapper->delete($entry);
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (Exception $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // ─── Tag API endpoints (v0.0.3) ───
+
+    /**
+     * Get all tags for the current user with entry counts.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getTags(): DataResponse
+    {
+        try {
+            $tags = $this->tagService->getTagCloud($this->userId);
+            return new DataResponse($tags);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getTags failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+            ]);
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get entries by tag ID.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getEntriesByTag(int $tagId, int $limit = 50, int $offset = 0): DataResponse
+    {
+        try {
+            $entryIds = $this->tagService->getEntryIdsByTag($tagId, $limit, $offset);
+            $response = [];
+            foreach ($entryIds as $entryId) {
+                try {
+                    $entry = $this->mapper->findById($entryId);
+                    if ($entry->getUid() !== $this->userId) {
+                        continue;
+                    }
+                    $content = $this->sanitizeUtf8((string) $entry->getEntryContent());
+                    $response[] = [
+                        'id' => $entry->getId(),
+                        'entryDate' => $entry->getEntryDate(),
+                        'entryContent' => $content,
+                        'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
+                        'excerpt' => mb_substr($content, 0, 200),
+                        'tags' => $this->tagService->getTagsForEntry($entry->getId()),
+                    ];
+                } catch (DoesNotExistException $e) {
+                    continue;
+                }
+            }
+            return new DataResponse($response);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getEntriesByTag failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'tagId' => $tagId,
+            ]);
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }

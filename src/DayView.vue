@@ -31,6 +31,11 @@
 				<div class="entry-preview">
 					{{ getExcerpt(entry) }}
 				</div>
+				<div v-if="entry.tags && entry.tags.length" class="entry-tags">
+					<span v-for="tag in entry.tags" :key="tag.id" class="tag-badge">
+						#{{ tag.name }}
+					</span>
+				</div>
 			</div>
 		</div>
 		<NcEmptyContent v-else
@@ -207,6 +212,22 @@ export default {
 			-webkit-line-clamp: 3;
 			-webkit-box-orient: vertical;
 			overflow: hidden;
+		}
+
+		.entry-tags {
+			margin-top: 6px;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 4px;
+		}
+
+		.tag-badge {
+			display: inline-block;
+			padding: 2px 8px;
+			background-color: var(--color-primary-element-light);
+			color: var(--color-primary-element-light-text);
+			border-radius: 12px;
+			font-size: 0.85em;
 		}
 	}
 }
