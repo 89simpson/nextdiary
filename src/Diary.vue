@@ -3,6 +3,7 @@
 		<NcAppNavigation>
 			<div class="navigation-wrapper">
 				<NcButton class="icon icon-view-previous"
+					:aria-label="t('nextdiary', 'Previous day')"
 					@click="goPrevDay" />
 				<NcDatetimePicker ref="datepicker"
 					v-model="selectedDate"
@@ -18,6 +19,7 @@
 				</NcButton>
 				<NcButton v-if="showNextDayButton"
 					class="icon icon-view-next"
+					:aria-label="t('nextdiary', 'Next day')"
 					@click="goNextDay" />
 			</div>
 			<template #list>
@@ -40,7 +42,7 @@
 				</ul>
 			</template>
 			<template #footer>
-				<NcAppNavigationItem class="export" :title="t('nextdiary', 'Export')" icon="icon-download">
+				<NcAppNavigationItem class="export" :name="t('nextdiary', 'Export')" icon="icon-download">
 					<template #actions>
 						<NcActionLink :href="pdfDownloadLink">
 							<template #icon>
@@ -156,7 +158,10 @@ export default {
 	},
 	methods: {
 		onDateChange(date) {
-			this.$router.push({ name: 'date', params: { date: moment(date).format('YYYY-MM-DD') } })
+			const targetDate = moment(date).format('YYYY-MM-DD')
+			if (this.date !== targetDate) {
+				this.$router.push({ name: 'date', params: { date: targetDate } })
+			}
 			this.calendarOpen = false
 			this.fetchPastEntries()
 		},
