@@ -366,25 +366,12 @@ export default {
 	.navigation-wrapper {
 		display: flex;
 		justify-content: space-around;
-		align-items: center;
 		padding: 12px;
-		position: relative;
 
 		.diary-datetimepicker {
-			position: absolute;
-			left: 0;
-			right: 0;
-			width: 100%;
-			top: 100%;
-
+			width: 0;
 			.mx-input-wrapper {
 				display: none;
-			}
-
-			.mx-datepicker-popup {
-				left: 0 !important;
-				right: 0 !important;
-				width: 100% !important;
 			}
 		}
 
@@ -397,6 +384,11 @@ export default {
 	.export {
 		padding: 12px;
 	}
+}
+
+.mx-datepicker-popup .mx-calendar {
+	width: 300px !important;
+	margin: 0 auto;
 }
 
 .mx-calendar-content .cell.has-diary-entry {
