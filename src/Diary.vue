@@ -366,25 +366,13 @@ export default {
 	.navigation-wrapper {
 		display: flex;
 		justify-content: space-around;
-		align-items: center;
 		padding: 12px;
-		position: relative;
 
 		.diary-datetimepicker {
-			position: absolute;
-			left: 0;
-			right: 0;
-			width: 100%;
-			top: 100%;
+			width: 0;
 
 			.mx-input-wrapper {
 				display: none;
-			}
-
-			.mx-datepicker-popup {
-				left: 0 !important;
-				right: 0 !important;
-				width: 100% !important;
 			}
 		}
 
@@ -398,7 +386,27 @@ export default {
 		padding: 12px;
 	}
 }
+</style>
 
+<style lang="scss">
+// Global styles (not scoped) for datepicker popup that renders in body
+.mx-datepicker-main.mx-datepicker-popup {
+	// Fix positioning: center popup and ensure all buttons are visible
+	// The popup is 264px wide (from Nextcloud's override of .mx-calendar)
+	// Sidebar is typically 300px, so we need to position it properly
+	left: 12px !important;
+	right: auto !important;
+	width: auto !important;
+	max-width: calc(100vw - 24px);
+
+	// Ensure the calendar has proper constraints
+	.mx-calendar {
+		min-width: 264px;
+		max-width: 100%;
+	}
+}
+
+// Diary entry indicators (green dots)
 .mx-calendar-content .cell.has-diary-entry {
 	position: relative !important;
 
