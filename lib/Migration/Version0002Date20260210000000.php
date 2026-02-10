@@ -104,13 +104,22 @@ class Version0002Date20260210000000 extends SimpleMigrationStep
             ]);
 
         $count = 0;
+        $now = date('Y-m-d H:i:s');
         foreach ($this->savedEntries as $row) {
-            $timestamp = new \DateTime($row['entry_date'] . ' 12:00:00');
+            $entryDate = $row['entry_date'] ?? '';
+
+            // Skip entries with invalid or empty dates
+            if ($entryDate === '' || $entryDate === '0000-00-00' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $entryDate)) {
+                $output->warning('NextDiary: skipping entry with invalid date "' . $entryDate . '" for user ' . ($row['uid'] ?? 'unknown'));
+                continue;
+            }
+
+            $timestamp = $entryDate . ' 12:00:00';
             $insert->setParameter('uid', $row['uid']);
-            $insert->setParameter('entry_date', $row['entry_date']);
+            $insert->setParameter('entry_date', $entryDate);
             $insert->setParameter('entry_content', $row['entry_content']);
-            $insert->setParameter('created_at', $timestamp, 'datetime');
-            $insert->setParameter('updated_at', $timestamp, 'datetime');
+            $insert->setParameter('created_at', $timestamp);
+            $insert->setParameter('updated_at', $timestamp);
             $insert->executeStatement();
             $count++;
         }
