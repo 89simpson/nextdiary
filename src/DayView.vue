@@ -140,7 +140,7 @@ export default {
 			return moment(createdAt).format('HH:mm')
 		},
 		getExcerpt(entry) {
-			const content = entry.entryContent || ''
+			const content = (entry.entryContent || '').trim()
 			if (content.length > 200) {
 				return content.substring(0, 200) + '...'
 			}
@@ -183,7 +183,7 @@ export default {
 	.entry-card {
 		border: 1px solid var(--color-border);
 		border-radius: 8px;
-		padding: 16px;
+		padding: 10px 12px;
 		cursor: pointer;
 		transition: background-color 0.2s;
 
@@ -195,7 +195,7 @@ export default {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			margin-bottom: 8px;
+			margin-bottom: 4px;
 
 			.entry-time {
 				font-weight: 600;
@@ -205,9 +205,8 @@ export default {
 
 		.entry-preview {
 			color: var(--color-text-lighter);
-			white-space: pre-wrap;
 			word-break: break-word;
-			line-height: 1.5;
+			line-height: 1.4;
 		}
 	}
 }
