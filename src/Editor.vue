@@ -86,20 +86,26 @@ export default {
 	},
 	mounted() {
 		this.simplemde.codemirror.on('change', () => {
-			if (this.status === 'loaded' || this.content === this.simplemde.value()) {
-				this.status = 'writing'
+			if (this.status === 'loading' || this.status === 'loaded' || this.content === this.simplemde.value()) {
+				if (this.status === 'loaded') {
+					this.status = 'writing'
+				}
 				return
 			}
 			this.content = this.simplemde.value()
 			this.unSavedChanges = true
 			clearTimeout(this.timeout)
+			const entryId = this.id
 			const saveFunction = () => {
+				if (this.id !== entryId) return
 				const newContent = this.simplemde.value()
-				axios.put(generateUrl('apps/nextdiary/api/entry/' + this.id), {
+				axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
 					content: newContent,
 				})
 					.then(() => {
-						this.unSavedChanges = false
+						if (this.id === entryId) {
+							this.unSavedChanges = false
+						}
 						this.$emit('entry-changed')
 					})
 					.catch(error => {
@@ -112,6 +118,8 @@ export default {
 	},
 	methods: {
 		fetchEntry() {
+			clearTimeout(this.timeout)
+			this.unSavedChanges = false
 			this.status = 'loading'
 			axios.get(generateUrl('apps/nextdiary/api/entry/' + this.id))
 				.then(response => {

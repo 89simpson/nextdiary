@@ -58,10 +58,16 @@ class PageController extends Controller
     {
         try {
             $entries = $this->mapper->findByDate($this->userId, $date);
-            foreach ($entries as $entry) {
-                $entry->setEntryContent($this->sanitizeUtf8((string) $entry->getEntryContent()));
-            }
-            return new DataResponse($entries);
+            $response = array_map(function ($entry) {
+                return [
+                    'id' => $entry->getId(),
+                    'entryDate' => $entry->getEntryDate(),
+                    'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
+                    'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
+                    'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
+                ];
+            }, $entries);
+            return new DataResponse($response);
         } catch (\Exception $e) {
             $this->logger->error('[NextDiary] getEntriesByDate failed: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -92,8 +98,13 @@ class PageController extends Controller
             return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
         }
 
-        $entry->setEntryContent($this->sanitizeUtf8((string) $entry->getEntryContent()));
-        return new DataResponse($entry);
+        return new DataResponse([
+            'id' => $entry->getId(),
+            'entryDate' => $entry->getEntryDate(),
+            'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
+            'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
+            'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
+        ]);
     }
 
     /**
