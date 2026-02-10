@@ -366,12 +366,25 @@ export default {
 	.navigation-wrapper {
 		display: flex;
 		justify-content: space-around;
+		align-items: center;
 		padding: 12px;
+		position: relative;
 
 		.diary-datetimepicker {
-			width: 0;
+			position: absolute;
+			left: 0;
+			right: 0;
+			width: 100%;
+			top: 100%;
+
 			.mx-input-wrapper {
 				display: none;
+			}
+
+			.mx-datepicker-popup {
+				left: 0 !important;
+				right: 0 !important;
+				width: 100% !important;
 			}
 		}
 
