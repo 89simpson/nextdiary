@@ -78,16 +78,19 @@ class PageController extends Controller
     {
         try {
             $entries = $this->mapper->findLast($this->userId, $amount);
-        } catch (DoesNotExistException $e) {
-            return new DataResponse(['isEmpty' => true]);
-        } catch (MultipleObjectsReturnedException|Exception $e) {
+            $response = array_map(static function ($entry) {
+                return ['date' => $entry->getEntryDate(), 'excerpt' => substr((string) $entry->getEntryContent(), 0, 40)];
+            }, $entries);
+
+            return new DataResponse($response);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getLastEntries failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'amount' => $amount,
+            ]);
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
-        $response = array_map(static function ($entry) {
-            return ['date' => $entry->getEntryDate(), 'excerpt' => substr($entry->getEntryContent(), 0, 40)];
-        }, $entries);
-
-        return new DataResponse($response);
     }
 
     /**
