@@ -73,10 +73,12 @@ class Version0002Date20260210000000 extends SimpleMigrationStep
             'notnull' => false,
         ]);
         $table->addColumn('created_at', 'datetime', [
-            'notnull' => true,
+            'notnull' => false,
+            'default' => null,
         ]);
         $table->addColumn('updated_at', 'datetime', [
-            'notnull' => true,
+            'notnull' => false,
+            'default' => null,
         ]);
 
         $table->setPrimaryKey(['id']);
