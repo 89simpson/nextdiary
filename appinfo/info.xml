@@ -22,6 +22,10 @@ Warning! This is a very early alpha release and things are still pretty rough ar
         <php min-version="8.0" max-version="8.3" />
         <nextcloud min-version="25" max-version="28"/>
     </dependencies>
+    <settings>
+        <personal>OCA\NextDiary\Settings\Personal</personal>
+        <personal-section>OCA\NextDiary\Settings\PersonalSection</personal-section>
+    </settings>
     <navigations>
         <navigation>
             <id>nextdiary</id>
