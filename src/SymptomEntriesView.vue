@@ -218,7 +218,7 @@ export default {
 
 @media (max-width: 768px) {
 	.symptom-entries-view {
-		padding: 12px 10px;
+		padding: 12px 10px 12px 44px;
 
 		.symptom-header h2 {
 			font-size: 16px;

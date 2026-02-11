@@ -65,17 +65,25 @@
 				@entry-changed="onEntryChanged"
 				@navigate-date="onDateChange" />
 		</NcAppContent>
-		<div id="nextdiary-right-sidebar">
+		<div id="nextdiary-right-sidebar" :class="{ 'mobile-open': mobileSidebarOpen }">
 			<div class="sidebar-section">
 				<h4 class="sidebar-title">{{ t('nextdiary', 'Tags') }}</h4>
 				<TagSearch :value="tagSearchQuery" @input="tagSearchQuery = $event" />
-				<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="selectTag" />
+				<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="onMobileTagSelect" />
 			</div>
 			<div class="sidebar-section">
 				<h4 class="sidebar-title">{{ t('nextdiary', 'Symptoms') }}</h4>
-				<SymptomCloud :symptoms="symptoms" :active-symptom-id="activeSymptomId" @select-symptom="selectSymptom" />
+				<SymptomCloud :symptoms="symptoms" :active-symptom-id="activeSymptomId" @select-symptom="onMobileSymptomSelect" />
 			</div>
 		</div>
+		<div v-if="mobileSidebarOpen"
+			class="mobile-sidebar-backdrop"
+			@click="mobileSidebarOpen = false" />
+		<button class="mobile-sidebar-fab"
+			:aria-label="t('nextdiary', 'Tags')"
+			@click="mobileSidebarOpen = !mobileSidebarOpen">
+			<TagMultiple :size="20" />
+		</button>
 	</NcContent>
 </template>
 
@@ -98,6 +106,7 @@ import { generateUrl } from '@nextcloud/router'
 import TagCloud from './TagCloud.vue'
 import TagSearch from './TagSearch.vue'
 import SymptomCloud from './SymptomCloud.vue'
+import TagMultiple from 'vue-material-design-icons/TagMultiple'
 import axios from '@nextcloud/axios'
 
 export default {
@@ -117,6 +126,7 @@ export default {
 		TagCloud,
 		TagSearch,
 		SymptomCloud,
+		TagMultiple,
 	},
 	data() {
 		const baseUrl = generateUrl('apps/nextdiary')
@@ -132,6 +142,7 @@ export default {
 			tags: [],
 			tagSearchQuery: '',
 			symptoms: [],
+			mobileSidebarOpen: false,
 		}
 	},
 	computed: {
@@ -268,6 +279,14 @@ export default {
 		},
 		selectSymptom(symptomId) {
 			this.$router.push({ name: 'symptom-entries', params: { symptomId: String(symptomId) } })
+		},
+		onMobileTagSelect(tagId) {
+			this.mobileSidebarOpen = false
+			this.selectTag(tagId)
+		},
+		onMobileSymptomSelect(symptomId) {
+			this.mobileSidebarOpen = false
+			this.selectSymptom(symptomId)
 		},
 		stripMarkdown(text) {
 			if (!text) return ''
@@ -450,7 +469,21 @@ export default {
 		height: 100%;
 
 		@media (max-width: 768px) {
-			display: none;
+			position: fixed;
+			top: 50px;
+			right: 0;
+			bottom: 0;
+			width: 280px;
+			min-width: 280px;
+			z-index: 1000;
+			background: var(--color-main-background);
+			border-left: 1px solid var(--color-border);
+			transform: translateX(100%);
+			transition: transform 0.25s ease-in-out;
+
+			&.mobile-open {
+				transform: translateX(0);
+			}
 		}
 
 		.sidebar-section {
@@ -469,6 +502,47 @@ export default {
 			color: #fff;
 			padding: 12px 12px 0;
 			margin: 0;
+		}
+	}
+
+	.mobile-sidebar-backdrop {
+		display: none;
+
+		@media (max-width: 768px) {
+			display: block;
+			position: fixed;
+			top: 50px;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 999;
+			background: rgba(0, 0, 0, 0.4);
+		}
+	}
+
+	.mobile-sidebar-fab {
+		display: none;
+
+		@media (max-width: 768px) {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: fixed;
+			bottom: 60px;
+			right: 16px;
+			z-index: 998;
+			width: 48px;
+			height: 48px;
+			border-radius: 50%;
+			border: none;
+			background: var(--color-primary);
+			color: #fff;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+			cursor: pointer;
+
+			&:active {
+				transform: scale(0.95);
+			}
 		}
 	}
 

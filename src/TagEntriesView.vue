@@ -207,7 +207,7 @@ export default {
 
 @media (max-width: 768px) {
 	.tag-entries-view {
-		padding: 12px 10px;
+		padding: 12px 10px 12px 44px;
 
 		.tag-header h2 {
 			font-size: 16px;

@@ -225,7 +225,7 @@ export default {
 		padding-top: 16px;
 
 		@media (max-width: 768px) {
-			padding-left: 12px;
+			padding-left: 44px;
 			padding-top: 10px;
 			font-size: 15px;
 			gap: 4px;
@@ -238,7 +238,7 @@ export default {
 		margin-bottom: 4px;
 
 		@media (max-width: 768px) {
-			padding: 0 12px 4px;
+			padding: 0 12px 4px 44px;
 		}
 	}
 

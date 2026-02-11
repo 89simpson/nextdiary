@@ -6,7 +6,7 @@
 				<template #icon>
 					<Plus :size="20" />
 				</template>
-				{{ t('nextdiary', 'New entry') }}
+				<span class="new-entry-text">{{ t('nextdiary', 'New entry') }}</span>
 			</NcButton>
 		</div>
 		<div v-if="isLoading" class="day-loading">
@@ -288,13 +288,17 @@ export default {
 
 @media (max-width: 768px) {
 	.day-view {
-		padding: 12px 10px;
+		padding: 12px 10px 12px 44px;
 
 		.day-header {
 			margin-bottom: 12px;
 
 			h2 {
 				font-size: 16px;
+			}
+
+			.new-entry-text {
+				display: none;
 			}
 		}
 
