@@ -45,9 +45,9 @@ class Version0005Date20260211000001 extends SimpleMigrationStep
             $table->addIndex(['uid'], 'diary_med_uid_idx');
         }
 
-        // Create diary_entry_medications table
-        if (!$schema->hasTable('diary_entry_medications')) {
-            $table = $schema->createTable('diary_entry_medications');
+        // Create diary_entry_meds table (short name to fit Nextcloud index name limits)
+        if (!$schema->hasTable('diary_entry_meds')) {
+            $table = $schema->createTable('diary_entry_meds');
             $table->addColumn('id', 'integer', [
                 'autoincrement' => true,
                 'notnull' => true,

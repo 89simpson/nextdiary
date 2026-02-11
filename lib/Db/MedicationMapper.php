@@ -69,7 +69,7 @@ class MedicationMapper extends QBMapper
         $qb->select('m.id', 'm.medication_name', 'm.category')
             ->selectAlias($qb->func()->count('em.id'), 'entry_count')
             ->from($this->getTableName(), 'm')
-            ->leftJoin('m', 'diary_entry_medications', 'em', $qb->expr()->eq('m.id', 'em.medication_id'))
+            ->leftJoin('m', 'diary_entry_meds', 'em', $qb->expr()->eq('m.id', 'em.medication_id'))
             ->where($qb->expr()->eq('m.uid', $qb->createNamedParameter($uid)))
             ->groupBy('m.id', 'm.medication_name', 'm.category')
             ->having($qb->expr()->gt($qb->func()->count('em.id'), $qb->createNamedParameter(0)))
@@ -100,7 +100,7 @@ class MedicationMapper extends QBMapper
             ->where($qb->expr()->eq('uid', $qb->createNamedParameter($uid)))
             ->andWhere(
                 $qb->expr()->notIn('id', $qb->createFunction(
-                    'SELECT DISTINCT `medication_id` FROM `*PREFIX*diary_entry_medications`'
+                    'SELECT DISTINCT `medication_id` FROM `*PREFIX*diary_entry_meds`'
                 ))
             );
 

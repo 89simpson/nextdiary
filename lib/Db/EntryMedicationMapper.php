@@ -10,7 +10,7 @@ class EntryMedicationMapper extends QBMapper
 {
     public function __construct(IDBConnection $db)
     {
-        parent::__construct($db, 'diary_entry_medications', EntryMedication::class);
+        parent::__construct($db, 'diary_entry_meds', EntryMedication::class);
     }
 
     /**
