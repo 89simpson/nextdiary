@@ -278,8 +278,8 @@ export default {
 		.symptom-badge {
 			display: inline-block;
 			padding: 2px 8px;
-			background-color: var(--color-error);
-			color: white;
+			background-color: #ef9a9a;
+			color: #b71c1c;
 			border-radius: 12px;
 			font-size: 0.85em;
 		}

@@ -63,13 +63,13 @@ export default {
 		transition: all 0.2s;
 
 		&:hover {
-			background-color: var(--color-error);
-			color: white;
+			background-color: #ef9a9a;
+			color: #b71c1c;
 		}
 
 		&.active {
-			background-color: var(--color-error);
-			color: white;
+			background-color: #ef9a9a;
+			color: #b71c1c;
 			font-weight: 700;
 		}
 

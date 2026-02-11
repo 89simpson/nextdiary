@@ -1,28 +1,43 @@
 <template>
-	<div class="symptom-picker">
-		<div class="symptom-input-row">
-			<input ref="input"
-				v-model="inputValue"
-				type="text"
-				class="symptom-input"
-				:placeholder="t('nextdiary', 'Add symptom...')"
-				@keydown.enter.prevent="addSymptom"
-				@input="onInput">
-			<ul v-if="suggestions.length > 0" class="symptom-suggestions">
-				<li v-for="s in suggestions"
-					:key="s.id"
-					@mousedown.prevent="selectSuggestion(s)">
-					{{ s.name }}
-				</li>
-			</ul>
-		</div>
-		<div v-if="symptoms.length > 0" class="symptom-chips">
-			<span v-for="(symptom, idx) in symptoms"
-				:key="idx"
-				class="symptom-chip">
-				{{ symptom }}
-				<span class="remove" @click="removeSymptom(idx)">&times;</span>
+	<div class="chip-picker symptom-picker">
+		<div class="picker-header">
+			<span class="picker-label">{{ t('nextdiary', 'Symptoms') }}</span>
+			<span v-for="name in selected"
+				:key="'sel-' + name"
+				class="chip selected"
+				@click="toggle(name)">
+				{{ name }} &times;
 			</span>
+			<button class="picker-toggle" @click="expanded = !expanded">
+				{{ expanded ? '−' : '+' }}
+			</button>
+		</div>
+		<div v-if="expanded" class="picker-cloud">
+			<span v-for="name in cloudItems"
+				:key="'cloud-' + name"
+				class="chip"
+				:class="{ selected: isSelected(name) }"
+				@click="toggle(name)">
+				{{ name }}
+			</span>
+			<span v-if="hasMore" class="chip more" @click="showAll = !showAll">
+				{{ showAll ? t('nextdiary', 'less') : t('nextdiary', 'more...') }}
+			</span>
+			<div class="picker-input-row">
+				<input v-model="inputValue"
+					type="text"
+					class="picker-input"
+					:placeholder="t('nextdiary', 'New symptom...')"
+					@keydown.enter.prevent="addNew"
+					@input="onInput">
+				<ul v-if="suggestions.length > 0" class="picker-suggestions">
+					<li v-for="s in suggestions"
+						:key="s"
+						@mousedown.prevent="toggle(s)">
+						{{ s }}
+					</li>
+				</ul>
+			</div>
 		</div>
 	</div>
 </template>
@@ -30,6 +45,8 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+
+const MAX_VISIBLE = 10
 
 export default {
 	name: 'SymptomPicker',
@@ -41,26 +58,57 @@ export default {
 	},
 	data() {
 		return {
+			expanded: false,
+			showAll: false,
 			inputValue: '',
-			allSymptoms: [],
+			allItems: [],
 			suggestions: [],
 		}
 	},
 	computed: {
-		symptoms() {
+		selected() {
 			return this.value || []
+		},
+		cloudItems() {
+			const items = this.allItems.filter(n => !this.isSelected(n))
+			if (this.showAll) return items
+			return items.slice(0, MAX_VISIBLE)
+		},
+		hasMore() {
+			return this.allItems.filter(n => !this.isSelected(n)).length > MAX_VISIBLE
 		},
 	},
 	mounted() {
-		this.fetchAllSymptoms()
+		this.fetchItems()
 	},
 	methods: {
-		fetchAllSymptoms() {
+		fetchItems() {
 			axios.get(generateUrl('apps/nextdiary/api/symptoms'))
 				.then(response => {
-					this.allSymptoms = (response.data || []).map(s => s.name)
+					this.allItems = (response.data || [])
+						.sort((a, b) => b.count - a.count)
+						.map(s => s.name)
 				})
 				.catch(() => {})
+		},
+		isSelected(name) {
+			return this.selected.includes(name)
+		},
+		toggle(name) {
+			if (this.isSelected(name)) {
+				this.$emit('input', this.selected.filter(n => n !== name))
+			} else {
+				this.$emit('input', [...this.selected, name])
+			}
+		},
+		addNew() {
+			const name = this.inputValue.trim()
+			if (!name) return
+			if (!this.isSelected(name)) {
+				this.$emit('input', [...this.selected, name])
+			}
+			this.inputValue = ''
+			this.suggestions = []
 		},
 		onInput() {
 			const q = this.inputValue.trim().toLowerCase()
@@ -68,52 +116,95 @@ export default {
 				this.suggestions = []
 				return
 			}
-			this.suggestions = this.allSymptoms
-				.filter(name => name.toLowerCase().includes(q) && !this.symptoms.includes(name))
+			this.suggestions = this.allItems
+				.filter(name => name.toLowerCase().includes(q) && !this.isSelected(name))
 				.slice(0, 5)
-				.map((name, id) => ({ id, name }))
-		},
-		addSymptom() {
-			const name = this.inputValue.trim()
-			if (!name) return
-			if (!this.symptoms.includes(name)) {
-				this.$emit('input', [...this.symptoms, name])
-			}
-			this.inputValue = ''
-			this.suggestions = []
-		},
-		selectSuggestion(s) {
-			if (!this.symptoms.includes(s.name)) {
-				this.$emit('input', [...this.symptoms, s.name])
-			}
-			this.inputValue = ''
-			this.suggestions = []
-		},
-		removeSymptom(idx) {
-			const updated = [...this.symptoms]
-			updated.splice(idx, 1)
-			this.$emit('input', updated)
 		},
 	},
 }
 </script>
 
 <style lang="scss" scoped>
-.symptom-picker {
+.chip-picker {
 	padding: 4px 0;
 
-	.symptom-input-row {
-		position: relative;
+	.picker-header {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-wrap: wrap;
 	}
 
-	.symptom-input {
-		width: 200px;
-		padding: 4px 8px;
+	.picker-label {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text-lighter);
+		white-space: nowrap;
+	}
+
+	.picker-toggle {
+		background: none;
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		width: 22px;
+		height: 22px;
+		cursor: pointer;
+		color: var(--color-text-lighter);
+		font-size: 14px;
+		line-height: 1;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		&:hover {
+			background: var(--color-background-hover);
+			color: var(--color-main-text);
+		}
+	}
+
+	.picker-cloud {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+		margin-top: 6px;
+		align-items: center;
+	}
+
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		padding: 3px 10px;
+		border-radius: 14px;
+		font-size: 0.85em;
+		cursor: pointer;
+		transition: all 0.15s;
+		user-select: none;
+	}
+
+	.chip.more {
+		font-style: italic;
+		opacity: 0.6;
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+
+	.picker-input-row {
+		position: relative;
+		margin-top: 4px;
+		width: 100%;
+	}
+
+	.picker-input {
+		width: 180px;
+		padding: 3px 8px;
 		border: 1px solid var(--color-border);
 		border-radius: 4px;
 		background: var(--color-main-background);
 		color: var(--color-main-text);
-		font-size: 13px;
+		font-size: 12px;
 
 		&:focus {
 			border-color: var(--color-primary);
@@ -121,7 +212,7 @@ export default {
 		}
 	}
 
-	.symptom-suggestions {
+	.picker-suggestions {
 		position: absolute;
 		top: 100%;
 		left: 0;
@@ -132,46 +223,39 @@ export default {
 		list-style: none;
 		margin: 2px 0 0;
 		padding: 0;
-		width: 200px;
-		max-height: 150px;
+		width: 180px;
+		max-height: 120px;
 		overflow-y: auto;
 
 		li {
-			padding: 6px 10px;
+			padding: 5px 10px;
 			cursor: pointer;
-			font-size: 13px;
+			font-size: 12px;
 
 			&:hover {
 				background: var(--color-background-hover);
 			}
 		}
 	}
+}
 
-	.symptom-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 4px;
-		margin-top: 6px;
-	}
+.symptom-picker {
+	.chip {
+		background-color: var(--color-background-dark);
+		color: var(--color-text-lighter);
+		border: 1px solid var(--color-border);
+		opacity: 0.7;
 
-	.symptom-chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 2px 8px;
-		background-color: var(--color-error);
-		color: white;
-		border-radius: 12px;
-		font-size: 0.85em;
+		&:hover {
+			opacity: 1;
+			border-color: #ef9a9a;
+		}
 
-		.remove {
-			cursor: pointer;
-			font-weight: 700;
-			opacity: 0.7;
-
-			&:hover {
-				opacity: 1;
-			}
+		&.selected {
+			background-color: #ef9a9a;
+			color: #b71c1c;
+			border-color: #ef9a9a;
+			opacity: 1;
 		}
 	}
 }
