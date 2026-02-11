@@ -223,12 +223,23 @@ export default {
 		font-size: 18px;
 		padding-left: 52px;
 		padding-top: 16px;
+
+		@media (max-width: 768px) {
+			padding-left: 12px;
+			padding-top: 10px;
+			font-size: 15px;
+			gap: 4px;
+		}
 	}
 
 	.entry-meta-panel {
 		padding: 0 52px 4px;
 		border-bottom: 1px solid var(--color-border);
 		margin-bottom: 4px;
+
+		@media (max-width: 768px) {
+			padding: 0 12px 4px;
+		}
 	}
 
 	.chips-row {
@@ -241,8 +252,9 @@ export default {
 
 	.vue-simplemde {
 		padding-left: 32px;
-		@media (max-width: 500px) {
+		@media (max-width: 768px) {
 			padding-left: 0;
+			padding-right: 0;
 		}
 
 		.CodeMirror {
@@ -266,6 +278,19 @@ export default {
 
 		.editor-toolbar {
 			border: none;
+
+			@media (max-width: 768px) {
+				padding: 4px 8px;
+
+				a {
+					width: 28px !important;
+					height: 28px !important;
+				}
+
+				i.separator {
+					margin: 0 3px !important;
+				}
+			}
 
 			a {
 				color: var(--color-main-text) !important;

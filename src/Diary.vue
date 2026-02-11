@@ -449,6 +449,10 @@ export default {
 		overflow-y: auto;
 		height: 100%;
 
+		@media (max-width: 768px) {
+			display: none;
+		}
+
 		.sidebar-section {
 			border-bottom: 1px solid var(--color-border);
 			padding-bottom: 4px;

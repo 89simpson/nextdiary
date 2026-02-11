@@ -286,9 +286,31 @@ export default {
 	}
 }
 
-@media (max-width: 500px) {
+@media (max-width: 768px) {
 	.day-view {
-		padding: 12px;
+		padding: 12px 10px;
+
+		.day-header {
+			margin-bottom: 12px;
+
+			h2 {
+				font-size: 16px;
+			}
+		}
+
+		.entry-card {
+			padding: 12px 10px;
+
+			.entry-preview {
+				font-size: 14px;
+				-webkit-line-clamp: 2;
+			}
+
+			.tag-badge,
+			.symptom-badge {
+				font-size: 0.8em;
+			}
+		}
 	}
 }
 </style>

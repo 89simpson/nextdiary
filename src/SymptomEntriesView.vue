@@ -216,9 +216,22 @@ export default {
 	font-size: 0.85em;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 768px) {
 	.symptom-entries-view {
-		padding: 12px;
+		padding: 12px 10px;
+
+		.symptom-header h2 {
+			font-size: 16px;
+		}
+
+		.entry-card {
+			padding: 12px 10px;
+
+			.entry-preview {
+				font-size: 14px;
+				-webkit-line-clamp: 2;
+			}
+		}
 	}
 }
 </style>

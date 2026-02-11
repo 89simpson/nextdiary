@@ -141,6 +141,10 @@ export default {
 		font-weight: 600;
 		color: var(--color-text-lighter);
 		white-space: nowrap;
+
+		@media (max-width: 768px) {
+			font-size: 11px;
+		}
 	}
 
 	.picker-toggle {
@@ -161,6 +165,14 @@ export default {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+
+		@media (max-width: 768px) {
+			width: 28px;
+			height: 28px;
+			min-width: 28px;
+			min-height: 28px;
+			font-size: 16px;
+		}
 
 		&:hover {
 			background: var(--color-background-hover);
@@ -188,6 +200,11 @@ export default {
 		cursor: pointer;
 		transition: all 0.15s;
 		user-select: none;
+
+		@media (max-width: 768px) {
+			padding: 5px 12px;
+			min-height: 30px;
+		}
 	}
 
 	.chip.more {
@@ -214,6 +231,13 @@ export default {
 		color: var(--color-main-text);
 		font-size: 12px;
 
+		@media (max-width: 768px) {
+			width: 100%;
+			padding: 6px 10px;
+			font-size: 14px;
+			box-sizing: border-box;
+		}
+
 		&:focus {
 			border-color: var(--color-primary);
 			outline: none;
@@ -235,10 +259,19 @@ export default {
 		max-height: 120px;
 		overflow-y: auto;
 
+		@media (max-width: 768px) {
+			width: 100%;
+		}
+
 		li {
 			padding: 5px 10px;
 			cursor: pointer;
 			font-size: 12px;
+
+			@media (max-width: 768px) {
+				padding: 8px 12px;
+				font-size: 14px;
+			}
 
 			&:hover {
 				background: var(--color-background-hover);

@@ -78,10 +78,19 @@ export default {
 	padding: 8px 0;
 	flex-wrap: wrap;
 
+	@media (max-width: 768px) {
+		gap: 8px;
+		padding: 6px 0;
+	}
+
 	.mood-row {
 		display: flex;
 		align-items: center;
 		gap: 8px;
+
+		@media (max-width: 768px) {
+			gap: 4px;
+		}
 	}
 
 	.mood-label {
@@ -89,11 +98,19 @@ export default {
 		font-weight: 600;
 		color: var(--color-text-lighter);
 		white-space: nowrap;
+
+		@media (max-width: 768px) {
+			font-size: 11px;
+		}
 	}
 
 	.mood-emojis {
 		display: flex;
 		gap: 4px;
+
+		@media (max-width: 768px) {
+			gap: 2px;
+		}
 	}
 
 	.mood-emoji {
@@ -102,6 +119,11 @@ export default {
 		opacity: 0.4;
 		transition: all 0.15s;
 		padding: 2px;
+
+		@media (max-width: 768px) {
+			font-size: 20px;
+			padding: 1px;
+		}
 
 		&:hover {
 			opacity: 0.8;
@@ -117,6 +139,10 @@ export default {
 	.wellbeing-dots {
 		display: flex;
 		gap: 4px;
+
+		@media (max-width: 768px) {
+			gap: 2px;
+		}
 	}
 
 	.wellbeing-dot {
@@ -124,6 +150,10 @@ export default {
 		cursor: pointer;
 		color: var(--color-border-dark);
 		transition: all 0.15s;
+
+		@media (max-width: 768px) {
+			font-size: 14px;
+		}
 
 		&:hover {
 			color: var(--color-warning);
