@@ -20,7 +20,7 @@ Warning! This is a very early alpha release and things are still pretty rough ar
     <screenshot>https://raw.githubusercontent.com/danielroehrig/diary/main/screenshots/01-markdown-editor.png</screenshot>
     <dependencies>
         <php min-version="8.0" max-version="8.3" />
-        <nextcloud min-version="25" max-version="28"/>
+        <nextcloud min-version="25" max-version="30"/>
     </dependencies>
     <settings>
         <personal>OCA\NextDiary\Settings\Personal</personal>
