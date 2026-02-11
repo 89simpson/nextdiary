@@ -475,7 +475,7 @@ export default {
 			bottom: 0;
 			width: 280px;
 			min-width: 280px;
-			z-index: 1000;
+			z-index: 10001;
 			background: var(--color-main-background);
 			border-left: 1px solid var(--color-border);
 			transform: translateX(100%);
@@ -505,47 +505,6 @@ export default {
 		}
 	}
 
-	.mobile-sidebar-backdrop {
-		display: none;
-
-		@media (max-width: 768px) {
-			display: block;
-			position: fixed;
-			top: 50px;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			z-index: 999;
-			background: rgba(0, 0, 0, 0.4);
-		}
-	}
-
-	.mobile-sidebar-fab {
-		display: none;
-
-		@media (max-width: 768px) {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			position: fixed;
-			bottom: 60px;
-			right: 16px;
-			z-index: 998;
-			width: 48px;
-			height: 48px;
-			border-radius: 50%;
-			border: none;
-			background: var(--color-primary);
-			color: #fff;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-			cursor: pointer;
-
-			&:active {
-				transform: scale(0.95);
-			}
-		}
-	}
-
 	.navigation-wrapper {
 		display: flex;
 		justify-content: space-around;
@@ -567,6 +526,50 @@ export default {
 	.export {
 		padding: 12px;
 	}
+}
+
+.mobile-sidebar-backdrop {
+	display: none;
+}
+
+.mobile-sidebar-fab {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	.mobile-sidebar-backdrop {
+		display: block;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 10000;
+		background: rgba(0, 0, 0, 0.4);
+	}
+
+	.mobile-sidebar-fab {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: fixed;
+		bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+		right: 16px;
+		z-index: 9999;
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		border: none;
+		background: var(--color-primary);
+		color: #fff;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+		cursor: pointer;
+
+		&:active {
+			opacity: 0.8;
+		}
+	}
+
 }
 
 .mx-datepicker-popup .mx-calendar {
