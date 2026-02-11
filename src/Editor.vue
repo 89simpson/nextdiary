@@ -15,6 +15,7 @@
 		</div>
 		<div class="entry-meta-panel">
 			<MoodSelector :value="ratings" @input="onRatingsChange" />
+			<TagPicker :value="tags" @input="onTagsChange" />
 			<SymptomPicker :value="symptoms" @input="onSymptomsChange" />
 		</div>
 		<VueSimplemde ref="markdownEditor"
@@ -31,6 +32,7 @@ import VueSimplemde from 'vue-simplemde'
 import { NcButton } from '@nextcloud/vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
 import MoodSelector from './MoodSelector.vue'
+import TagPicker from './TagPicker.vue'
 import SymptomPicker from './SymptomPicker.vue'
 
 import axios from '@nextcloud/axios'
@@ -39,7 +41,7 @@ import moment from '@nextcloud/moment'
 
 export default {
 	name: 'EntryEditor',
-	components: { VueSimplemde, NcButton, ArrowLeft, MoodSelector, SymptomPicker },
+	components: { VueSimplemde, NcButton, ArrowLeft, MoodSelector, TagPicker, SymptomPicker },
 	props: {
 		id: {
 			type: String,
@@ -54,6 +56,7 @@ export default {
 			entryDate: null,
 			createdAt: null,
 			ratings: {},
+			tags: [],
 			symptoms: [],
 			configs: {
 				toolbar: ['bold', 'italic', 'strikethrough', 'heading', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'link', '|', 'preview', '|', 'guide'],
@@ -113,6 +116,7 @@ export default {
 				axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
 					content: newContent,
 					ratings: this.ratings,
+					tags: this.tags,
 					symptoms: this.symptoms,
 				})
 					.then(() => {
@@ -141,6 +145,7 @@ export default {
 					this.entryDate = data.entryDate
 					this.createdAt = data.createdAt
 					this.ratings = data.entryRatings || {}
+					this.tags = (data.tags || []).map(t => t.name)
 					this.symptoms = (data.symptoms || []).map(s => s.name)
 					this.status = 'loaded'
 					this.simplemde.value(this.content)
@@ -153,6 +158,10 @@ export default {
 		},
 		onRatingsChange(val) {
 			this.ratings = val
+			this.triggerMetaSave()
+		},
+		onTagsChange(val) {
+			this.tags = val
 			this.triggerMetaSave()
 		},
 		onSymptomsChange(val) {
@@ -168,6 +177,7 @@ export default {
 				axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
 					content: this.simplemde.value(),
 					ratings: this.ratings,
+					tags: this.tags,
 					symptoms: this.symptoms,
 				})
 					.then(() => {

@@ -22,6 +22,7 @@ OC.L10N.register(
     "No tags yet" : "Тегов пока нет",
     "Search tags..." : "Поиск тегов...",
     "No symptoms yet" : "Симптомов пока нет",
+    "Add tag..." : "Добавить тег...",
     "Add symptom..." : "Добавить симптом...",
     "No entries with this tag" : "Нет записей с этим тегом",
     "No entries with this symptom" : "Нет записей с этим симптомом",

@@ -151,7 +151,7 @@ class PageController extends Controller
      *
      * @NoAdminRequired
      */
-    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null): DataResponse
+    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null, ?array $tags = null): DataResponse
     {
         try {
             $entry = $this->mapper->findById($id);
@@ -172,7 +172,9 @@ class PageController extends Controller
 
         try {
             $this->mapper->update($entry);
-            $this->tagService->syncTagsForEntry($this->userId, $id, $content);
+            if ($tags !== null) {
+                $this->tagService->syncTagsByNames($this->userId, $id, $tags);
+            }
             if ($symptoms !== null) {
                 $this->moodService->syncSymptomsForEntry($this->userId, $id, $symptoms);
             }

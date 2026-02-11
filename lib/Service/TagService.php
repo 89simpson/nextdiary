@@ -80,6 +80,36 @@ class TagService
     }
 
     /**
+     * Sync tags for an entry by tag names array.
+     *
+     * @param string[] $tagNames Array of tag names
+     * @return array Array of ['id' => int, 'name' => string]
+     * @throws Exception
+     */
+    public function syncTagsByNames(string $uid, int $entryId, array $tagNames): array
+    {
+        $this->entryTagMapper->detachAllFromEntry($entryId);
+
+        $result = [];
+        foreach ($tagNames as $name) {
+            $name = trim($name);
+            if ($name === '') {
+                continue;
+            }
+            $tag = $this->tagMapper->findOrCreate($uid, mb_strtolower($name));
+            $this->entryTagMapper->attach($entryId, $tag->getId());
+            $result[] = [
+                'id' => $tag->getId(),
+                'name' => $tag->getTagName(),
+            ];
+        }
+
+        $this->tagMapper->deleteUnusedTags($uid);
+
+        return $result;
+    }
+
+    /**
      * Remove all tags from an entry and clean up unused tags.
      *
      * @throws Exception

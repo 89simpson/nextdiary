@@ -199,8 +199,8 @@ export default {
 .tag-badge {
 	display: inline-block;
 	padding: 2px 8px;
-	background-color: var(--color-primary-element-light);
-	color: var(--color-primary-element-light-text);
+	background-color: #a5d6a7;
+	color: #1b5e20;
 	border-radius: 12px;
 	font-size: 0.85em;
 }
