@@ -9,7 +9,7 @@
 			:class="{ active: activeTagId === tag.id }"
 			:style="{ fontSize: calculateFontSize(tag.count) }"
 			@click="$emit('select-tag', tag.id)">
-			#{{ tag.name }}
+			{{ tag.name }}
 			<small>({{ tag.count }})</small>
 		</span>
 	</div>

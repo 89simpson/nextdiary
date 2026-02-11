@@ -6,7 +6,7 @@
 				:key="'sel-' + name"
 				class="chip selected"
 				@click="toggle(name)">
-				#{{ name }} &times;
+				{{ name }} &times;
 			</span>
 			<button class="picker-toggle" @click="expanded = !expanded">
 				{{ expanded ? '−' : '+' }}
@@ -18,7 +18,7 @@
 				class="chip"
 				:class="{ selected: isSelected(name) }"
 				@click="toggle(name)">
-				#{{ name }}
+				{{ name }}
 			</span>
 			<span v-if="hasMore" class="chip more" @click="showAll = !showAll">
 				{{ showAll ? t('nextdiary', 'less') : t('nextdiary', 'more...') }}

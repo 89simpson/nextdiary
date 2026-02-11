@@ -67,17 +67,34 @@
 		</NcAppContent>
 		<div id="nextdiary-right-sidebar" :class="{ 'mobile-open': mobileSidebarOpen }">
 			<div v-if="settings.show_tags" class="sidebar-section">
-				<h4 class="sidebar-title">{{ t('nextdiary', 'Tags') }}</h4>
-				<TagSearch :value="tagSearchQuery" @input="tagSearchQuery = $event" />
+				<h4 class="sidebar-title" @click="toggleSearch('tags')">{{ t('nextdiary', 'Tags') }}</h4>
+				<input v-if="searchOpen === 'tags'"
+					ref="searchTags"
+					v-model="tagSearchQuery"
+					type="text"
+					class="sidebar-search-input"
+					:placeholder="t('nextdiary', 'Search...')">
 				<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="onMobileTagSelect" />
 			</div>
 			<div v-if="settings.show_symptoms" class="sidebar-section">
-				<h4 class="sidebar-title">{{ t('nextdiary', 'Symptoms') }}</h4>
-				<SymptomCloud :symptoms="symptoms" :active-symptom-id="activeSymptomId" @select-symptom="onMobileSymptomSelect" />
+				<h4 class="sidebar-title" @click="toggleSearch('symptoms')">{{ t('nextdiary', 'Symptoms') }}</h4>
+				<input v-if="searchOpen === 'symptoms'"
+					ref="searchSymptoms"
+					v-model="symptomSearchQuery"
+					type="text"
+					class="sidebar-search-input"
+					:placeholder="t('nextdiary', 'Search...')">
+				<SymptomCloud :symptoms="filteredSymptoms" :active-symptom-id="activeSymptomId" @select-symptom="onMobileSymptomSelect" />
 			</div>
 			<div v-if="settings.show_medications" class="sidebar-section">
-				<h4 class="sidebar-title">{{ t('nextdiary', 'Medications') }}</h4>
-				<MedicationCloud :medications="medications" :active-medication-id="activeMedicationId" @select-medication="onMobileMedicationSelect" />
+				<h4 class="sidebar-title" @click="toggleSearch('medications')">{{ t('nextdiary', 'Medications') }}</h4>
+				<input v-if="searchOpen === 'medications'"
+					ref="searchMedications"
+					v-model="medicationSearchQuery"
+					type="text"
+					class="sidebar-search-input"
+					:placeholder="t('nextdiary', 'Search...')">
+				<MedicationCloud :medications="filteredMedications" :active-medication-id="activeMedicationId" @select-medication="onMobileMedicationSelect" />
 			</div>
 		</div>
 		<div v-if="mobileSidebarOpen"
@@ -108,7 +125,6 @@ import FilePdfBox from 'vue-material-design-icons/FilePdfBox'
 import Markdown from 'vue-material-design-icons/LanguageMarkdown'
 import { generateUrl } from '@nextcloud/router'
 import TagCloud from './TagCloud.vue'
-import TagSearch from './TagSearch.vue'
 import SymptomCloud from './SymptomCloud.vue'
 import MedicationCloud from './MedicationCloud.vue'
 import TagMultiple from 'vue-material-design-icons/TagMultiple'
@@ -129,7 +145,6 @@ export default {
 		NcAppNavigationIconBullet,
 		NcListItem,
 		TagCloud,
-		TagSearch,
 		SymptomCloud,
 		MedicationCloud,
 		TagMultiple,
@@ -147,6 +162,9 @@ export default {
 			calendarViewDate: null,
 			tags: [],
 			tagSearchQuery: '',
+			symptomSearchQuery: '',
+			medicationSearchQuery: '',
+			searchOpen: null,
 			symptoms: [],
 			medications: [],
 			settings: {
@@ -184,7 +202,17 @@ export default {
 		filteredTags() {
 			if (!this.tagSearchQuery) return this.tags
 			const q = this.tagSearchQuery.toLowerCase()
-			return this.tags.filter(tag => tag.name.includes(q))
+			return this.tags.filter(tag => tag.name.toLowerCase().includes(q))
+		},
+		filteredSymptoms() {
+			if (!this.symptomSearchQuery) return this.symptoms
+			const q = this.symptomSearchQuery.toLowerCase()
+			return this.symptoms.filter(s => s.name.toLowerCase().includes(q))
+		},
+		filteredMedications() {
+			if (!this.medicationSearchQuery) return this.medications
+			const q = this.medicationSearchQuery.toLowerCase()
+			return this.medications.filter(m => m.name.toLowerCase().includes(q))
 		},
 		activeTagId() {
 			if (this.$route.name === 'tag-entries') {
@@ -317,6 +345,22 @@ export default {
 		onMobileMedicationSelect(medicationId) {
 			this.mobileSidebarOpen = false
 			this.selectMedication(medicationId)
+		},
+		toggleSearch(section) {
+			if (this.searchOpen === section) {
+				this.searchOpen = null
+				this.tagSearchQuery = ''
+				this.symptomSearchQuery = ''
+				this.medicationSearchQuery = ''
+			} else {
+				this.searchOpen = section
+				this.$nextTick(() => {
+					const refName = 'search' + section.charAt(0).toUpperCase() + section.slice(1)
+					if (this.$refs[refName]) {
+						this.$refs[refName].focus()
+					}
+				})
+			}
 		},
 		stripMarkdown(text) {
 			if (!text) return ''
@@ -553,6 +597,28 @@ export default {
 			color: #fff;
 			padding: 12px 12px 0;
 			margin: 0;
+			cursor: pointer;
+
+			&:hover {
+				opacity: 0.8;
+			}
+		}
+
+		.sidebar-search-input {
+			width: calc(100% - 24px);
+			margin: 8px 12px 0;
+			padding: 6px 10px;
+			border: 1px solid var(--color-border);
+			border-radius: 16px;
+			background-color: var(--color-main-background);
+			color: var(--color-main-text);
+			font-size: 13px;
+			outline: none;
+			box-sizing: border-box;
+
+			&:focus {
+				border-color: var(--color-primary);
+			}
 		}
 	}
 

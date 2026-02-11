@@ -8,7 +8,7 @@
 					<ArrowLeft :size="20" />
 				</template>
 			</NcButton>
-			<h2>#{{ tagName }}</h2>
+			<h2>{{ tagName }}</h2>
 		</div>
 		<div v-if="isLoading" class="tag-loading">
 			<i class="fa fa-spinner fa-spin fa-3x" />
@@ -27,7 +27,7 @@
 				</div>
 				<div v-if="entry.tags && entry.tags.length" class="entry-tags">
 					<span v-for="tag in entry.tags" :key="tag.id" class="tag-badge">
-						#{{ tag.name }}
+						{{ tag.name }}
 					</span>
 				</div>
 			</div>

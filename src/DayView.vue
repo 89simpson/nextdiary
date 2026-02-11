@@ -41,7 +41,7 @@
 				<div class="entry-meta-badges">
 					<template v-if="entry.tags && entry.tags.length">
 						<span v-for="tag in entry.tags" :key="'tag-' + tag.id" class="tag-badge">
-							#{{ tag.name }}
+							{{ tag.name }}
 						</span>
 					</template>
 					<template v-if="entry.symptoms && entry.symptoms.length">
