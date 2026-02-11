@@ -148,6 +148,10 @@ export default {
 		border-radius: 50%;
 		width: 22px;
 		height: 22px;
+		min-width: 22px;
+		min-height: 22px;
+		flex-shrink: 0;
+		box-sizing: border-box;
 		cursor: pointer;
 		color: var(--color-text-lighter);
 		font-size: 14px;
