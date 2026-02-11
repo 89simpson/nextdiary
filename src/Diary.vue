@@ -462,7 +462,7 @@ export default {
 			font-size: 12px;
 			font-weight: 700;
 			text-transform: uppercase;
-			color: var(--color-main-text);
+			color: #fff;
 			padding: 12px 12px 0;
 			margin: 0;
 		}
