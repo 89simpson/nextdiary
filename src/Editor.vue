@@ -16,6 +16,8 @@
 		<div class="entry-meta-panel">
 			<MoodSelector v-if="settings.show_mood || settings.show_wellbeing"
 				:value="ratings"
+				:show-mood="settings.show_mood"
+				:show-wellbeing="settings.show_wellbeing"
 				@input="onRatingsChange" />
 			<div class="chips-row">
 				<TagPicker v-if="settings.show_tags" :value="tags" @input="onTagsChange" />

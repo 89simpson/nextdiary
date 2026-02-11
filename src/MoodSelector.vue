@@ -1,6 +1,6 @@
 <template>
 	<div class="mood-selector">
-		<div class="mood-row">
+		<div v-if="showMood" class="mood-row">
 			<label class="mood-label">{{ t('nextdiary', 'Mood') }}</label>
 			<div class="mood-emojis">
 				<span v-for="(emoji, idx) in moodEmojis"
@@ -13,7 +13,7 @@
 				</span>
 			</div>
 		</div>
-		<div class="mood-row">
+		<div v-if="showWellbeing" class="mood-row">
 			<label class="mood-label">{{ t('nextdiary', 'Wellbeing') }}</label>
 			<div class="wellbeing-dots">
 				<span v-for="n in 5"
@@ -35,6 +35,14 @@ export default {
 		value: {
 			type: Object,
 			default: () => ({}),
+		},
+		showMood: {
+			type: Boolean,
+			default: true,
+		},
+		showWellbeing: {
+			type: Boolean,
+			default: true,
 		},
 	},
 	data() {
