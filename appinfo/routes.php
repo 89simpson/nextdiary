@@ -34,6 +34,15 @@ return [
         ['name' => 'page#get_entries_by_symptom', 'url' => '/api/entries/symptom/{symptomId}', 'verb' => 'GET'],
         ['name' => 'page#index', 'url' => '/symptom/{symptomId}', 'verb' => 'GET', 'postfix' => 'symptomPage'],
 
+        // Medication API (v0.0.5)
+        ['name' => 'page#get_medications', 'url' => '/api/medications', 'verb' => 'GET'],
+        ['name' => 'page#get_entries_by_medication', 'url' => '/api/entries/medication/{medicationId}', 'verb' => 'GET'],
+        ['name' => 'page#index', 'url' => '/medication/{medicationId}', 'verb' => 'GET', 'postfix' => 'medicationPage'],
+
+        // Settings API
+        ['name' => 'settings#get_settings', 'url' => '/api/settings', 'verb' => 'GET'],
+        ['name' => 'settings#update_settings', 'url' => '/api/settings', 'verb' => 'PUT'],
+
         // Legacy API (backward compatible)
         ['name' => 'page#get_entry', 'url' => '/entry/{date}', 'verb' => 'GET', 'postfix' => 'legacy'],
         ['name' => 'page#get_last_entries', 'url' => '/entries/{amount}', 'verb' => 'GET', 'postfix' => 'legacy'],

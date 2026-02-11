@@ -3,6 +3,8 @@
 namespace OCA\NextDiary\AppInfo;
 
 use OCA\NextDiary\Listener\UserDeletedListener;
+use OCA\NextDiary\Settings\Personal;
+use OCA\NextDiary\Settings\PersonalSection;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -23,6 +25,8 @@ class Application extends App implements IBootstrap
     {
         include_once __DIR__.'/../../vendor/autoload.php';//TODO Check if this is needed at all
         $context->registerEventListener(UserDeletedEvent::class, UserDeletedListener::class);
+        $context->registerPersonalSection(PersonalSection::class);
+        $context->registerPersonalSetting(Personal::class);
     }
 
     public function boot(IBootContext $context): void

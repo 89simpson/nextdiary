@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Controller;
 
 use OCA\NextDiary\Db\Entry;
 use OCA\NextDiary\Db\EntryMapper;
+use OCA\NextDiary\Service\MedicationService;
 use OCA\NextDiary\Service\MoodService;
 use OCA\NextDiary\Service\TagService;
 use OCP\AppFramework\Controller;
@@ -26,16 +27,19 @@ class PageController extends Controller
     private $tagService;
     /** @var MoodService */
     private $moodService;
+    /** @var MedicationService */
+    private $medicationService;
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, TagService $tagService, MoodService $moodService, LoggerInterface $logger)
+    public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, TagService $tagService, MoodService $moodService, MedicationService $medicationService, LoggerInterface $logger)
     {
         parent::__construct($AppName, $request);
         $this->userId = $UserId;
         $this->mapper = $mapper;
         $this->tagService = $tagService;
         $this->moodService = $moodService;
+        $this->medicationService = $medicationService;
         $this->logger = $logger;
     }
 
@@ -45,7 +49,7 @@ class PageController extends Controller
     }
 
     /**
-     * Build a full entry response array with tags, ratings, and symptoms.
+     * Build a full entry response array with tags, ratings, symptoms, and medications.
      */
     private function buildEntryResponse(Entry $entry): array
     {
@@ -59,6 +63,7 @@ class PageController extends Controller
             'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
             'tags' => $this->tagService->getTagsForEntry($entry->getId()),
             'symptoms' => $this->moodService->getSymptomsForEntry($entry->getId()),
+            'medications' => $this->medicationService->getMedicationsForEntry($entry->getId()),
         ];
     }
 
@@ -151,7 +156,7 @@ class PageController extends Controller
      *
      * @NoAdminRequired
      */
-    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null, ?array $tags = null): DataResponse
+    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null, ?array $medications = null, ?array $tags = null): DataResponse
     {
         try {
             $entry = $this->mapper->findById($id);
@@ -177,6 +182,9 @@ class PageController extends Controller
             }
             if ($symptoms !== null) {
                 $this->moodService->syncSymptomsForEntry($this->userId, $id, $symptoms);
+            }
+            if ($medications !== null) {
+                $this->medicationService->syncMedicationsForEntry($this->userId, $id, $medications);
             }
             return new DataResponse($this->buildEntryResponse($entry));
         } catch (Exception $e) {
@@ -206,6 +214,7 @@ class PageController extends Controller
         try {
             $this->tagService->removeTagsFromEntry($this->userId, $entry->getId());
             $this->moodService->removeSymptomsFromEntry($this->userId, $entry->getId());
+            $this->medicationService->removeMedicationsFromEntry($this->userId, $entry->getId());
             $this->mapper->delete($entry);
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (Exception $e) {
@@ -318,6 +327,61 @@ class PageController extends Controller
                 'exception' => $e,
                 'userId' => $this->userId,
                 'symptomId' => $symptomId,
+            ]);
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // ─── Medication API endpoints (v0.0.5) ───
+
+    /**
+     * Get all medications for the current user with entry counts.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getMedications(): DataResponse
+    {
+        try {
+            $medications = $this->medicationService->getMedicationCloud($this->userId);
+            return new DataResponse($medications);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getMedications failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+            ]);
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get entries by medication ID.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getEntriesByMedication(int $medicationId, int $limit = 50, int $offset = 0): DataResponse
+    {
+        try {
+            $entryIds = $this->medicationService->getEntryIdsByMedication($medicationId, $limit, $offset);
+            $response = [];
+            foreach ($entryIds as $entryId) {
+                try {
+                    $entry = $this->mapper->findById($entryId);
+                    if ($entry->getUid() !== $this->userId) {
+                        continue;
+                    }
+                    $response[] = $this->buildEntryResponse($entry);
+                } catch (DoesNotExistException $e) {
+                    continue;
+                }
+            }
+            return new DataResponse($response);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getEntriesByMedication failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'medicationId' => $medicationId,
             ]);
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }

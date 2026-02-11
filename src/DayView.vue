@@ -49,6 +49,11 @@
 							{{ s.name }}
 						</span>
 					</template>
+					<template v-if="entry.medications && entry.medications.length">
+						<span v-for="m in entry.medications" :key="'med-' + m.id" class="medication-badge">
+							{{ m.name }}
+						</span>
+					</template>
 				</div>
 			</div>
 		</div>
@@ -283,6 +288,15 @@ export default {
 			border-radius: 12px;
 			font-size: 0.85em;
 		}
+
+		.medication-badge {
+			display: inline-block;
+			padding: 2px 8px;
+			background-color: #90CAF9;
+			color: #1565C0;
+			border-radius: 12px;
+			font-size: 0.85em;
+		}
 	}
 }
 
@@ -311,7 +325,8 @@ export default {
 			}
 
 			.tag-badge,
-			.symptom-badge {
+			.symptom-badge,
+			.medication-badge {
 				font-size: 0.8em;
 			}
 		}

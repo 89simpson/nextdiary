@@ -66,14 +66,18 @@
 				@navigate-date="onDateChange" />
 		</NcAppContent>
 		<div id="nextdiary-right-sidebar" :class="{ 'mobile-open': mobileSidebarOpen }">
-			<div class="sidebar-section">
+			<div v-if="settings.show_tags" class="sidebar-section">
 				<h4 class="sidebar-title">{{ t('nextdiary', 'Tags') }}</h4>
 				<TagSearch :value="tagSearchQuery" @input="tagSearchQuery = $event" />
 				<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="onMobileTagSelect" />
 			</div>
-			<div class="sidebar-section">
+			<div v-if="settings.show_symptoms" class="sidebar-section">
 				<h4 class="sidebar-title">{{ t('nextdiary', 'Symptoms') }}</h4>
 				<SymptomCloud :symptoms="symptoms" :active-symptom-id="activeSymptomId" @select-symptom="onMobileSymptomSelect" />
+			</div>
+			<div v-if="settings.show_medications" class="sidebar-section">
+				<h4 class="sidebar-title">{{ t('nextdiary', 'Medications') }}</h4>
+				<MedicationCloud :medications="medications" :active-medication-id="activeMedicationId" @select-medication="onMobileMedicationSelect" />
 			</div>
 		</div>
 		<div v-if="mobileSidebarOpen"
@@ -106,6 +110,7 @@ import { generateUrl } from '@nextcloud/router'
 import TagCloud from './TagCloud.vue'
 import TagSearch from './TagSearch.vue'
 import SymptomCloud from './SymptomCloud.vue'
+import MedicationCloud from './MedicationCloud.vue'
 import TagMultiple from 'vue-material-design-icons/TagMultiple'
 import axios from '@nextcloud/axios'
 
@@ -126,6 +131,7 @@ export default {
 		TagCloud,
 		TagSearch,
 		SymptomCloud,
+		MedicationCloud,
 		TagMultiple,
 	},
 	data() {
@@ -142,6 +148,14 @@ export default {
 			tags: [],
 			tagSearchQuery: '',
 			symptoms: [],
+			medications: [],
+			settings: {
+				show_mood: true,
+				show_wellbeing: true,
+				show_tags: true,
+				show_symptoms: true,
+				show_medications: true,
+			},
 			mobileSidebarOpen: false,
 		}
 	},
@@ -184,6 +198,12 @@ export default {
 			}
 			return null
 		},
+		activeMedicationId() {
+			if (this.$route.name === 'medication-entries') {
+				return parseInt(this.$route.params.medicationId)
+			}
+			return null
+		},
 		entryDatesSet() {
 			return new Set(this.entryDates)
 		},
@@ -208,6 +228,8 @@ export default {
 		this.fetchEntryDates()
 		this.fetchTags()
 		this.fetchSymptoms()
+		this.fetchMedications()
+		this.fetchSettings()
 	},
 	beforeDestroy() {
 		this.disconnectObserver()
@@ -273,6 +295,7 @@ export default {
 			this.fetchEntryDates()
 			this.fetchTags()
 			this.fetchSymptoms()
+			this.fetchMedications()
 		},
 		selectTag(tagId) {
 			this.$router.push({ name: 'tag-entries', params: { tagId: String(tagId) } })
@@ -287,6 +310,13 @@ export default {
 		onMobileSymptomSelect(symptomId) {
 			this.mobileSidebarOpen = false
 			this.selectSymptom(symptomId)
+		},
+		selectMedication(medicationId) {
+			this.$router.push({ name: 'medication-entries', params: { medicationId: String(medicationId) } })
+		},
+		onMobileMedicationSelect(medicationId) {
+			this.mobileSidebarOpen = false
+			this.selectMedication(medicationId)
 		},
 		stripMarkdown(text) {
 			if (!text) return ''
@@ -339,6 +369,27 @@ export default {
 					// eslint-disable-next-line no-console
 					console.error('[NextDiary] Error fetching symptoms:', error)
 				})
+		},
+		fetchMedications() {
+			axios.get(generateUrl('apps/nextdiary/api/medications'))
+				.then(response => {
+					this.medications = response.data || []
+				})
+				.catch(error => {
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error fetching medications:', error)
+				})
+		},
+		async fetchSettings() {
+			try {
+				const response = await axios.get(generateUrl('/apps/nextdiary/api/settings'))
+				if (response.data) {
+					this.settings = { ...this.settings, ...response.data }
+				}
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				console.error('[NextDiary] Error fetching settings:', error)
+			}
 		},
 		fetchEntryDates() {
 			axios.get(generateUrl('apps/nextdiary/api/entry-dates'))

@@ -7,6 +7,7 @@ import DayView from './DayView.vue'
 import EntryEditor from './Editor.vue'
 import TagEntriesView from './TagEntriesView.vue'
 import SymptomEntriesView from './SymptomEntriesView.vue'
+import MedicationEntriesView from './MedicationEntriesView.vue'
 
 Vue.use(VueRouter)
 
@@ -41,6 +42,12 @@ export default new VueRouter({
 					path: 'symptom/:symptomId',
 					name: 'symptom-entries',
 					component: SymptomEntriesView,
+					props: true,
+				},
+				{
+					path: 'medication/:medicationId',
+					name: 'medication-entries',
+					component: MedicationEntriesView,
 					props: true,
 				},
 			],

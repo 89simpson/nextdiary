@@ -14,10 +14,13 @@
 			</span>
 		</div>
 		<div class="entry-meta-panel">
-			<MoodSelector :value="ratings" @input="onRatingsChange" />
+			<MoodSelector v-if="settings.show_mood || settings.show_wellbeing"
+				:value="ratings"
+				@input="onRatingsChange" />
 			<div class="chips-row">
-				<TagPicker :value="tags" @input="onTagsChange" />
-				<SymptomPicker :value="symptoms" @input="onSymptomsChange" />
+				<TagPicker v-if="settings.show_tags" :value="tags" @input="onTagsChange" />
+				<SymptomPicker v-if="settings.show_symptoms" :value="symptoms" @input="onSymptomsChange" />
+				<MedicationPicker v-if="settings.show_medications" :value="medications" @input="onMedicationsChange" />
 			</div>
 		</div>
 		<VueSimplemde ref="markdownEditor"
@@ -36,6 +39,7 @@ import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
 import MoodSelector from './MoodSelector.vue'
 import TagPicker from './TagPicker.vue'
 import SymptomPicker from './SymptomPicker.vue'
+import MedicationPicker from './MedicationPicker.vue'
 
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
@@ -43,7 +47,7 @@ import moment from '@nextcloud/moment'
 
 export default {
 	name: 'EntryEditor',
-	components: { VueSimplemde, NcButton, ArrowLeft, MoodSelector, TagPicker, SymptomPicker },
+	components: { VueSimplemde, NcButton, ArrowLeft, MoodSelector, TagPicker, SymptomPicker, MedicationPicker },
 	props: {
 		id: {
 			type: String,
@@ -60,6 +64,14 @@ export default {
 			ratings: {},
 			tags: [],
 			symptoms: [],
+			medications: [],
+			settings: {
+				show_mood: true,
+				show_wellbeing: true,
+				show_tags: true,
+				show_symptoms: true,
+				show_medications: true,
+			},
 			configs: {
 				toolbar: ['bold', 'italic', 'strikethrough', 'heading', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'link', '|', 'preview', '|', 'guide'],
 				autoDownloadFontAwesome: false,
@@ -99,6 +111,7 @@ export default {
 	},
 	created() {
 		this.fetchEntry()
+		this.fetchSettings()
 	},
 	mounted() {
 		this.simplemde.codemirror.on('change', () => {
@@ -120,6 +133,7 @@ export default {
 					ratings: this.ratings,
 					tags: this.tags,
 					symptoms: this.symptoms,
+					medications: this.medications,
 				})
 					.then(() => {
 						if (this.id === entryId) {
@@ -149,6 +163,7 @@ export default {
 					this.ratings = data.entryRatings || {}
 					this.tags = (data.tags || []).map(t => t.name)
 					this.symptoms = (data.symptoms || []).map(s => s.name)
+					this.medications = (data.medications || []).map(m => m.name)
 					this.status = 'loaded'
 					this.simplemde.value(this.content)
 				})
@@ -170,6 +185,21 @@ export default {
 			this.symptoms = val
 			this.triggerMetaSave()
 		},
+		onMedicationsChange(val) {
+			this.medications = val
+			this.triggerMetaSave()
+		},
+		async fetchSettings() {
+			try {
+				const response = await axios.get(generateUrl('/apps/nextdiary/api/settings'))
+				if (response.data) {
+					this.settings = { ...this.settings, ...response.data }
+				}
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				console.error('[NextDiary] Error fetching settings:', error)
+			}
+		},
 		triggerMetaSave() {
 			this.unSavedChanges = true
 			clearTimeout(this.metaTimeout)
@@ -181,6 +211,7 @@ export default {
 					ratings: this.ratings,
 					tags: this.tags,
 					symptoms: this.symptoms,
+					medications: this.medications,
 				})
 					.then(() => {
 						if (this.id === entryId) {

@@ -8,7 +8,7 @@
 a Markdown editor. Use the calendar to jump to any date and edit your entries.
 
 Warning! This is a very early alpha release and things are still pretty rough around the edges.]]></description>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <licence>agpl</licence>
     <author mail="2-89simpson@users.noreply.gitlab.malcador.ru" homepage="ssh://git@gitlab.malcador.ru:8022/89simpson/nextdiary.git">89simpson (Homer Jay Simpson)</author>
     <namespace>NextDiary</namespace>
