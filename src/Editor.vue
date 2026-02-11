@@ -53,6 +53,9 @@ export default {
 				placeholder: t('nextdiary', 'Write your entry here'),
 				spellChecker: false,
 				status: false,
+				parsingConfig: {
+					highlightFormatting: true,
+				},
 			},
 		}
 	},
@@ -214,6 +217,21 @@ export default {
 		.editor-preview {
 			background-color: var(--color-main-background);
 			color: var(--color-main-text);
+		}
+
+		.CodeMirror .cm-formatting {
+			font-size: 1px !important;
+			letter-spacing: -1ch;
+			color: transparent;
+			font-family: monospace;
+		}
+
+		.CodeMirror .CodeMirror-activeline .cm-formatting {
+			font-size: inherit !important;
+			letter-spacing: inherit;
+			color: inherit;
+			font-family: inherit;
+			opacity: 0.4;
 		}
 	}
 
