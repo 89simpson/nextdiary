@@ -200,11 +200,6 @@ export default {
 		cursor: pointer;
 		transition: all 0.15s;
 		user-select: none;
-
-		@media (max-width: 768px) {
-			padding: 5px 12px;
-			min-height: 30px;
-		}
 	}
 
 	.chip.more {
