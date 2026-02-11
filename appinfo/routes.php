@@ -24,6 +24,11 @@ return [
         ['name' => 'page#get_last_entries', 'url' => '/api/last-entries/{amount}', 'verb' => 'GET'],
         ['name' => 'page#get_entry_dates', 'url' => '/api/entry-dates', 'verb' => 'GET'],
 
+        // Tag API (v0.0.3)
+        ['name' => 'page#get_tags', 'url' => '/api/tags', 'verb' => 'GET'],
+        ['name' => 'page#get_entries_by_tag', 'url' => '/api/entries/tag/{tagId}', 'verb' => 'GET'],
+        ['name' => 'page#index', 'url' => '/tag/{tagId}', 'verb' => 'GET', 'postfix' => 'tagPage'],
+
         // Legacy API (backward compatible)
         ['name' => 'page#get_entry', 'url' => '/entry/{date}', 'verb' => 'GET', 'postfix' => 'legacy'],
         ['name' => 'page#get_last_entries', 'url' => '/entries/{amount}', 'verb' => 'GET', 'postfix' => 'legacy'],

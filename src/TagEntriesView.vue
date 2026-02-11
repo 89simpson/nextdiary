@@ -1,32 +1,26 @@
 <template>
-	<div class="day-view">
-		<div class="day-header">
-			<h2>{{ formattedDate }}</h2>
-			<NcButton type="primary" @click="createNewEntry">
+	<div class="tag-entries-view">
+		<div class="tag-header">
+			<NcButton type="tertiary"
+				:aria-label="t('nextdiary', 'Back')"
+				@click="goBack">
 				<template #icon>
-					<Plus :size="20" />
+					<ArrowLeft :size="20" />
 				</template>
-				{{ t('nextdiary', 'New entry') }}
 			</NcButton>
+			<h2>#{{ tagName }}</h2>
 		</div>
-		<div v-if="isLoading" class="day-loading">
+		<div v-if="isLoading" class="tag-loading">
 			<i class="fa fa-spinner fa-spin fa-3x" />
 		</div>
-		<div v-else-if="entries.length > 0" class="day-entries">
+		<div v-else-if="entries.length > 0" class="tag-entries">
 			<div v-for="entry in entries"
 				:key="entry.id"
 				class="entry-card"
 				@click="openEntry(entry)">
 				<div class="entry-card-header">
-					<span class="entry-time">{{ formatTime(entry.createdAt) }}</span>
-					<NcActions>
-						<NcActionButton @click.stop="confirmDelete(entry)">
-							<template #icon>
-								<Delete :size="20" />
-							</template>
-							{{ t('nextdiary', 'Delete') }}
-						</NcActionButton>
-					</NcActions>
+					<span class="entry-date">{{ formatDate(entry.entryDate) }}</span>
+					<span v-if="entry.createdAt" class="entry-time">{{ formatTime(entry.createdAt) }}</span>
 				</div>
 				<div class="entry-preview">
 					{{ getExcerpt(entry) }}
@@ -39,42 +33,27 @@
 			</div>
 		</div>
 		<NcEmptyContent v-else
-			:name="t('nextdiary', 'No entries for this day')"
-			:description="t('nextdiary', 'Click the button above to create a new entry')">
+			:name="t('nextdiary', 'No entries with this tag')">
 			<template #icon>
-				<NoteEdit :size="64" />
+				<TagIcon :size="64" />
 			</template>
 		</NcEmptyContent>
 	</div>
 </template>
 
 <script>
-import {
-	NcButton,
-	NcActions,
-	NcActionButton,
-	NcEmptyContent,
-} from '@nextcloud/vue'
-import Plus from 'vue-material-design-icons/Plus'
-import Delete from 'vue-material-design-icons/Delete'
-import NoteEdit from 'vue-material-design-icons/NoteEditOutline'
+import { NcButton, NcEmptyContent } from '@nextcloud/vue'
+import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
+import TagIcon from 'vue-material-design-icons/Tag'
 import moment from '@nextcloud/moment'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 
 export default {
-	name: 'DayView',
-	components: {
-		NcButton,
-		NcActions,
-		NcActionButton,
-		NcEmptyContent,
-		Plus,
-		Delete,
-		NoteEdit,
-	},
+	name: 'TagEntriesView',
+	components: { NcButton, NcEmptyContent, ArrowLeft, TagIcon },
 	props: {
-		date: {
+		tagId: {
 			type: String,
 			required: true,
 		},
@@ -82,16 +61,12 @@ export default {
 	data() {
 		return {
 			entries: [],
+			tagName: '',
 			isLoading: false,
 		}
 	},
-	computed: {
-		formattedDate() {
-			return moment(this.date).format('dddd, LL')
-		},
-	},
 	watch: {
-		date() {
+		tagId() {
 			this.fetchEntries()
 		},
 	},
@@ -101,44 +76,29 @@ export default {
 	methods: {
 		fetchEntries() {
 			this.isLoading = true
-			axios.get(generateUrl('apps/nextdiary/api/entries/' + this.date))
+			axios.get(generateUrl('apps/nextdiary/api/entries/tag/' + this.tagId))
 				.then(response => {
 					this.entries = response.data || []
+					if (this.entries.length > 0 && this.entries[0].tags) {
+						const tag = this.entries[0].tags.find(t => t.id === parseInt(this.tagId))
+						if (tag) this.tagName = tag.name
+					}
 					this.isLoading = false
 				})
 				.catch(error => {
 					// eslint-disable-next-line no-console
-					console.error('[NextDiary] Error fetching entries:', error)
+					console.error('[NextDiary] Error fetching tag entries:', error)
 					this.isLoading = false
 				})
 		},
-		async createNewEntry() {
-			try {
-				const response = await axios.post(generateUrl('apps/nextdiary/api/entry/' + this.date), {
-					content: '',
-				})
-				this.$emit('entry-changed')
-				this.$router.push({ name: 'entry', params: { id: String(response.data.id) } })
-			} catch (error) {
-				// eslint-disable-next-line no-console
-				console.error('[NextDiary] Error creating entry:', error)
-			}
+		goBack() {
+			this.$router.push({ name: 'day', params: { date: moment().format('YYYY-MM-DD') } })
 		},
 		openEntry(entry) {
 			this.$router.push({ name: 'entry', params: { id: String(entry.id) } })
 		},
-		async confirmDelete(entry) {
-			if (!confirm(t('nextdiary', 'Are you sure you want to delete this entry?'))) {
-				return
-			}
-			try {
-				await axios.delete(generateUrl('apps/nextdiary/api/entry/' + entry.id))
-				this.entries = this.entries.filter(e => e.id !== entry.id)
-				this.$emit('entry-changed')
-			} catch (error) {
-				// eslint-disable-next-line no-console
-				console.error('[NextDiary] Error deleting entry:', error)
-			}
+		formatDate(date) {
+			return moment(date).format('D MMM YYYY')
 		},
 		formatTime(createdAt) {
 			if (!createdAt) return ''
@@ -162,29 +122,30 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.day-view {
+.tag-entries-view {
 	padding: 20px 50px;
 
-	.day-header {
+	.tag-header {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
+		gap: 8px;
 		margin-bottom: 20px;
 
 		h2 {
 			font-size: 20px;
 			font-weight: 700;
 			margin: 0;
+			color: var(--color-primary);
 		}
 	}
 
-	.day-loading {
+	.tag-loading {
 		display: flex;
 		justify-content: center;
 		padding: 40px;
 	}
 
-	.day-entries {
+	.tag-entries {
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
@@ -203,13 +164,16 @@ export default {
 
 		.entry-card-header {
 			display: flex;
-			justify-content: space-between;
 			align-items: center;
+			gap: 8px;
 			margin-bottom: 4px;
 
-			.entry-time {
+			.entry-date {
 				font-weight: 600;
-				color: var(--color-primary);
+			}
+
+			.entry-time {
+				color: var(--color-text-lighter);
 			}
 		}
 
@@ -229,21 +193,15 @@ export default {
 			flex-wrap: wrap;
 			gap: 4px;
 		}
-
-		.tag-badge {
-			display: inline-block;
-			padding: 2px 8px;
-			background-color: var(--color-primary-element-light);
-			color: var(--color-primary-element-light-text);
-			border-radius: 12px;
-			font-size: 0.85em;
-		}
 	}
 }
 
-@media (max-width: 500px) {
-	.day-view {
-		padding: 12px;
-	}
+.tag-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	background-color: var(--color-primary-element-light);
+	color: var(--color-primary-element-light-text);
+	border-radius: 12px;
+	font-size: 0.85em;
 }
 </style>
