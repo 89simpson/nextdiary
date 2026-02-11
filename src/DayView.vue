@@ -146,7 +146,16 @@ export default {
 		},
 		getExcerpt(entry) {
 			const content = (entry.entryContent || '').trim()
-			return content || t('nextdiary', 'Empty entry')
+			if (!content) return t('nextdiary', 'Empty entry')
+			return content
+				.replace(/^#{1,6}\s+/gm, '')
+				.replace(/\*\*(.+?)\*\*/g, '$1')
+				.replace(/\*(.+?)\*/g, '$1')
+				.replace(/~~(.+?)~~/g, '$1')
+				.replace(/^\s*[-*+]\s+/gm, '')
+				.replace(/^\s*>\s+/gm, '')
+				.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+				.trim()
 		},
 	},
 }
