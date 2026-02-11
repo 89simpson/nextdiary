@@ -36,7 +36,7 @@
 							<NcAppNavigationIconBullet v-else color="FFFFFF" />
 						</template>
 						<template #subtitle>
-							{{ entry.excerpt }}
+							{{ stripMarkdown(entry.excerpt) }}
 						</template>
 					</NcListItem>
 				</ul>
@@ -247,6 +247,18 @@ export default {
 		},
 		selectTag(tagId) {
 			this.$router.push({ name: 'tag-entries', params: { tagId: String(tagId) } })
+		},
+		stripMarkdown(text) {
+			if (!text) return ''
+			return text
+				.replace(/^#{1,6}\s+/gm, '')
+				.replace(/\*\*(.+?)\*\*/g, '$1')
+				.replace(/\*(.+?)\*/g, '$1')
+				.replace(/~~(.+?)~~/g, '$1')
+				.replace(/^\s*[-*+]\s+/gm, '')
+				.replace(/^\s*>\s+/gm, '')
+				.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+				.trim()
 		},
 		formatEntryTitle(entry) {
 			const date = moment(entry.date).format('D MMM')
