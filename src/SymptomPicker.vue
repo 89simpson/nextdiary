@@ -126,13 +126,14 @@ export default {
 
 <style lang="scss" scoped>
 .chip-picker {
-	padding: 4px 0;
+	display: contents;
 
 	.picker-header {
 		display: flex;
 		align-items: center;
 		gap: 6px;
 		flex-wrap: wrap;
+		order: 0;
 	}
 
 	.picker-label {
@@ -173,6 +174,9 @@ export default {
 		gap: 4px;
 		margin-top: 6px;
 		align-items: center;
+		order: 1;
+		width: 100%;
+		flex-basis: 100%;
 	}
 
 	.chip {

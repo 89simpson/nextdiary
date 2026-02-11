@@ -15,8 +15,10 @@
 		</div>
 		<div class="entry-meta-panel">
 			<MoodSelector :value="ratings" @input="onRatingsChange" />
-			<TagPicker :value="tags" @input="onTagsChange" />
-			<SymptomPicker :value="symptoms" @input="onSymptomsChange" />
+			<div class="chips-row">
+				<TagPicker :value="tags" @input="onTagsChange" />
+				<SymptomPicker :value="symptoms" @input="onSymptomsChange" />
+			</div>
 		</div>
 		<VueSimplemde ref="markdownEditor"
 			:model-value="content"
@@ -227,6 +229,14 @@ export default {
 		padding: 0 52px 4px;
 		border-bottom: 1px solid var(--color-border);
 		margin-bottom: 4px;
+	}
+
+	.chips-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 0;
 	}
 
 	.vue-simplemde {
