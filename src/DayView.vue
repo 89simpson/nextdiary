@@ -19,6 +19,13 @@
 				@click="openEntry(entry)">
 				<div class="entry-card-header">
 					<span class="entry-time">{{ formatTime(entry.createdAt) }}</span>
+					<span v-if="entry.entryRatings && entry.entryRatings.mood" class="entry-mood">
+						{{ moodEmoji(entry.entryRatings.mood) }}
+					</span>
+					<span v-if="entry.entryRatings && entry.entryRatings.wellbeing" class="entry-wellbeing">
+						<span v-for="n in entry.entryRatings.wellbeing" :key="'wb-' + n" class="wb-dot active">&#9679;</span>
+						<span v-for="n in (5 - entry.entryRatings.wellbeing)" :key="'wbe-' + n" class="wb-dot">&#9679;</span>
+					</span>
 					<NcActions>
 						<NcActionButton @click.stop="confirmDelete(entry)">
 							<template #icon>
@@ -31,10 +38,17 @@
 				<div class="entry-preview">
 					{{ getExcerpt(entry) }}
 				</div>
-				<div v-if="entry.tags && entry.tags.length" class="entry-tags">
-					<span v-for="tag in entry.tags" :key="tag.id" class="tag-badge">
-						#{{ tag.name }}
-					</span>
+				<div class="entry-meta-badges">
+					<template v-if="entry.tags && entry.tags.length">
+						<span v-for="tag in entry.tags" :key="'tag-' + tag.id" class="tag-badge">
+							#{{ tag.name }}
+						</span>
+					</template>
+					<template v-if="entry.symptoms && entry.symptoms.length">
+						<span v-for="s in entry.symptoms" :key="'sym-' + s.id" class="symptom-badge">
+							{{ s.name }}
+						</span>
+					</template>
 				</div>
 			</div>
 		</div>
@@ -144,6 +158,10 @@ export default {
 			if (!createdAt) return ''
 			return moment(createdAt).format('HH:mm')
 		},
+		moodEmoji(level) {
+			const emojis = ['\uD83D\uDE1E', '\uD83D\uDE15', '\uD83D\uDE10', '\uD83D\uDE42', '\uD83D\uDE0A']
+			return emojis[(level || 3) - 1] || ''
+		},
 		getExcerpt(entry) {
 			const content = (entry.entryContent || '').trim()
 			if (!content) return t('nextdiary', 'Empty entry')
@@ -223,7 +241,25 @@ export default {
 			overflow: hidden;
 		}
 
-		.entry-tags {
+		.entry-mood {
+			font-size: 18px;
+		}
+
+		.entry-wellbeing {
+			display: inline-flex;
+			gap: 1px;
+			font-size: 10px;
+
+			.wb-dot {
+				color: var(--color-border-dark);
+
+				&.active {
+					color: var(--color-warning);
+				}
+			}
+		}
+
+		.entry-meta-badges {
 			margin-top: 6px;
 			display: flex;
 			flex-wrap: wrap;
@@ -235,6 +271,15 @@ export default {
 			padding: 2px 8px;
 			background-color: var(--color-primary-element-light);
 			color: var(--color-primary-element-light-text);
+			border-radius: 12px;
+			font-size: 0.85em;
+		}
+
+		.symptom-badge {
+			display: inline-block;
+			padding: 2px 8px;
+			background-color: var(--color-error);
+			color: white;
 			border-radius: 12px;
 			font-size: 0.85em;
 		}

@@ -13,6 +13,10 @@
 				{{ unSavedMarker }}{{ title }}
 			</span>
 		</div>
+		<div class="entry-meta-panel">
+			<MoodSelector :value="ratings" @input="onRatingsChange" />
+			<SymptomPicker :value="symptoms" @input="onSymptomsChange" />
+		</div>
 		<VueSimplemde ref="markdownEditor"
 			:model-value="content"
 			:configs="configs"
@@ -26,6 +30,8 @@
 import VueSimplemde from 'vue-simplemde'
 import { NcButton } from '@nextcloud/vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
+import MoodSelector from './MoodSelector.vue'
+import SymptomPicker from './SymptomPicker.vue'
 
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
@@ -33,7 +39,7 @@ import moment from '@nextcloud/moment'
 
 export default {
 	name: 'EntryEditor',
-	components: { VueSimplemde, NcButton, ArrowLeft },
+	components: { VueSimplemde, NcButton, ArrowLeft, MoodSelector, SymptomPicker },
 	props: {
 		id: {
 			type: String,
@@ -47,6 +53,8 @@ export default {
 			content: '',
 			entryDate: null,
 			createdAt: null,
+			ratings: {},
+			symptoms: [],
 			configs: {
 				toolbar: ['bold', 'italic', 'strikethrough', 'heading', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'link', '|', 'preview', '|', 'guide'],
 				autoDownloadFontAwesome: false,
@@ -104,6 +112,8 @@ export default {
 				const newContent = this.simplemde.value()
 				axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
 					content: newContent,
+					ratings: this.ratings,
+					symptoms: this.symptoms,
 				})
 					.then(() => {
 						if (this.id === entryId) {
@@ -130,6 +140,8 @@ export default {
 					this.content = data.entryContent || ''
 					this.entryDate = data.entryDate
 					this.createdAt = data.createdAt
+					this.ratings = data.entryRatings || {}
+					this.symptoms = (data.symptoms || []).map(s => s.name)
 					this.status = 'loaded'
 					this.simplemde.value(this.content)
 				})
@@ -138,6 +150,37 @@ export default {
 					console.error('[NextDiary] Error fetching entry:', error)
 					this.status = 'error'
 				})
+		},
+		onRatingsChange(val) {
+			this.ratings = val
+			this.triggerMetaSave()
+		},
+		onSymptomsChange(val) {
+			this.symptoms = val
+			this.triggerMetaSave()
+		},
+		triggerMetaSave() {
+			this.unSavedChanges = true
+			clearTimeout(this.metaTimeout)
+			const entryId = this.id
+			this.metaTimeout = setTimeout(() => {
+				if (this.id !== entryId) return
+				axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
+					content: this.simplemde.value(),
+					ratings: this.ratings,
+					symptoms: this.symptoms,
+				})
+					.then(() => {
+						if (this.id === entryId) {
+							this.unSavedChanges = false
+						}
+						this.$emit('entry-changed')
+					})
+					.catch(error => {
+						// eslint-disable-next-line no-console
+						console.error('[NextDiary] Error saving meta:', error)
+					})
+			}, 500)
 		},
 		goBack() {
 			if (this.entryDate) {
@@ -168,6 +211,12 @@ export default {
 		font-size: 18px;
 		padding-left: 52px;
 		padding-top: 16px;
+	}
+
+	.entry-meta-panel {
+		padding: 0 52px 4px;
+		border-bottom: 1px solid var(--color-border);
+		margin-bottom: 4px;
 	}
 
 	.vue-simplemde {

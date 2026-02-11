@@ -66,8 +66,15 @@
 				@navigate-date="onDateChange" />
 		</NcAppContent>
 		<div id="nextdiary-right-sidebar">
-			<TagSearch :value="tagSearchQuery" @input="tagSearchQuery = $event" />
-			<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="selectTag" />
+			<div class="sidebar-section">
+				<h4 class="sidebar-title">{{ t('nextdiary', 'Tags') }}</h4>
+				<TagSearch :value="tagSearchQuery" @input="tagSearchQuery = $event" />
+				<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="selectTag" />
+			</div>
+			<div class="sidebar-section">
+				<h4 class="sidebar-title">{{ t('nextdiary', 'Symptoms') }}</h4>
+				<SymptomCloud :symptoms="symptoms" :active-symptom-id="activeSymptomId" @select-symptom="selectSymptom" />
+			</div>
 		</div>
 	</NcContent>
 </template>
@@ -90,6 +97,7 @@ import Markdown from 'vue-material-design-icons/LanguageMarkdown'
 import { generateUrl } from '@nextcloud/router'
 import TagCloud from './TagCloud.vue'
 import TagSearch from './TagSearch.vue'
+import SymptomCloud from './SymptomCloud.vue'
 import axios from '@nextcloud/axios'
 
 export default {
@@ -108,6 +116,7 @@ export default {
 		NcListItem,
 		TagCloud,
 		TagSearch,
+		SymptomCloud,
 	},
 	data() {
 		const baseUrl = generateUrl('apps/nextdiary')
@@ -122,6 +131,7 @@ export default {
 			calendarViewDate: null,
 			tags: [],
 			tagSearchQuery: '',
+			symptoms: [],
 		}
 	},
 	computed: {
@@ -157,6 +167,12 @@ export default {
 			}
 			return null
 		},
+		activeSymptomId() {
+			if (this.$route.name === 'symptom-entries') {
+				return parseInt(this.$route.params.symptomId)
+			}
+			return null
+		},
 		entryDatesSet() {
 			return new Set(this.entryDates)
 		},
@@ -180,6 +196,7 @@ export default {
 		this.fetchPastEntries()
 		this.fetchEntryDates()
 		this.fetchTags()
+		this.fetchSymptoms()
 	},
 	beforeDestroy() {
 		this.disconnectObserver()
@@ -244,9 +261,13 @@ export default {
 			this.fetchPastEntries()
 			this.fetchEntryDates()
 			this.fetchTags()
+			this.fetchSymptoms()
 		},
 		selectTag(tagId) {
 			this.$router.push({ name: 'tag-entries', params: { tagId: String(tagId) } })
+		},
+		selectSymptom(symptomId) {
+			this.$router.push({ name: 'symptom-entries', params: { symptomId: String(symptomId) } })
 		},
 		stripMarkdown(text) {
 			if (!text) return ''
@@ -288,6 +309,16 @@ export default {
 				.catch(error => {
 					// eslint-disable-next-line no-console
 					console.error('[NextDiary] Error fetching tags:', error)
+				})
+		},
+		fetchSymptoms() {
+			axios.get(generateUrl('apps/nextdiary/api/symptoms'))
+				.then(response => {
+					this.symptoms = response.data || []
+				})
+				.catch(error => {
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error fetching symptoms:', error)
 				})
 		},
 		fetchEntryDates() {
@@ -417,6 +448,24 @@ export default {
 		border-left: 1px solid var(--color-border);
 		overflow-y: auto;
 		height: 100%;
+
+		.sidebar-section {
+			border-bottom: 1px solid var(--color-border);
+			padding-bottom: 4px;
+
+			&:last-child {
+				border-bottom: none;
+			}
+		}
+
+		.sidebar-title {
+			font-size: 12px;
+			font-weight: 700;
+			text-transform: uppercase;
+			color: var(--color-text-lighter);
+			padding: 12px 12px 0;
+			margin: 0;
+		}
 	}
 
 	.navigation-wrapper {

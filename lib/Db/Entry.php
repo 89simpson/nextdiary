@@ -12,6 +12,7 @@ class Entry extends Entity implements JsonSerializable
     protected $uid;
     protected $entryDate;
     protected $entryContent;
+    protected $entryRatings;
     protected $createdAt;
     protected $updatedAt;
 
@@ -21,6 +22,7 @@ class Entry extends Entity implements JsonSerializable
         $this->addType('uid', 'string');
         $this->addType('entryDate', 'string');
         $this->addType('entryContent', 'string');
+        $this->addType('entryRatings', 'string');
         $this->addType('createdAt', 'datetime');
         $this->addType('updatedAt', 'datetime');
     }
@@ -31,11 +33,13 @@ class Entry extends Entity implements JsonSerializable
     #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
+        $ratings = $this->entryRatings ? json_decode($this->entryRatings, true) : null;
         return [
             'id' => $this->id,
             'uid' => $this->uid,
             'entryDate' => $this->entryDate,
             'entryContent' => $this->entryContent,
+            'entryRatings' => $ratings,
             'createdAt' => $this->createdAt ? $this->createdAt->format('c') : null,
             'updatedAt' => $this->updatedAt ? $this->updatedAt->format('c') : null,
         ];

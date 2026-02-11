@@ -6,6 +6,7 @@ import Diary from './Diary.vue'
 import DayView from './DayView.vue'
 import EntryEditor from './Editor.vue'
 import TagEntriesView from './TagEntriesView.vue'
+import SymptomEntriesView from './SymptomEntriesView.vue'
 
 Vue.use(VueRouter)
 
@@ -34,6 +35,12 @@ export default new VueRouter({
 					path: 'tag/:tagId',
 					name: 'tag-entries',
 					component: TagEntriesView,
+					props: true,
+				},
+				{
+					path: 'symptom/:symptomId',
+					name: 'symptom-entries',
+					component: SymptomEntriesView,
 					props: true,
 				},
 			],

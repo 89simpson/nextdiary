@@ -29,6 +29,11 @@ return [
         ['name' => 'page#get_entries_by_tag', 'url' => '/api/entries/tag/{tagId}', 'verb' => 'GET'],
         ['name' => 'page#index', 'url' => '/tag/{tagId}', 'verb' => 'GET', 'postfix' => 'tagPage'],
 
+        // Mood/Symptom API (v0.0.4)
+        ['name' => 'page#get_symptoms', 'url' => '/api/symptoms', 'verb' => 'GET'],
+        ['name' => 'page#get_entries_by_symptom', 'url' => '/api/entries/symptom/{symptomId}', 'verb' => 'GET'],
+        ['name' => 'page#index', 'url' => '/symptom/{symptomId}', 'verb' => 'GET', 'postfix' => 'symptomPage'],
+
         // Legacy API (backward compatible)
         ['name' => 'page#get_entry', 'url' => '/entry/{date}', 'verb' => 'GET', 'postfix' => 'legacy'],
         ['name' => 'page#get_last_entries', 'url' => '/entries/{amount}', 'verb' => 'GET', 'postfix' => 'legacy'],

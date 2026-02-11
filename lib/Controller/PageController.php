@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Controller;
 
 use OCA\NextDiary\Db\Entry;
 use OCA\NextDiary\Db\EntryMapper;
+use OCA\NextDiary\Service\MoodService;
 use OCA\NextDiary\Service\TagService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -23,21 +24,42 @@ class PageController extends Controller
     private $mapper;
     /** @var TagService */
     private $tagService;
+    /** @var MoodService */
+    private $moodService;
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, TagService $tagService, LoggerInterface $logger)
+    public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, TagService $tagService, MoodService $moodService, LoggerInterface $logger)
     {
         parent::__construct($AppName, $request);
         $this->userId = $UserId;
         $this->mapper = $mapper;
         $this->tagService = $tagService;
+        $this->moodService = $moodService;
         $this->logger = $logger;
     }
 
     private function sanitizeUtf8(string $text): string
     {
         return mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+    }
+
+    /**
+     * Build a full entry response array with tags, ratings, and symptoms.
+     */
+    private function buildEntryResponse(Entry $entry): array
+    {
+        $ratings = $this->moodService->decodeRatings($entry->getEntryRatings());
+        return [
+            'id' => $entry->getId(),
+            'entryDate' => $entry->getEntryDate(),
+            'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
+            'entryRatings' => $ratings,
+            'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
+            'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
+            'tags' => $this->tagService->getTagsForEntry($entry->getId()),
+            'symptoms' => $this->moodService->getSymptomsForEntry($entry->getId()),
+        ];
     }
 
     /**
@@ -63,14 +85,7 @@ class PageController extends Controller
         try {
             $entries = $this->mapper->findByDate($this->userId, $date);
             $response = array_map(function ($entry) {
-                return [
-                    'id' => $entry->getId(),
-                    'entryDate' => $entry->getEntryDate(),
-                    'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
-                    'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
-                    'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
-                    'tags' => $this->tagService->getTagsForEntry($entry->getId()),
-                ];
+                return $this->buildEntryResponse($entry);
             }, $entries);
             return new DataResponse($response);
         } catch (\Exception $e) {
@@ -103,14 +118,7 @@ class PageController extends Controller
             return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
         }
 
-        return new DataResponse([
-            'id' => $entry->getId(),
-            'entryDate' => $entry->getEntryDate(),
-            'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
-            'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
-            'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
-            'tags' => $this->tagService->getTagsForEntry($entry->getId()),
-        ]);
+        return new DataResponse($this->buildEntryResponse($entry));
     }
 
     /**
@@ -143,7 +151,7 @@ class PageController extends Controller
      *
      * @NoAdminRequired
      */
-    public function updateEntryById(int $id, string $content): DataResponse
+    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null): DataResponse
     {
         try {
             $entry = $this->mapper->findById($id);
@@ -159,19 +167,16 @@ class PageController extends Controller
 
         $content = $this->sanitizeUtf8(strip_tags($content));
         $entry->setEntryContent($content);
+        $entry->setEntryRatings($this->moodService->encodeRatings($ratings));
         $entry->setUpdatedAt(new \DateTime());
 
         try {
             $this->mapper->update($entry);
-            $tags = $this->tagService->syncTagsForEntry($this->userId, $id, $content);
-            return new DataResponse([
-                'id' => $entry->getId(),
-                'entryDate' => $entry->getEntryDate(),
-                'entryContent' => $this->sanitizeUtf8((string) $entry->getEntryContent()),
-                'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
-                'updatedAt' => $entry->getUpdatedAt() ? $entry->getUpdatedAt()->format('c') : null,
-                'tags' => $tags,
-            ]);
+            $this->tagService->syncTagsForEntry($this->userId, $id, $content);
+            if ($symptoms !== null) {
+                $this->moodService->syncSymptomsForEntry($this->userId, $id, $symptoms);
+            }
+            return new DataResponse($this->buildEntryResponse($entry));
         } catch (Exception $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
@@ -198,6 +203,7 @@ class PageController extends Controller
 
         try {
             $this->tagService->removeTagsFromEntry($this->userId, $entry->getId());
+            $this->moodService->removeSymptomsFromEntry($this->userId, $entry->getId());
             $this->mapper->delete($entry);
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (Exception $e) {
@@ -244,15 +250,7 @@ class PageController extends Controller
                     if ($entry->getUid() !== $this->userId) {
                         continue;
                     }
-                    $content = $this->sanitizeUtf8((string) $entry->getEntryContent());
-                    $response[] = [
-                        'id' => $entry->getId(),
-                        'entryDate' => $entry->getEntryDate(),
-                        'entryContent' => $content,
-                        'createdAt' => $entry->getCreatedAt() ? $entry->getCreatedAt()->format('c') : null,
-                        'excerpt' => mb_substr($content, 0, 200),
-                        'tags' => $this->tagService->getTagsForEntry($entry->getId()),
-                    ];
+                    $response[] = $this->buildEntryResponse($entry);
                 } catch (DoesNotExistException $e) {
                     continue;
                 }
@@ -263,6 +261,61 @@ class PageController extends Controller
                 'exception' => $e,
                 'userId' => $this->userId,
                 'tagId' => $tagId,
+            ]);
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // ─── Mood/Symptom API endpoints (v0.0.4) ───
+
+    /**
+     * Get all symptoms for the current user with entry counts.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getSymptoms(): DataResponse
+    {
+        try {
+            $symptoms = $this->moodService->getSymptomCloud($this->userId);
+            return new DataResponse($symptoms);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getSymptoms failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+            ]);
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get entries by symptom ID.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getEntriesBySymptom(int $symptomId, int $limit = 50, int $offset = 0): DataResponse
+    {
+        try {
+            $entryIds = $this->moodService->getEntryIdsBySymptom($symptomId, $limit, $offset);
+            $response = [];
+            foreach ($entryIds as $entryId) {
+                try {
+                    $entry = $this->mapper->findById($entryId);
+                    if ($entry->getUid() !== $this->userId) {
+                        continue;
+                    }
+                    $response[] = $this->buildEntryResponse($entry);
+                } catch (DoesNotExistException $e) {
+                    continue;
+                }
+            }
+            return new DataResponse($response);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getEntriesBySymptom failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'symptomId' => $symptomId,
             ]);
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
