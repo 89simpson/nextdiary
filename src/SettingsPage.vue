@@ -23,11 +23,37 @@
 				{{ t('nextdiary', 'Show medications') }}
 			</NcCheckboxRadioSwitch>
 		</div>
+		<h3>{{ t('nextdiary', 'Sidebar order') }}</h3>
+		<div class="order-list">
+			<div v-for="(sectionKey, index) in localSettings.sidebar_order"
+				:key="sectionKey"
+				class="order-item">
+				<span class="order-label">{{ sectionLabel(sectionKey) }}</span>
+				<NcButton type="tertiary"
+					:disabled="index === 0"
+					:aria-label="t('nextdiary', 'Move up')"
+					@click="moveSection(index, -1)">
+					<template #icon>
+						<ArrowUp :size="20" />
+					</template>
+				</NcButton>
+				<NcButton type="tertiary"
+					:disabled="index === localSettings.sidebar_order.length - 1"
+					:aria-label="t('nextdiary', 'Move down')"
+					@click="moveSection(index, 1)">
+					<template #icon>
+						<ArrowDown :size="20" />
+					</template>
+				</NcButton>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script>
-import { NcCheckboxRadioSwitch } from '@nextcloud/vue'
+import { NcCheckboxRadioSwitch, NcButton } from '@nextcloud/vue'
+import ArrowUp from 'vue-material-design-icons/ArrowUp'
+import ArrowDown from 'vue-material-design-icons/ArrowDown'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 
@@ -35,6 +61,9 @@ export default {
 	name: 'SettingsPage',
 	components: {
 		NcCheckboxRadioSwitch,
+		NcButton,
+		ArrowUp,
+		ArrowDown,
 	},
 	data() {
 		return {
@@ -44,6 +73,7 @@ export default {
 				show_tags: true,
 				show_symptoms: true,
 				show_medications: true,
+				sidebar_order: ['tags', 'symptoms', 'medications'],
 			},
 		}
 	},
@@ -73,6 +103,23 @@ export default {
 				console.error('[NextDiary] Error updating setting:', error)
 			}
 		},
+		sectionLabel(key) {
+			const labels = {
+				tags: t('nextdiary', 'Tags'),
+				symptoms: t('nextdiary', 'Symptoms'),
+				medications: t('nextdiary', 'Medications'),
+			}
+			return labels[key] || key
+		},
+		moveSection(index, direction) {
+			const newIndex = index + direction
+			const order = [...this.localSettings.sidebar_order]
+			const temp = order[index]
+			order[index] = order[newIndex]
+			order[newIndex] = temp
+			this.localSettings.sidebar_order = order
+			this.updateSetting('sidebar_order', order)
+		},
 	},
 }
 </script>
@@ -91,6 +138,30 @@ export default {
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
+	}
+
+	h3 {
+		font-size: 16px;
+		font-weight: 600;
+		margin-top: 24px;
+		margin-bottom: 12px;
+	}
+
+	.order-list {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.order-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		.order-label {
+			flex-grow: 1;
+			font-size: 14px;
+		}
 	}
 }
 </style>

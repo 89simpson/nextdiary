@@ -18,6 +18,10 @@ class SettingsController extends Controller {
         'show_medications' => 'true',
     ];
 
+    private const JSON_SETTINGS_KEYS = [
+        'sidebar_order' => '["tags","symptoms","medications"]',
+    ];
+
     public function __construct($AppName, IRequest $request, $UserId, IConfig $config) {
         parent::__construct($AppName, $request);
         $this->userId = $UserId;
@@ -33,6 +37,10 @@ class SettingsController extends Controller {
         foreach (self::SETTINGS_KEYS as $key => $default) {
             $settings[$key] = $this->config->getUserValue($this->userId, 'nextdiary', $key, $default) === 'true';
         }
+        foreach (self::JSON_SETTINGS_KEYS as $key => $default) {
+            $raw = $this->config->getUserValue($this->userId, 'nextdiary', $key, $default);
+            $settings[$key] = json_decode($raw, true);
+        }
         return new DataResponse($settings);
     }
 
@@ -40,6 +48,14 @@ class SettingsController extends Controller {
      * @NoAdminRequired
      */
     public function updateSettings(string $key, $value): DataResponse {
+        if (array_key_exists($key, self::JSON_SETTINGS_KEYS)) {
+            $validKeys = ['tags', 'symptoms', 'medications'];
+            if (!is_array($value) || count($value) !== 3 || array_diff($validKeys, $value) || array_diff($value, $validKeys)) {
+                return new DataResponse(['error' => 'Invalid sidebar order'], 400);
+            }
+            $this->config->setUserValue($this->userId, 'nextdiary', $key, json_encode($value));
+            return new DataResponse(['status' => 'ok']);
+        }
         if (!array_key_exists($key, self::SETTINGS_KEYS)) {
             return new DataResponse(['error' => 'Invalid setting key'], 400);
         }

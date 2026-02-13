@@ -66,36 +66,65 @@
 				@navigate-date="onDateChange" />
 		</NcAppContent>
 		<div id="nextdiary-right-sidebar" :class="{ 'mobile-open': mobileSidebarOpen }">
-			<div v-if="settings.show_tags" class="sidebar-section">
-				<h4 class="sidebar-title" @click="toggleSearch('tags')">{{ t('nextdiary', 'Tags') }}</h4>
-				<input v-if="searchOpen === 'tags'"
-					ref="searchTags"
-					v-model="tagSearchQuery"
-					type="text"
-					class="sidebar-search-input"
-					:placeholder="t('nextdiary', 'Search...')">
-				<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="onMobileTagSelect" />
-			</div>
-			<div v-if="settings.show_symptoms" class="sidebar-section">
-				<h4 class="sidebar-title" @click="toggleSearch('symptoms')">{{ t('nextdiary', 'Symptoms') }}</h4>
-				<input v-if="searchOpen === 'symptoms'"
-					ref="searchSymptoms"
-					v-model="symptomSearchQuery"
-					type="text"
-					class="sidebar-search-input"
-					:placeholder="t('nextdiary', 'Search...')">
-				<SymptomCloud :symptoms="filteredSymptoms" :active-symptom-id="activeSymptomId" @select-symptom="onMobileSymptomSelect" />
-			</div>
-			<div v-if="settings.show_medications" class="sidebar-section">
-				<h4 class="sidebar-title" @click="toggleSearch('medications')">{{ t('nextdiary', 'Medications') }}</h4>
-				<input v-if="searchOpen === 'medications'"
-					ref="searchMedications"
-					v-model="medicationSearchQuery"
-					type="text"
-					class="sidebar-search-input"
-					:placeholder="t('nextdiary', 'Search...')">
-				<MedicationCloud :medications="filteredMedications" :active-medication-id="activeMedicationId" @select-medication="onMobileMedicationSelect" />
-			</div>
+			<template v-for="sectionKey in sidebarOrder">
+				<div v-if="sectionKey === 'tags' && settings.show_tags"
+					:key="sectionKey"
+					class="sidebar-section"
+					:class="{ expanded: expandedSection === 'tags' }">
+					<h4 class="sidebar-title" @click="toggleSection('tags')">
+						<ChevronRight v-if="expandedSection !== 'tags'" :size="16" />
+						<ChevronDown v-else :size="16" />
+						{{ t('nextdiary', 'Tags') }}
+					</h4>
+					<template v-if="expandedSection === 'tags'">
+						<input v-if="searchOpen === 'tags'"
+							ref="searchTags"
+							v-model="tagSearchQuery"
+							type="text"
+							class="sidebar-search-input"
+							:placeholder="t('nextdiary', 'Search...')">
+						<TagCloud :tags="filteredTags" :active-tag-id="activeTagId" @select-tag="onMobileTagSelect" />
+					</template>
+				</div>
+				<div v-if="sectionKey === 'symptoms' && settings.show_symptoms"
+					:key="sectionKey"
+					class="sidebar-section"
+					:class="{ expanded: expandedSection === 'symptoms' }">
+					<h4 class="sidebar-title" @click="toggleSection('symptoms')">
+						<ChevronRight v-if="expandedSection !== 'symptoms'" :size="16" />
+						<ChevronDown v-else :size="16" />
+						{{ t('nextdiary', 'Symptoms') }}
+					</h4>
+					<template v-if="expandedSection === 'symptoms'">
+						<input v-if="searchOpen === 'symptoms'"
+							ref="searchSymptoms"
+							v-model="symptomSearchQuery"
+							type="text"
+							class="sidebar-search-input"
+							:placeholder="t('nextdiary', 'Search...')">
+						<SymptomCloud :symptoms="filteredSymptoms" :active-symptom-id="activeSymptomId" @select-symptom="onMobileSymptomSelect" />
+					</template>
+				</div>
+				<div v-if="sectionKey === 'medications' && settings.show_medications"
+					:key="sectionKey"
+					class="sidebar-section"
+					:class="{ expanded: expandedSection === 'medications' }">
+					<h4 class="sidebar-title" @click="toggleSection('medications')">
+						<ChevronRight v-if="expandedSection !== 'medications'" :size="16" />
+						<ChevronDown v-else :size="16" />
+						{{ t('nextdiary', 'Medications') }}
+					</h4>
+					<template v-if="expandedSection === 'medications'">
+						<input v-if="searchOpen === 'medications'"
+							ref="searchMedications"
+							v-model="medicationSearchQuery"
+							type="text"
+							class="sidebar-search-input"
+							:placeholder="t('nextdiary', 'Search...')">
+						<MedicationCloud :medications="filteredMedications" :active-medication-id="activeMedicationId" @select-medication="onMobileMedicationSelect" />
+					</template>
+				</div>
+			</template>
 		</div>
 		<div v-if="mobileSidebarOpen"
 			class="mobile-sidebar-backdrop"
@@ -128,6 +157,8 @@ import TagCloud from './TagCloud.vue'
 import SymptomCloud from './SymptomCloud.vue'
 import MedicationCloud from './MedicationCloud.vue'
 import TagMultiple from 'vue-material-design-icons/TagMultiple'
+import ChevronDown from 'vue-material-design-icons/ChevronDown'
+import ChevronRight from 'vue-material-design-icons/ChevronRight'
 import axios from '@nextcloud/axios'
 
 export default {
@@ -148,6 +179,8 @@ export default {
 		SymptomCloud,
 		MedicationCloud,
 		TagMultiple,
+		ChevronDown,
+		ChevronRight,
 	},
 	data() {
 		const baseUrl = generateUrl('apps/nextdiary')
@@ -175,6 +208,8 @@ export default {
 				show_medications: true,
 			},
 			mobileSidebarOpen: false,
+			expandedSection: null,
+			sidebarOrder: ['tags', 'symptoms', 'medications'],
 		}
 	},
 	computed: {
@@ -346,6 +381,17 @@ export default {
 			this.mobileSidebarOpen = false
 			this.selectMedication(medicationId)
 		},
+		toggleSection(sectionKey) {
+			if (this.expandedSection === sectionKey) {
+				this.toggleSearch(sectionKey)
+			} else {
+				this.expandedSection = sectionKey
+				this.searchOpen = null
+				this.tagSearchQuery = ''
+				this.symptomSearchQuery = ''
+				this.medicationSearchQuery = ''
+			}
+		},
 		toggleSearch(section) {
 			if (this.searchOpen === section) {
 				this.searchOpen = null
@@ -429,6 +475,9 @@ export default {
 				const response = await axios.get(generateUrl('/apps/nextdiary/api/settings'))
 				if (response.data) {
 					this.settings = { ...this.settings, ...response.data }
+					if (Array.isArray(response.data.sidebar_order)) {
+						this.sidebarOrder = response.data.sidebar_order
+					}
 				}
 			} catch (error) {
 				// eslint-disable-next-line no-console
@@ -583,21 +632,29 @@ export default {
 
 		.sidebar-section {
 			border-bottom: 1px solid var(--color-border);
-			padding-bottom: 4px;
+			padding-bottom: 0;
 
 			&:last-child {
 				border-bottom: none;
 			}
+
+			&.expanded {
+				padding-bottom: 4px;
+			}
 		}
 
 		.sidebar-title {
+			display: flex;
+			align-items: center;
+			gap: 6px;
 			font-size: 12px;
 			font-weight: 700;
 			text-transform: uppercase;
 			color: #fff;
-			padding: 12px 12px 0;
+			padding: 12px;
 			margin: 0;
 			cursor: pointer;
+			user-select: none;
 
 			&:hover {
 				opacity: 0.8;
