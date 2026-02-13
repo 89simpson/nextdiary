@@ -6,23 +6,27 @@ use Dompdf\Dompdf;
 use iio\libmergepdf\Merger;
 use League\CommonMark\CommonMarkConverter;
 use OCA\NextDiary\Db\Entry;
+use OCP\IL10N;
 
 /**
  * Convert entries into multiple formats.
  */
 class ConversionService
 {
+    private IL10N $l;
     private TagService $tagService;
     private MoodService $moodService;
     private MedicationService $medicationService;
     private FileService $fileService;
 
     public function __construct(
+        IL10N $l,
         TagService $tagService,
         MoodService $moodService,
         MedicationService $medicationService,
         FileService $fileService
     ) {
+        $this->l = $l;
         $this->tagService = $tagService;
         $this->moodService = $moodService;
         $this->medicationService = $medicationService;
@@ -141,33 +145,33 @@ class ConversionService
         $ratings = $metadata['ratings'] ?? null;
 
         if ($ratings && isset($ratings['mood'])) {
-            $lines[] = '- **Настроение:** ' . $ratings['mood'] . '/5';
+            $lines[] = '- **' . $this->l->t('Mood') . ':** ' . $ratings['mood'] . '/5';
         }
         if ($ratings && isset($ratings['wellbeing'])) {
-            $lines[] = '- **Самочувствие:** ' . $ratings['wellbeing'] . '/5';
+            $lines[] = '- **' . $this->l->t('Wellbeing') . ':** ' . $ratings['wellbeing'] . '/5';
         }
 
         $tags = $metadata['tags'] ?? [];
         if (!empty($tags)) {
             $names = array_map(fn($t) => $t['name'], $tags);
-            $lines[] = '- **Теги:** ' . implode(', ', $names);
+            $lines[] = '- **' . $this->l->t('Tags') . ':** ' . implode(', ', $names);
         }
 
         $symptoms = $metadata['symptoms'] ?? [];
         if (!empty($symptoms)) {
             $names = array_map(fn($s) => $s['name'], $symptoms);
-            $lines[] = '- **Симптомы:** ' . implode(', ', $names);
+            $lines[] = '- **' . $this->l->t('Symptoms') . ':** ' . implode(', ', $names);
         }
 
         $medications = $metadata['medications'] ?? [];
         if (!empty($medications)) {
             $names = array_map(fn($m) => $m['name'], $medications);
-            $lines[] = '- **Препараты:** ' . implode(', ', $names);
+            $lines[] = '- **' . $this->l->t('Medications') . ':** ' . implode(', ', $names);
         }
 
         $files = $metadata['files'] ?? [];
         if (!empty($files)) {
-            $lines[] = '- **Файлы:**';
+            $lines[] = '- **' . $this->l->t('Files') . ':**';
             foreach ($files as $file) {
                 $serialized = $file->jsonSerialize();
                 $originalName = $serialized['originalName'] ?? 'file';
@@ -221,28 +225,28 @@ class ConversionService
         $ratings = $metadata['ratings'] ?? null;
 
         if ($ratings && isset($ratings['mood'])) {
-            $rows[] = '<tr><td class="meta-label">Настроение:</td><td>' . (int)$ratings['mood'] . '/5</td></tr>';
+            $rows[] = '<tr><td class="meta-label">' . htmlspecialchars($this->l->t('Mood')) . ':</td><td>' . (int)$ratings['mood'] . '/5</td></tr>';
         }
         if ($ratings && isset($ratings['wellbeing'])) {
-            $rows[] = '<tr><td class="meta-label">Самочувствие:</td><td>' . (int)$ratings['wellbeing'] . '/5</td></tr>';
+            $rows[] = '<tr><td class="meta-label">' . htmlspecialchars($this->l->t('Wellbeing')) . ':</td><td>' . (int)$ratings['wellbeing'] . '/5</td></tr>';
         }
 
         $tags = $metadata['tags'] ?? [];
         if (!empty($tags)) {
             $names = array_map(fn($t) => htmlspecialchars($t['name']), $tags);
-            $rows[] = '<tr><td class="meta-label">Теги:</td><td>' . implode(', ', $names) . '</td></tr>';
+            $rows[] = '<tr><td class="meta-label">' . htmlspecialchars($this->l->t('Tags')) . ':</td><td>' . implode(', ', $names) . '</td></tr>';
         }
 
         $symptoms = $metadata['symptoms'] ?? [];
         if (!empty($symptoms)) {
             $names = array_map(fn($s) => htmlspecialchars($s['name']), $symptoms);
-            $rows[] = '<tr><td class="meta-label">Симптомы:</td><td>' . implode(', ', $names) . '</td></tr>';
+            $rows[] = '<tr><td class="meta-label">' . htmlspecialchars($this->l->t('Symptoms')) . ':</td><td>' . implode(', ', $names) . '</td></tr>';
         }
 
         $medications = $metadata['medications'] ?? [];
         if (!empty($medications)) {
             $names = array_map(fn($m) => htmlspecialchars($m['name']), $medications);
-            $rows[] = '<tr><td class="meta-label">Препараты:</td><td>' . implode(', ', $names) . '</td></tr>';
+            $rows[] = '<tr><td class="meta-label">' . htmlspecialchars($this->l->t('Medications')) . ':</td><td>' . implode(', ', $names) . '</td></tr>';
         }
 
         $files = $metadata['files'] ?? [];
@@ -254,7 +258,7 @@ class ConversionService
                 $filePath = htmlspecialchars($serialized['filePath'] ?? '');
                 $fileLines[] = $originalName . ' — ' . $filePath;
             }
-            $rows[] = '<tr><td class="meta-label">Файлы:</td><td>' . implode('<br>', $fileLines) . '</td></tr>';
+            $rows[] = '<tr><td class="meta-label">' . htmlspecialchars($this->l->t('Files')) . ':</td><td>' . implode('<br>', $fileLines) . '</td></tr>';
         }
 
         if (empty($rows)) {
