@@ -58,6 +58,16 @@ class PageController extends Controller
     private function buildEntryResponse(Entry $entry): array
     {
         $ratings = $this->moodService->decodeRatings($entry->getEntryRatings());
+
+        $files = [];
+        try {
+            $files = array_map(function ($f) {
+                return $f->jsonSerialize();
+            }, $this->fileService->getFilesForEntry($entry->getId()));
+        } catch (\Exception $e) {
+            $this->logger->warning('[NextDiary] Could not fetch files for entry ' . $entry->getId() . ': ' . $e->getMessage());
+        }
+
         return [
             'id' => $entry->getId(),
             'entryDate' => $entry->getEntryDate(),
@@ -68,7 +78,7 @@ class PageController extends Controller
             'tags' => $this->tagService->getTagsForEntry($entry->getId()),
             'symptoms' => $this->moodService->getSymptomsForEntry($entry->getId()),
             'medications' => $this->medicationService->getMedicationsForEntry($entry->getId()),
-            'files' => array_map(function ($f) { return $f->jsonSerialize(); }, $this->fileService->getFilesForEntry($entry->getId())),
+            'files' => $files,
         ];
     }
 
