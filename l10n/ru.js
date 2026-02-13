@@ -49,6 +49,9 @@ OC.L10N.register(
     "Show medications" : "Показывать препараты",
     "Diary settings" : "Настройки дневника",
     "Change date" : "Изменить дату",
-    "Change date and time" : "Изменить дату и время"
+    "Change date and time" : "Изменить дату и время",
+    "Attach file" : "Прикрепить файл",
+    "Uploading..." : "Загрузка...",
+    "Delete file" : "Удалить файл"
 },
 "nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);");

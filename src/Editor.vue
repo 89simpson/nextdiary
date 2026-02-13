@@ -31,7 +31,9 @@
 				<TagPicker v-if="settings.show_tags" :value="tags" @input="onTagsChange" />
 				<SymptomPicker v-if="settings.show_symptoms" :value="symptoms" @input="onSymptomsChange" />
 				<MedicationPicker v-if="settings.show_medications" :value="medications" @input="onMedicationsChange" />
+				<FileUploadZone :uploading="fileUploading" @upload="onFilesUpload" />
 			</div>
+			<FileGallery :files="files" @delete="onFileDelete" />
 		</div>
 		<VueSimplemde ref="markdownEditor"
 			:model-value="content"
@@ -50,6 +52,8 @@ import MoodSelector from './MoodSelector.vue'
 import TagPicker from './TagPicker.vue'
 import SymptomPicker from './SymptomPicker.vue'
 import MedicationPicker from './MedicationPicker.vue'
+import FileUploadZone from './FileUploadZone.vue'
+import FileGallery from './FileGallery.vue'
 
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
@@ -57,7 +61,7 @@ import moment from '@nextcloud/moment'
 
 export default {
 	name: 'EntryEditor',
-	components: { VueSimplemde, NcButton, NcDateTimePickerNative, ArrowLeft, MoodSelector, TagPicker, SymptomPicker, MedicationPicker },
+	components: { VueSimplemde, NcButton, NcDateTimePickerNative, ArrowLeft, MoodSelector, TagPicker, SymptomPicker, MedicationPicker, FileUploadZone, FileGallery },
 	props: {
 		id: {
 			type: String,
@@ -75,6 +79,8 @@ export default {
 			tags: [],
 			symptoms: [],
 			medications: [],
+			files: [],
+			fileUploading: false,
 			settings: {
 				show_mood: true,
 				show_wellbeing: true,
@@ -183,6 +189,7 @@ export default {
 					this.tags = (data.tags || []).map(t => t.name)
 					this.symptoms = (data.symptoms || []).map(s => s.name)
 					this.medications = (data.medications || []).map(m => m.name)
+					this.files = data.files || []
 					this.status = 'loaded'
 					this.simplemde.value(this.content)
 				})
@@ -243,6 +250,36 @@ export default {
 						console.error('[NextDiary] Error saving meta:', error)
 					})
 			}, 500)
+		},
+		async onFilesUpload(fileList) {
+			this.fileUploading = true
+			for (const file of fileList) {
+				const formData = new FormData()
+				formData.append('file', file)
+				try {
+					const response = await axios.post(
+						generateUrl('/apps/nextdiary/api/entry/{entryId}/files', { entryId: this.id }),
+						formData,
+						{ headers: { 'Content-Type': 'multipart/form-data' } }
+					)
+					this.files.push(response.data)
+				} catch (error) {
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] File upload error:', error)
+				}
+			}
+			this.fileUploading = false
+		},
+		async onFileDelete(file) {
+			try {
+				await axios.delete(
+					generateUrl('/apps/nextdiary/api/entry/{entryId}/files/{fileId}', { entryId: this.id, fileId: file.id })
+				)
+				this.files = this.files.filter(f => f.id !== file.id)
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				console.error('[NextDiary] File delete error:', error)
+			}
 		},
 		onDateTimeChange(date) {
 			if (!date || !(date instanceof Date)) return

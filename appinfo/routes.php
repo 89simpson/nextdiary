@@ -39,6 +39,12 @@ return [
         ['name' => 'page#get_entries_by_medication', 'url' => '/api/entries/medication/{medicationId}', 'verb' => 'GET'],
         ['name' => 'page#index', 'url' => '/medication/{medicationId}', 'verb' => 'GET', 'postfix' => 'medicationPage'],
 
+        // File API (v0.0.5)
+        ['name' => 'file#upload', 'url' => '/api/entry/{entryId}/files', 'verb' => 'POST'],
+        ['name' => 'file#list_files', 'url' => '/api/entry/{entryId}/files', 'verb' => 'GET'],
+        ['name' => 'file#delete_file', 'url' => '/api/entry/{entryId}/files/{fileId}', 'verb' => 'DELETE'],
+        ['name' => 'file#download', 'url' => '/api/files/{fileId}/download', 'verb' => 'GET'],
+
         // Settings API
         ['name' => 'settings#get_settings', 'url' => '/api/settings', 'verb' => 'GET'],
         ['name' => 'settings#update_settings', 'url' => '/api/settings', 'verb' => 'PUT'],

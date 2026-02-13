@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Controller;
 
 use OCA\NextDiary\Db\Entry;
 use OCA\NextDiary\Db\EntryMapper;
+use OCA\NextDiary\Service\FileService;
 use OCA\NextDiary\Service\MedicationService;
 use OCA\NextDiary\Service\MoodService;
 use OCA\NextDiary\Service\TagService;
@@ -29,10 +30,12 @@ class PageController extends Controller
     private $moodService;
     /** @var MedicationService */
     private $medicationService;
+    /** @var FileService */
+    private $fileService;
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, TagService $tagService, MoodService $moodService, MedicationService $medicationService, LoggerInterface $logger)
+    public function __construct($AppName, IRequest $request, $UserId, EntryMapper $mapper, TagService $tagService, MoodService $moodService, MedicationService $medicationService, FileService $fileService, LoggerInterface $logger)
     {
         parent::__construct($AppName, $request);
         $this->userId = $UserId;
@@ -40,6 +43,7 @@ class PageController extends Controller
         $this->tagService = $tagService;
         $this->moodService = $moodService;
         $this->medicationService = $medicationService;
+        $this->fileService = $fileService;
         $this->logger = $logger;
     }
 
@@ -64,6 +68,7 @@ class PageController extends Controller
             'tags' => $this->tagService->getTagsForEntry($entry->getId()),
             'symptoms' => $this->moodService->getSymptomsForEntry($entry->getId()),
             'medications' => $this->medicationService->getMedicationsForEntry($entry->getId()),
+            'files' => array_map(function ($f) { return $f->jsonSerialize(); }, $this->fileService->getFilesForEntry($entry->getId())),
         ];
     }
 
@@ -235,6 +240,7 @@ class PageController extends Controller
             $this->tagService->removeTagsFromEntry($this->userId, $entry->getId());
             $this->moodService->removeSymptomsFromEntry($this->userId, $entry->getId());
             $this->medicationService->removeMedicationsFromEntry($this->userId, $entry->getId());
+            $this->fileService->deleteFilesForEntry($this->userId, $entry->getId());
             $this->mapper->delete($entry);
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (Exception $e) {

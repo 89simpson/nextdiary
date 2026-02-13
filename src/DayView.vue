@@ -38,6 +38,10 @@
 				<div class="entry-preview">
 					{{ getExcerpt(entry) }}
 				</div>
+				<div v-if="entry.files && entry.files.length" class="entry-files-badge">
+					<Paperclip :size="14" />
+					<span>{{ entry.files.length }}</span>
+				</div>
 				<div class="entry-meta-badges">
 					<template v-if="entry.tags && entry.tags.length">
 						<span v-for="tag in entry.tags" :key="'tag-' + tag.id" class="tag-badge">
@@ -76,6 +80,7 @@ import {
 } from '@nextcloud/vue'
 import Plus from 'vue-material-design-icons/Plus'
 import Delete from 'vue-material-design-icons/Delete'
+import Paperclip from 'vue-material-design-icons/Paperclip'
 import NoteEdit from 'vue-material-design-icons/NoteEditOutline'
 import moment from '@nextcloud/moment'
 import axios from '@nextcloud/axios'
@@ -91,6 +96,7 @@ export default {
 		Plus,
 		Delete,
 		NoteEdit,
+		Paperclip,
 	},
 	props: {
 		date: {
@@ -262,6 +268,15 @@ export default {
 					color: var(--color-warning);
 				}
 			}
+		}
+
+		.entry-files-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 2px;
+			margin-top: 4px;
+			font-size: 12px;
+			color: var(--color-text-lighter);
 		}
 
 		.entry-meta-badges {
