@@ -31,9 +31,9 @@ class FileService
     }
 
     /**
-     * Get or create the app folder for a user: /NextDiary/{entryId}/
+     * Get or create folder: /NextDiary/{entryDate}/
      */
-    private function getEntryFolder(string $uid, int $entryId): Folder
+    private function getDateFolder(string $uid, string $entryDate): Folder
     {
         $userFolder = $this->rootFolder->getUserFolder($uid);
 
@@ -43,14 +43,13 @@ class FileService
             $appFolder = $userFolder->newFolder(self::APP_FOLDER);
         }
 
-        $entryFolderName = (string) $entryId;
         try {
-            $entryFolder = $appFolder->get($entryFolderName);
+            $dateFolder = $appFolder->get($entryDate);
         } catch (NotFoundException $e) {
-            $entryFolder = $appFolder->newFolder($entryFolderName);
+            $dateFolder = $appFolder->newFolder($entryDate);
         }
 
-        return $entryFolder;
+        return $dateFolder;
     }
 
     /**
@@ -78,7 +77,7 @@ class FileService
      * @throws NotPermittedException
      * @throws Exception
      */
-    public function uploadFile(string $uid, int $entryId, string $originalName, string $content, string $mimeType): EntryFile
+    public function uploadFile(string $uid, int $entryId, string $entryDate, string $originalName, string $content, string $mimeType): EntryFile
     {
         $size = strlen($content);
         if ($size > self::MAX_FILE_SIZE) {
@@ -91,12 +90,12 @@ class FileService
             $safeName = 'file';
         }
 
-        $entryFolder = $this->getEntryFolder($uid, $entryId);
-        $fileName = $this->uniqueFileName($entryFolder, $safeName);
-        $file = $entryFolder->newFile($fileName);
+        $dateFolder = $this->getDateFolder($uid, $entryDate);
+        $fileName = $this->uniqueFileName($dateFolder, $safeName);
+        $file = $dateFolder->newFile($fileName);
         $file->putContent($content);
 
-        $filePath = self::APP_FOLDER . '/' . $entryId . '/' . $fileName;
+        $filePath = self::APP_FOLDER . '/' . $entryDate . '/' . $fileName;
 
         $entryFile = new EntryFile();
         $entryFile->setEntryId($entryId);
@@ -165,11 +164,10 @@ class FileService
             throw $e;
         }
 
-        // Delete from database
         $this->mapper->delete($entryFile);
 
-        // Try to remove empty entry folder
-        $this->cleanupEmptyFolder($uid, $entryFile->getEntryId());
+        // Try to remove empty date folder
+        $this->cleanupEmptyFolder($uid, $entryFile->getFilePath());
     }
 
     /**
@@ -180,7 +178,9 @@ class FileService
     public function deleteFilesForEntry(string $uid, int $entryId): void
     {
         $files = $this->mapper->findByEntry($entryId);
+        $folderPath = null;
         foreach ($files as $entryFile) {
+            $folderPath = $entryFile->getFilePath();
             try {
                 $userFolder = $this->rootFolder->getUserFolder($uid);
                 $file = $userFolder->get($entryFile->getFilePath());
@@ -190,17 +190,21 @@ class FileService
             }
         }
         $this->mapper->deleteByEntry($entryId);
-        $this->cleanupEmptyFolder($uid, $entryId);
+
+        if ($folderPath !== null) {
+            $this->cleanupEmptyFolder($uid, $folderPath);
+        }
     }
 
     /**
-     * Remove empty entry folder after file deletion.
+     * Remove empty date folder after file deletion.
      */
-    private function cleanupEmptyFolder(string $uid, int $entryId): void
+    private function cleanupEmptyFolder(string $uid, string $filePath): void
     {
         try {
             $userFolder = $this->rootFolder->getUserFolder($uid);
-            $folderPath = self::APP_FOLDER . '/' . $entryId;
+            // filePath is like "NextDiary/2026-02-13/file.jpg" — get parent folder
+            $folderPath = dirname($filePath);
             $folder = $userFolder->get($folderPath);
             if ($folder instanceof Folder && count($folder->getDirectoryListing()) === 0) {
                 $folder->delete();

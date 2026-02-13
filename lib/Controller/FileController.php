@@ -78,9 +78,13 @@ class FileController extends Controller
         }
 
         try {
+            $entry = $this->entryMapper->findById($entryId);
+            $entryDate = $entry->getEntryDate();
+
             $entryFile = $this->fileService->uploadFile(
                 $this->userId,
                 $entryId,
+                $entryDate,
                 $originalName,
                 $content,
                 $mimeType
