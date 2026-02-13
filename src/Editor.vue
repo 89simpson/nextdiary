@@ -14,12 +14,12 @@
 			</span>
 			<NcDateTimePickerNative
 				id="entry-date-picker"
-				:value="entryDateObj"
-				:label="t('nextdiary', 'Change date')"
+				:value="entryDateTimeObj"
+				:label="t('nextdiary', 'Change date and time')"
 				:hide-label="true"
-				type="date"
+				type="datetime-local"
 				class="entry-date-picker"
-				@input="onDateChange" />
+				@input="onDateTimeChange" />
 		</div>
 		<div class="entry-meta-panel">
 			<MoodSelector v-if="settings.show_mood || settings.show_wellbeing"
@@ -107,9 +107,13 @@ export default {
 			}
 			return title
 		},
-		entryDateObj() {
+		entryDateTimeObj() {
 			if (!this.entryDate) return null
 			const parts = this.entryDate.split('-')
+			if (this.createdAt) {
+				const time = moment(this.createdAt)
+				return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), time.hours(), time.minutes())
+			}
 			return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
 		},
 		unSavedMarker() {
@@ -240,13 +244,18 @@ export default {
 					})
 			}, 500)
 		},
-		onDateChange(date) {
+		onDateTimeChange(date) {
 			if (!date || !(date instanceof Date)) return
 			const yyyy = date.getFullYear().toString().padStart(4, '0')
 			const mm = (date.getMonth() + 1).toString().padStart(2, '0')
 			const dd = date.getDate().toString().padStart(2, '0')
+			const hh = date.getHours().toString().padStart(2, '0')
+			const min = date.getMinutes().toString().padStart(2, '0')
 			const newDate = `${yyyy}-${mm}-${dd}`
-			if (newDate === this.entryDate) return
+			const newTime = `${hh}:${min}`
+			const oldTime = this.createdAt ? moment(this.createdAt).format('HH:mm') : null
+			if (newDate === this.entryDate && newTime === oldTime) return
+			const dateChanged = newDate !== this.entryDate
 			const entryId = this.id
 			axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
 				content: this.simplemde.value(),
@@ -255,16 +264,20 @@ export default {
 				symptoms: this.symptoms,
 				medications: this.medications,
 				entryDate: newDate,
+				entryTime: newTime,
 			})
 				.then(() => {
 					this.entryDate = newDate
+					this.createdAt = date.toISOString()
 					this.unSavedChanges = false
 					this.$emit('entry-changed')
-					this.$router.push({ name: 'day', params: { date: newDate } })
+					if (dateChanged) {
+						this.$router.push({ name: 'day', params: { date: newDate } })
+					}
 				})
 				.catch(error => {
 					// eslint-disable-next-line no-console
-					console.error('[NextDiary] Error changing date:', error)
+					console.error('[NextDiary] Error changing date/time:', error)
 				})
 		},
 		goBack() {
