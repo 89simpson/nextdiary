@@ -8,10 +8,18 @@
 					<ArrowLeft :size="20" />
 				</template>
 			</NcButton>
-			<span>
+			<span class="entry-title-text">
 				<i v-if="isLoading" class="fa fa-spinner fa-spin" />
 				{{ unSavedMarker }}{{ title }}
 			</span>
+			<NcDateTimePickerNative
+				id="entry-date-picker"
+				:value="entryDateObj"
+				:label="t('nextdiary', 'Change date')"
+				:hide-label="true"
+				type="date"
+				class="entry-date-picker"
+				@input="onDateChange" />
 		</div>
 		<div class="entry-meta-panel">
 			<MoodSelector v-if="settings.show_mood || settings.show_wellbeing"
@@ -36,7 +44,7 @@
 </template>
 <script>
 import VueSimplemde from 'vue-simplemde'
-import { NcButton } from '@nextcloud/vue'
+import { NcButton, NcDateTimePickerNative } from '@nextcloud/vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
 import MoodSelector from './MoodSelector.vue'
 import TagPicker from './TagPicker.vue'
@@ -49,7 +57,7 @@ import moment from '@nextcloud/moment'
 
 export default {
 	name: 'EntryEditor',
-	components: { VueSimplemde, NcButton, ArrowLeft, MoodSelector, TagPicker, SymptomPicker, MedicationPicker },
+	components: { VueSimplemde, NcButton, NcDateTimePickerNative, ArrowLeft, MoodSelector, TagPicker, SymptomPicker, MedicationPicker },
 	props: {
 		id: {
 			type: String,
@@ -98,6 +106,11 @@ export default {
 				title += ' ' + moment(this.createdAt).format('HH:mm')
 			}
 			return title
+		},
+		entryDateObj() {
+			if (!this.entryDate) return null
+			const parts = this.entryDate.split('-')
+			return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
 		},
 		unSavedMarker() {
 			return this.unSavedChanges ? '*' : ''
@@ -227,6 +240,33 @@ export default {
 					})
 			}, 500)
 		},
+		onDateChange(date) {
+			if (!date || !(date instanceof Date)) return
+			const yyyy = date.getFullYear().toString().padStart(4, '0')
+			const mm = (date.getMonth() + 1).toString().padStart(2, '0')
+			const dd = date.getDate().toString().padStart(2, '0')
+			const newDate = `${yyyy}-${mm}-${dd}`
+			if (newDate === this.entryDate) return
+			const entryId = this.id
+			axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
+				content: this.simplemde.value(),
+				ratings: this.ratings,
+				tags: this.tags,
+				symptoms: this.symptoms,
+				medications: this.medications,
+				entryDate: newDate,
+			})
+				.then(() => {
+					this.entryDate = newDate
+					this.unSavedChanges = false
+					this.$emit('entry-changed')
+					this.$router.push({ name: 'day', params: { date: newDate } })
+				})
+				.catch(error => {
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error changing date:', error)
+				})
+		},
 		goBack() {
 			if (this.entryDate) {
 				this.$router.push({ name: 'day', params: { date: this.entryDate } })
@@ -262,6 +302,55 @@ export default {
 			padding-top: 10px;
 			font-size: 15px;
 			gap: 4px;
+		}
+
+		.entry-title-text {
+			flex: 1;
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.entry-date-picker {
+			flex-shrink: 0;
+			margin-right: 8px;
+
+			label { display: none; }
+
+			.native-datetime-picker--input {
+				width: 36px;
+				height: 36px;
+				padding: 0;
+				border: none;
+				background: transparent;
+				cursor: pointer;
+				color: transparent;
+				position: relative;
+
+				&::-webkit-calendar-picker-indicator {
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					cursor: pointer;
+					opacity: 0.6;
+				}
+
+				&:hover::-webkit-calendar-picker-indicator {
+					opacity: 1;
+				}
+			}
+
+			@media (max-width: 768px) {
+				margin-right: 4px;
+
+				.native-datetime-picker--input {
+					width: 32px;
+					height: 32px;
+				}
+			}
 		}
 	}
 

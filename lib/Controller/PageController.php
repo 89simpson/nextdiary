@@ -156,7 +156,7 @@ class PageController extends Controller
      *
      * @NoAdminRequired
      */
-    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null, ?array $medications = null, ?array $tags = null): DataResponse
+    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null, ?array $medications = null, ?array $tags = null, ?string $entryDate = null): DataResponse
     {
         try {
             $entry = $this->mapper->findById($id);
@@ -168,6 +168,17 @@ class PageController extends Controller
 
         if ($entry->getUid() !== $this->userId) {
             return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
+        }
+
+        if ($entryDate !== null) {
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $entryDate)) {
+                return new DataResponse(['error' => 'Invalid date format. Expected YYYY-MM-DD'], Http::STATUS_BAD_REQUEST);
+            }
+            $parsed = \DateTime::createFromFormat('Y-m-d', $entryDate);
+            if (!$parsed || $parsed->format('Y-m-d') !== $entryDate) {
+                return new DataResponse(['error' => 'Invalid date'], Http::STATUS_BAD_REQUEST);
+            }
+            $entry->setEntryDate($entryDate);
         }
 
         $content = $this->sanitizeUtf8(strip_tags($content));
