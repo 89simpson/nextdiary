@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>nextdiary</id>
+    <name>NextDiary</name>
+    <summary>A personal diary and health journal</summary>
+    <description><![CDATA[Keep your personal diary with mood tracking, health symptoms, medications, tags, and file attachments.
+
+Write entries for each day in a Markdown editor. Track your mood and wellbeing, log symptoms and medications, organize entries with tags, and attach files. Use the calendar to jump to any date and manage your entries.
+
+Export your diary in Markdown or PDF format — a single entry, a day, a date range, or everything.]]></description>
+    <version>0.0.5</version>
+    <licence>AGPL-3.0-or-later</licence>
+    <author homepage="https://github.com/89simpson">89simpson</author>
+    <namespace>NextDiary</namespace>
+    <category>office</category>
+    <category>tools</category>
+    <website>https://github.com/89simpson/nextdiary</website>
+    <bugs>https://github.com/89simpson/nextdiary/issues</bugs>
+    <repository type="git">https://github.com/89simpson/nextdiary.git</repository>
+    <!--<screenshot>https://raw.githubusercontent.com/89simpson/nextdiary/main/screenshots/screenshot.png</screenshot>-->
+    <dependencies>
+        <php min-version="8.0" max-version="8.3" />
+        <nextcloud min-version="25" max-version="30"/>
+    </dependencies>
+    <settings>
+        <personal>OCA\NextDiary\Settings\Personal</personal>
+        <personal-section>OCA\NextDiary\Settings\PersonalSection</personal-section>
+    </settings>
+    <navigations>
+        <navigation>
+            <id>nextdiary</id>
+            <name>NextDiary</name>
+            <route>nextdiary.page.index</route>
+            <icon>diary.svg</icon>
+        </navigation>
+    </navigations>
+</info>
