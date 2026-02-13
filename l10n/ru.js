@@ -53,6 +53,7 @@ OC.L10N.register(
     "Attach file" : "Прикрепить файл",
     "Uploading..." : "Загрузка...",
     "Delete file" : "Удалить файл",
+    "Sidebar sections" : "Секции боковой панели",
     "Move up" : "Переместить вверх",
     "Move down" : "Переместить вниз",
     "Search..." : "Поиск..."

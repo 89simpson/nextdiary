@@ -210,7 +210,6 @@ export default {
 			mobileSidebarOpen: false,
 			expandedSection: null,
 			sidebarOrder: ['tags', 'symptoms', 'medications'],
-			sidebarSections: ['tags', 'symptoms', 'medications'],
 		}
 	},
 	computed: {
@@ -477,9 +476,7 @@ export default {
 				if (response.data) {
 					this.settings = { ...this.settings, ...response.data }
 					if (Array.isArray(response.data.sidebar_order)) {
-						this.sidebarOrder = response.data.sidebar_order.filter(
-							k => this.sidebarSections.includes(k),
-						)
+						this.sidebarOrder = response.data.sidebar_order
 					}
 				}
 			} catch (error) {

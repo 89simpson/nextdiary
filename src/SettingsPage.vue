@@ -1,7 +1,18 @@
 <template>
 	<div id="nextdiary-settings-page">
 		<h2>{{ t('nextdiary', 'Diary settings') }}</h2>
-		<div class="settings-list">
+		<div class="settings-section">
+			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_mood"
+				@update:checked="updateSetting('show_mood', $event)">
+				{{ t('nextdiary', 'Show mood') }}
+			</NcCheckboxRadioSwitch>
+			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_wellbeing"
+				@update:checked="updateSetting('show_wellbeing', $event)">
+				{{ t('nextdiary', 'Show wellbeing') }}
+			</NcCheckboxRadioSwitch>
+		</div>
+		<h3>{{ t('nextdiary', 'Sidebar sections') }}</h3>
+		<div class="settings-section">
 			<div v-for="(sectionKey, index) in localSettings.sidebar_order"
 				:key="sectionKey"
 				class="settings-row">
@@ -55,7 +66,7 @@ export default {
 				show_tags: true,
 				show_symptoms: true,
 				show_medications: true,
-				sidebar_order: ['mood', 'wellbeing', 'tags', 'symptoms', 'medications'],
+				sidebar_order: ['tags', 'symptoms', 'medications'],
 			},
 		}
 	},
@@ -68,8 +79,6 @@ export default {
 		},
 		sectionLabel(key) {
 			const labels = {
-				mood: t('nextdiary', 'Mood'),
-				wellbeing: t('nextdiary', 'Wellbeing'),
 				tags: t('nextdiary', 'Tags'),
 				symptoms: t('nextdiary', 'Symptoms'),
 				medications: t('nextdiary', 'Medications'),
@@ -121,7 +130,14 @@ export default {
 		margin-bottom: 20px;
 	}
 
-	.settings-list {
+	h3 {
+		font-size: 16px;
+		font-weight: 600;
+		margin-top: 24px;
+		margin-bottom: 12px;
+	}
+
+	.settings-section {
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
