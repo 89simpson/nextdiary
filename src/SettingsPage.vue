@@ -2,49 +2,31 @@
 	<div id="nextdiary-settings-page">
 		<h2>{{ t('nextdiary', 'Diary settings') }}</h2>
 		<div class="settings-list">
-			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_mood"
-				@update:checked="updateSetting('show_mood', $event)">
-				{{ t('nextdiary', 'Show mood') }}
-			</NcCheckboxRadioSwitch>
-			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_wellbeing"
-				@update:checked="updateSetting('show_wellbeing', $event)">
-				{{ t('nextdiary', 'Show wellbeing') }}
-			</NcCheckboxRadioSwitch>
-			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_tags"
-				@update:checked="updateSetting('show_tags', $event)">
-				{{ t('nextdiary', 'Show tags') }}
-			</NcCheckboxRadioSwitch>
-			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_symptoms"
-				@update:checked="updateSetting('show_symptoms', $event)">
-				{{ t('nextdiary', 'Show symptoms') }}
-			</NcCheckboxRadioSwitch>
-			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_medications"
-				@update:checked="updateSetting('show_medications', $event)">
-				{{ t('nextdiary', 'Show medications') }}
-			</NcCheckboxRadioSwitch>
-		</div>
-		<h3>{{ t('nextdiary', 'Sidebar order') }}</h3>
-		<div class="order-list">
 			<div v-for="(sectionKey, index) in localSettings.sidebar_order"
 				:key="sectionKey"
-				class="order-item">
-				<span class="order-label">{{ sectionLabel(sectionKey) }}</span>
-				<NcButton type="tertiary"
-					:disabled="index === 0"
-					:aria-label="t('nextdiary', 'Move up')"
-					@click="moveSection(index, -1)">
-					<template #icon>
-						<ArrowUp :size="20" />
-					</template>
-				</NcButton>
-				<NcButton type="tertiary"
-					:disabled="index === localSettings.sidebar_order.length - 1"
-					:aria-label="t('nextdiary', 'Move down')"
-					@click="moveSection(index, 1)">
-					<template #icon>
-						<ArrowDown :size="20" />
-					</template>
-				</NcButton>
+				class="settings-row">
+				<NcCheckboxRadioSwitch :checked.sync="localSettings[showKey(sectionKey)]"
+					@update:checked="updateSetting(showKey(sectionKey), $event)">
+					{{ sectionLabel(sectionKey) }}
+				</NcCheckboxRadioSwitch>
+				<div class="order-buttons">
+					<NcButton type="tertiary"
+						:disabled="index === 0"
+						:aria-label="t('nextdiary', 'Move up')"
+						@click="moveSection(index, -1)">
+						<template #icon>
+							<ArrowUp :size="20" />
+						</template>
+					</NcButton>
+					<NcButton type="tertiary"
+						:disabled="index === localSettings.sidebar_order.length - 1"
+						:aria-label="t('nextdiary', 'Move down')"
+						@click="moveSection(index, 1)">
+						<template #icon>
+							<ArrowDown :size="20" />
+						</template>
+					</NcButton>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -73,7 +55,7 @@ export default {
 				show_tags: true,
 				show_symptoms: true,
 				show_medications: true,
-				sidebar_order: ['tags', 'symptoms', 'medications'],
+				sidebar_order: ['mood', 'wellbeing', 'tags', 'symptoms', 'medications'],
 			},
 		}
 	},
@@ -81,6 +63,19 @@ export default {
 		this.fetchSettings()
 	},
 	methods: {
+		showKey(sectionKey) {
+			return 'show_' + sectionKey
+		},
+		sectionLabel(key) {
+			const labels = {
+				mood: t('nextdiary', 'Mood'),
+				wellbeing: t('nextdiary', 'Wellbeing'),
+				tags: t('nextdiary', 'Tags'),
+				symptoms: t('nextdiary', 'Symptoms'),
+				medications: t('nextdiary', 'Medications'),
+			}
+			return labels[key] || key
+		},
 		async fetchSettings() {
 			try {
 				const response = await axios.get(generateUrl('/apps/nextdiary/api/settings'))
@@ -102,14 +97,6 @@ export default {
 				// eslint-disable-next-line no-console
 				console.error('[NextDiary] Error updating setting:', error)
 			}
-		},
-		sectionLabel(key) {
-			const labels = {
-				tags: t('nextdiary', 'Tags'),
-				symptoms: t('nextdiary', 'Symptoms'),
-				medications: t('nextdiary', 'Medications'),
-			}
-			return labels[key] || key
 		},
 		moveSection(index, direction) {
 			const newIndex = index + direction
@@ -137,30 +124,18 @@ export default {
 	.settings-list {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
-	}
-
-	h3 {
-		font-size: 16px;
-		font-weight: 600;
-		margin-top: 24px;
-		margin-bottom: 12px;
-	}
-
-	.order-list {
-		display: flex;
-		flex-direction: column;
 		gap: 4px;
 	}
 
-	.order-item {
+	.settings-row {
 		display: flex;
 		align-items: center;
 		gap: 8px;
 
-		.order-label {
-			flex-grow: 1;
-			font-size: 14px;
+		.order-buttons {
+			display: flex;
+			gap: 0;
+			margin-left: auto;
 		}
 	}
 }

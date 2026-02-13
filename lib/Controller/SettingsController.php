@@ -19,7 +19,7 @@ class SettingsController extends Controller {
     ];
 
     private const JSON_SETTINGS_KEYS = [
-        'sidebar_order' => '["tags","symptoms","medications"]',
+        'sidebar_order' => '["mood","wellbeing","tags","symptoms","medications"]',
     ];
 
     public function __construct($AppName, IRequest $request, $UserId, IConfig $config) {
@@ -49,8 +49,8 @@ class SettingsController extends Controller {
      */
     public function updateSettings(string $key, $value): DataResponse {
         if (array_key_exists($key, self::JSON_SETTINGS_KEYS)) {
-            $validKeys = ['tags', 'symptoms', 'medications'];
-            if (!is_array($value) || count($value) !== 3 || array_diff($validKeys, $value) || array_diff($value, $validKeys)) {
+            $validKeys = ['mood', 'wellbeing', 'tags', 'symptoms', 'medications'];
+            if (!is_array($value) || count($value) !== 5 || array_diff($validKeys, $value) || array_diff($value, $validKeys)) {
                 return new DataResponse(['error' => 'Invalid sidebar order'], 400);
             }
             $this->config->setUserValue($this->userId, 'nextdiary', $key, json_encode($value));
