@@ -156,7 +156,7 @@ class PageController extends Controller
      *
      * @NoAdminRequired
      */
-    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null, ?array $medications = null, ?array $tags = null, ?string $entryDate = null, ?string $entryTime = null): DataResponse
+    public function updateEntryById(int $id, string $content, ?array $ratings = null, ?array $symptoms = null, ?array $medications = null, ?array $tags = null, ?string $entryDate = null, ?string $entryDateTime = null): DataResponse
     {
         try {
             $entry = $this->mapper->findById($id);
@@ -181,14 +181,12 @@ class PageController extends Controller
             $entry->setEntryDate($entryDate);
         }
 
-        if ($entryTime !== null) {
-            if (!preg_match('/^\d{2}:\d{2}$/', $entryTime)) {
-                return new DataResponse(['error' => 'Invalid time format. Expected HH:MM'], Http::STATUS_BAD_REQUEST);
-            }
-            $dateForTime = $entryDate ?? $entry->getEntryDate();
-            $newCreatedAt = \DateTime::createFromFormat('Y-m-d H:i', $dateForTime . ' ' . $entryTime);
-            if ($newCreatedAt) {
+        if ($entryDateTime !== null) {
+            try {
+                $newCreatedAt = new \DateTime($entryDateTime);
                 $entry->setCreatedAt($newCreatedAt);
+            } catch (\Exception $e) {
+                return new DataResponse(['error' => 'Invalid datetime format'], Http::STATUS_BAD_REQUEST);
             }
         }
 

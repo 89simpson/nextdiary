@@ -249,12 +249,10 @@ export default {
 			const yyyy = date.getFullYear().toString().padStart(4, '0')
 			const mm = (date.getMonth() + 1).toString().padStart(2, '0')
 			const dd = date.getDate().toString().padStart(2, '0')
-			const hh = date.getHours().toString().padStart(2, '0')
-			const min = date.getMinutes().toString().padStart(2, '0')
 			const newDate = `${yyyy}-${mm}-${dd}`
-			const newTime = `${hh}:${min}`
-			const oldTime = this.createdAt ? moment(this.createdAt).format('HH:mm') : null
-			if (newDate === this.entryDate && newTime === oldTime) return
+			const newLocalTime = moment(date).format('HH:mm')
+			const oldLocalTime = this.createdAt ? moment(this.createdAt).format('HH:mm') : null
+			if (newDate === this.entryDate && newLocalTime === oldLocalTime) return
 			const dateChanged = newDate !== this.entryDate
 			const entryId = this.id
 			axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
@@ -264,7 +262,7 @@ export default {
 				symptoms: this.symptoms,
 				medications: this.medications,
 				entryDate: newDate,
-				entryTime: newTime,
+				entryDateTime: date.toISOString(),
 			})
 				.then(() => {
 					this.entryDate = newDate
