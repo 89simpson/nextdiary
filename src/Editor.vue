@@ -20,7 +20,18 @@
 				type="datetime-local"
 				class="entry-date-picker"
 				@input="onDateTimeChange" />
+			<NcButton type="tertiary"
+				:aria-label="t('nextdiary', 'Export')"
+				@click="showExportDialog = true">
+				<template #icon>
+					<Download :size="20" />
+				</template>
+			</NcButton>
 		</div>
+		<ExportDialog v-if="showExportDialog"
+			:entry-id="id"
+			:current-date="entryDate"
+			@close="showExportDialog = false" />
 		<div class="entry-meta-panel">
 			<MoodSelector v-if="settings.show_mood || settings.show_wellbeing"
 				:value="ratings"
@@ -48,6 +59,8 @@
 import VueSimplemde from 'vue-simplemde'
 import { NcButton, NcDateTimePickerNative } from '@nextcloud/vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
+import Download from 'vue-material-design-icons/Download'
+import ExportDialog from './ExportDialog.vue'
 import MoodSelector from './MoodSelector.vue'
 import TagPicker from './TagPicker.vue'
 import SymptomPicker from './SymptomPicker.vue'
@@ -61,7 +74,7 @@ import moment from '@nextcloud/moment'
 
 export default {
 	name: 'EntryEditor',
-	components: { VueSimplemde, NcButton, NcDateTimePickerNative, ArrowLeft, MoodSelector, TagPicker, SymptomPicker, MedicationPicker, FileUploadZone, FileGallery },
+	components: { VueSimplemde, NcButton, NcDateTimePickerNative, ArrowLeft, Download, ExportDialog, MoodSelector, TagPicker, SymptomPicker, MedicationPicker, FileUploadZone, FileGallery },
 	props: {
 		id: {
 			type: String,
@@ -81,6 +94,7 @@ export default {
 			medications: [],
 			files: [],
 			fileUploading: false,
+			showExportDialog: false,
 			settings: {
 				show_mood: true,
 				show_wellbeing: true,

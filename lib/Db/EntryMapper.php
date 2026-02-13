@@ -136,6 +136,30 @@ class EntryMapper extends QBMapper
     }
 
     /**
+     * Find all entries for a given user within a date range.
+     *
+     * @return Entry[]
+     * @throws Exception
+     */
+    public function findByDateRange(string $uid, string $startDate, string $endDate): array
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where(
+                $qb->expr()->eq('uid', $qb->createNamedParameter($uid))
+            )->andWhere(
+                $qb->expr()->gte('entry_date', $qb->createNamedParameter($startDate))
+            )->andWhere(
+                $qb->expr()->lte('entry_date', $qb->createNamedParameter($endDate))
+            )
+            ->orderBy('entry_date', 'ASC')
+            ->addOrderBy('created_at', 'ASC');
+
+        return $this->findEntities($qb);
+    }
+
+    /**
      * Find all distinct dates that have entries for the given user.
      *
      * @return string[]

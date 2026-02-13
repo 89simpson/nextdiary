@@ -42,24 +42,15 @@
 				</ul>
 			</template>
 			<template #footer>
-				<NcAppNavigationItem class="export" :name="t('nextdiary', 'Export')" icon="icon-download">
-					<template #actions>
-						<NcActionLink :href="pdfDownloadLink">
-							<template #icon>
-								<FilePdfBox :size="20" />
-								{{ t('nextdiary', 'as PDF') }}
-							</template>
-						</NcActionLink>
-						<NcActionLink :href="markdownDownloadLink">
-							<template #icon>
-								<Markdown :size="20" />
-								{{ t('nextdiary', 'as Markdown') }}
-							</template>
-						</NcActionLink>
-					</template>
-				</NcAppNavigationItem>
+				<NcAppNavigationItem class="export"
+					:name="t('nextdiary', 'Export')"
+					icon="icon-download"
+					@click="showExportDialog = true" />
 			</template>
 		</NcAppNavigation>
+		<ExportDialog v-if="showExportDialog"
+			:current-date="currentDate"
+			@close="showExportDialog = false" />
 		<NcAppContent>
 			<router-view
 				@entry-changed="onEntryChanged"
@@ -145,15 +136,13 @@ import {
 	NcAppNavigationItem,
 	NcDatetimePicker,
 	NcButton,
-	NcActionLink,
 	NcAppNavigationIconBullet,
 	NcListItem,
 } from '@nextcloud/vue'
 import moment from '@nextcloud/moment'
-import FilePdfBox from 'vue-material-design-icons/FilePdfBox'
-import Markdown from 'vue-material-design-icons/LanguageMarkdown'
 import { generateUrl } from '@nextcloud/router'
 import TagCloud from './TagCloud.vue'
+import ExportDialog from './ExportDialog.vue'
 import SymptomCloud from './SymptomCloud.vue'
 import MedicationCloud from './MedicationCloud.vue'
 import TagMultiple from 'vue-material-design-icons/TagMultiple'
@@ -170,10 +159,8 @@ export default {
 		NcAppNavigationItem,
 		NcDatetimePicker,
 		NcButton,
-		FilePdfBox,
-		Markdown,
-		NcActionLink,
 		NcAppNavigationIconBullet,
+		ExportDialog,
 		NcListItem,
 		TagCloud,
 		SymptomCloud,
@@ -207,6 +194,7 @@ export default {
 				show_symptoms: true,
 				show_medications: true,
 			},
+			showExportDialog: false,
 			mobileSidebarOpen: false,
 			expandedSection: null,
 			sidebarOrder: ['tags', 'symptoms', 'medications'],
@@ -227,12 +215,6 @@ export default {
 			const nextDay = moment(this.currentDate).add(1, 'day')
 			const today = moment()
 			return nextDay.isBefore(today)
-		},
-		markdownDownloadLink() {
-			return this.baseUrl + '/export/markdown'
-		},
-		pdfDownloadLink() {
-			return this.baseUrl + '/export/pdf'
 		},
 		filteredTags() {
 			if (!this.tagSearchQuery) return this.tags
