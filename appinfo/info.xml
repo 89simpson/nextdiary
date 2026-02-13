@@ -10,7 +10,7 @@ Write entries for each day in a Markdown editor. Track your mood and wellbeing, 
 
 Export your diary in Markdown or PDF format — a single entry, a day, a date range, or everything.]]></description>
     <version>0.0.5</version>
-    <licence>agpl</licence>
+    <licence>AGPL-3.0-or-later</licence>
     <author homepage="https://github.com/89simpson">89simpson</author>
     <namespace>NextDiary</namespace>
     <category>office</category>

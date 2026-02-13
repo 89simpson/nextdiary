@@ -114,7 +114,7 @@ class PageController extends Controller
                 'userId' => $this->userId,
                 'date' => $date,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -131,7 +131,7 @@ class PageController extends Controller
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Entry not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         if ($entry->getUid() !== $this->userId) {
@@ -162,7 +162,7 @@ class PageController extends Controller
             $inserted = $this->mapper->insert($entry);
             return new DataResponse($inserted, Http::STATUS_CREATED);
         } catch (Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -178,7 +178,7 @@ class PageController extends Controller
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Entry not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         if ($entry->getUid() !== $this->userId) {
@@ -223,7 +223,7 @@ class PageController extends Controller
             }
             return new DataResponse($this->buildEntryResponse($entry));
         } catch (Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -239,7 +239,7 @@ class PageController extends Controller
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Entry not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         if ($entry->getUid() !== $this->userId) {
@@ -254,7 +254,7 @@ class PageController extends Controller
             $this->mapper->delete($entry);
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -276,7 +276,7 @@ class PageController extends Controller
                 'exception' => $e,
                 'userId' => $this->userId,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -309,7 +309,7 @@ class PageController extends Controller
                 'userId' => $this->userId,
                 'tagId' => $tagId,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -331,7 +331,7 @@ class PageController extends Controller
                 'exception' => $e,
                 'userId' => $this->userId,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -364,7 +364,7 @@ class PageController extends Controller
                 'userId' => $this->userId,
                 'symptomId' => $symptomId,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -386,7 +386,7 @@ class PageController extends Controller
                 'exception' => $e,
                 'userId' => $this->userId,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -419,7 +419,7 @@ class PageController extends Controller
                 'userId' => $this->userId,
                 'medicationId' => $medicationId,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -438,7 +438,7 @@ class PageController extends Controller
         } catch (DoesNotExistException $e) {
             return new DataResponse(['isEmpty' => true]);
         } catch (MultipleObjectsReturnedException|Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         $entry->setEntryContent($this->sanitizeUtf8((string) $entry->getEntryContent()));
@@ -472,7 +472,7 @@ class PageController extends Controller
                 'userId' => $this->userId,
                 'amount' => $amount,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -512,7 +512,7 @@ class PageController extends Controller
             $entry->setUpdatedAt($now);
             return new DataResponse($this->mapper->insert($entry));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -528,7 +528,7 @@ class PageController extends Controller
             $dates = $this->mapper->findAllDates($this->userId);
             return new DataResponse($dates);
         } catch (Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 }

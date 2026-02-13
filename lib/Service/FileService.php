@@ -16,6 +16,13 @@ class FileService
     private const APP_FOLDER = 'NextDiary';
     private const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
+    private const BLOCKED_EXTENSIONS = [
+        'php', 'phtml', 'php3', 'php4', 'php5', 'phps',
+        'exe', 'bat', 'cmd', 'com', 'sh', 'bash',
+        'js', 'vbs', 'wsf', 'ps1',
+        'htaccess', 'htpasswd',
+    ];
+
     private EntryFileMapper $mapper;
     private IRootFolder $rootFolder;
     private LoggerInterface $logger;
@@ -84,10 +91,23 @@ class FileService
             throw new \InvalidArgumentException('File too large. Maximum size is 50 MB.');
         }
 
-        // Sanitize filename
-        $safeName = preg_replace('/[^\w\s\-\.\(\)]/u', '_', $originalName);
-        if (empty($safeName) || $safeName === '.') {
-            $safeName = 'file';
+        // Validate file extension (block dangerous types)
+        $pathInfo = pathinfo($originalName);
+        $extension = strtolower($pathInfo['extension'] ?? '');
+        if (in_array($extension, self::BLOCKED_EXTENSIONS, true)) {
+            throw new \InvalidArgumentException('File type not allowed.');
+        }
+
+        // Sanitize filename: separate name and extension to prevent double-extension attacks
+        $baseName = preg_replace('/[^\w\s\-\(\)]/u', '_', $pathInfo['filename'] ?? 'file');
+        if (empty($baseName)) {
+            $baseName = 'file';
+        }
+        $safeName = !empty($extension) ? $baseName . '.' . $extension : $baseName;
+
+        // Ensure no path traversal
+        if (str_contains($safeName, '..')) {
+            throw new \InvalidArgumentException('Invalid file name.');
         }
 
         $dateFolder = $this->getDateFolder($uid, $entryDate);

@@ -206,10 +206,13 @@ class ConversionService
             $html .= '<div class="entry-meta">' . $metaHtml . '</div>';
         }
 
-        // Content: markdown to HTML
+        // Content: markdown to HTML (escape raw HTML for safety)
         $content = $serializedEntry['entryContent'] ?? '';
         if (!empty(trim($content))) {
-            $converter = new CommonMarkConverter();
+            $converter = new CommonMarkConverter([
+                'html_input' => 'escape',
+                'allow_unsafe_links' => false,
+            ]);
             $html .= $converter->convertToHtml($content);
         }
 

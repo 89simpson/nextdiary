@@ -44,7 +44,8 @@ class FileController extends Controller
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Entry not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            $this->logger->error('[NextDiary] Entry lookup failed: ' . $e->getMessage(), ['exception' => $e]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
         if ($entry->getUid() !== $this->userId) {
             return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
@@ -124,7 +125,7 @@ class FileController extends Controller
             $this->logger->error('[NextDiary] List files failed: ' . $e->getMessage(), [
                 'exception' => $e,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Failed to list files'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -153,7 +154,7 @@ class FileController extends Controller
             $this->logger->error('[NextDiary] File delete failed: ' . $e->getMessage(), [
                 'exception' => $e,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Delete failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -182,7 +183,7 @@ class FileController extends Controller
             $this->logger->error('[NextDiary] File download failed: ' . $e->getMessage(), [
                 'exception' => $e,
             ]);
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Download failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 }
