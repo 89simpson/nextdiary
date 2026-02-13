@@ -104,6 +104,24 @@ class EntryTagMapper extends QBMapper
     }
 
     /**
+     * Remove all tag associations for a user's entries.
+     *
+     * @throws Exception
+     */
+    public function deleteAllForUser(string $uid): int
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where(
+                $qb->expr()->in('entry_id', $qb->createFunction(
+                    'SELECT `id` FROM `*PREFIX*diary` WHERE `uid` = ' . $qb->createNamedParameter($uid)
+                ))
+            );
+
+        return $qb->executeStatement();
+    }
+
+    /**
      * Attach a tag to an entry (ignore if already attached).
      *
      * @throws Exception

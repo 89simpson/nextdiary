@@ -54,6 +54,20 @@ class EntryFileMapper extends QBMapper
     }
 
     /**
+     * Delete all file records for a user.
+     *
+     * @throws Exception
+     */
+    public function deleteAllByUser(string $uid): int
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where($qb->expr()->eq('uid', $qb->createNamedParameter($uid)));
+
+        return $qb->executeStatement();
+    }
+
+    /**
      * @return EntryFile[]
      * @throws Exception
      */

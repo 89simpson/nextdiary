@@ -76,6 +76,24 @@ class EntryMedicationMapper extends QBMapper
     }
 
     /**
+     * Remove all medication associations for a user's entries.
+     *
+     * @throws Exception
+     */
+    public function deleteAllForUser(string $uid): int
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where(
+                $qb->expr()->in('entry_id', $qb->createFunction(
+                    'SELECT `id` FROM `*PREFIX*diary` WHERE `uid` = ' . $qb->createNamedParameter($uid)
+                ))
+            );
+
+        return $qb->executeStatement();
+    }
+
+    /**
      * @throws Exception
      */
     public function attach(int $entryId, int $medicationId): void
