@@ -1,5 +1,5 @@
 OC.L10N.register(
-    "diary",
+    "nextdiary",
     {
     "Diary" : "日記",
     "A simple diary for Nextcloud - Alpha release" : "Nextcloudで使えるシンプルな日記 - αリリース",

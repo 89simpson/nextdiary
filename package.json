@@ -1,7 +1,7 @@
 {
   "name": "nextdiary",
   "version": "0.0.5",
-  "description": "NextDiary - A simple diary for Nextcloud",
+  "description": "NextDiary - A personal diary and health journal",
   "main": "js/index.js",
   "directories": {
     "lib": "lib",
@@ -14,7 +14,7 @@
     "serve": "webpack --node-env development serve --progress",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "89simpson (Homer Jay Simpson) <2-89simpson@users.noreply.gitlab.malcador.ru>",
+  "author": "89simpson",
   "license": "agpl",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",

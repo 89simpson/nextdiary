@@ -1,5 +1,5 @@
 OC.L10N.register(
-    "diary",
+    "nextdiary",
     {
     "Diary" : "كۈندىلىك خاتىرە",
     "A simple diary for Nextcloud - Alpha release" : "Nextcloud نىڭ ئاددىي كۈندىلىك خاتىرىسى - ئالفا تارقىتىلىشى",

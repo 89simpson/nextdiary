@@ -1,37 +1,50 @@
 # NextDiary
 
-A (currently) very simple diary for Nextcloud
+A personal diary and health journal for Nextcloud.
 
-## About This Fork
+## Features
 
-This is a fork of the original [Diary](https://github.com/danielroehrig/diary) application by Daniel Röhrig.
+- **Markdown editor** — write diary entries with full Markdown support
+- **Multiple entries per day** — create several entries for the same date
+- **Mood & wellbeing tracking** — rate your mood and wellbeing on a 1-5 scale
+- **Tags** — organize entries with tags, auto-extracted from #hashtags
+- **Symptoms** — track health symptoms across entries
+- **Medications** — log medications linked to diary entries
+- **File attachments** — attach files to entries, stored in Nextcloud
+- **Calendar navigation** — jump to any date, highlighted days with entries
+- **Configurable sidebar** — show/hide sections, reorder tags/symptoms/medications
+- **Export** — download entries as Markdown or PDF (single entry, day, date range, or all)
+- **Localization** — Russian and English translations included
 
-**Original Repository:** https://github.com/danielroehrig/diary
-**Fork Repository:** ssh://git@gitlab.malcador.ru:8022/89simpson/nextdiary.git
-**Author:** 89simpson (Homer Jay Simpson)
-**Version:** 0.0.1 (starting fresh from fork)
+## Requirements
 
-This fork maintains full backward compatibility with existing diary installations, including the same database table structure.
+- Nextcloud 25–30
+- PHP 8.0–8.3
 
-## Building Locally
+## Installation
 
-1. Install PHP 8 as well as the `xml` and `mbstring` extensions e.g. with `sudo apt install php php-xml php-mbstring` if
-   using Ubuntu
-2. Install Node via [nvm](https://github.com/nvm-sh/nvm)
-3. Install dependencies and run app build with `make`
-4. Mount this repo in the Nextcloud docker image
-   with `docker run --rm -p 8080:80 -v ~/path/to/nextdiary:/var/www/html/apps/nextdiary ghcr.io/juliushaertl/nextcloud-dev-php80:latest`.
-   Make sure to update the first path to the root of this repo.
+### From source
 
-* You can set a specific version with `-e SERVER_BRANCH=version`, where `version` is a branch or tag. For example, to
-  run it on NextCloud 24,
-  run `docker run --rm -p 8080:80 -e SERVER_BRANCH=stable24 -v ~/path/to/nextdiary:/var/www/html/apps/nextdiary ghcr.io/juliushaertl/nextcloud-dev-php80:latest`
+1. Clone the repository into your Nextcloud apps directory:
+   ```bash
+   cd /path/to/nextcloud/apps
+   git clone https://github.com/89simpson/nextdiary.git
+   ```
+2. Enable the app in Nextcloud admin panel under "Apps"
 
-5. In another terminal process, enable continuous builds by running `npm run watch`
-6. Navigate to the app in your browser at `localhost:8080`
-7. Login with `admin` / `admin`
-8. Go to "Apps" in main menu
-9. Scroll to "NextDiary" authorize enabling the untested app. The page will reload. Scroll down to "NextDiary" again and enable
-   it.
+### Building from source
 
-The NextDiary app will now be available in Nextcloud and will reflect the state of the local repo.
+1. Install PHP 8 with `xml` and `mbstring` extensions
+2. Install Node.js via [nvm](https://github.com/nvm-sh/nvm)
+3. Install dependencies and build:
+   ```bash
+   make
+   ```
+
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
+
+## Credits
+
+Originally inspired by the [Diary](https://github.com/danielroehrig/diary) app by Daniel Rohrig. The codebase has been substantially rewritten with new features and architecture.

@@ -1,12 +1,11 @@
 {
     "name": "89simpson/nc-nextdiary",
-    "description": "A simple diary (nextdiary).",
+    "description": "NextDiary - A personal diary and health journal",
     "type": "project",
     "license": "AGPL",
     "authors": [
         {
-            "name": "89simpson (Homer Jay Simpson)",
-            "email": "2-89simpson@users.noreply.gitlab.malcador.ru"
+            "name": "89simpson"
         }
     ],
     "config": {
