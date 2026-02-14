@@ -12,14 +12,17 @@
 				<i v-if="isLoading" class="fa fa-spinner fa-spin" />
 				{{ unSavedMarker }}{{ title }}
 			</span>
-			<NcDateTimePickerNative
-				id="entry-date-picker"
-				:value="entryDateTimeObj"
-				:label="t('nextdiary', 'Change date and time')"
-				:hide-label="true"
-				type="datetime-local"
-				class="entry-date-picker"
-				@input="onDateTimeChange" />
+			<div class="entry-date-picker-wrap">
+				<CalendarEdit :size="20" />
+				<NcDateTimePickerNative
+					id="entry-date-picker"
+					:value="entryDateTimeObj"
+					:label="t('nextdiary', 'Change date and time')"
+					:hide-label="true"
+					type="datetime-local"
+					class="entry-date-picker"
+					@input="onDateTimeChange" />
+			</div>
 			<NcButton type="tertiary"
 				:aria-label="t('nextdiary', 'Export')"
 				@click="showExportDialog = true">
@@ -59,6 +62,7 @@
 import VueSimplemde from 'vue-simplemde'
 import { NcButton, NcDateTimePickerNative } from '@nextcloud/vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
+import CalendarEdit from 'vue-material-design-icons/CalendarEdit'
 import Download from 'vue-material-design-icons/Download'
 import ExportDialog from './ExportDialog.vue'
 import MoodSelector from './MoodSelector.vue'
@@ -74,7 +78,7 @@ import moment from '@nextcloud/moment'
 
 export default {
 	name: 'EntryEditor',
-	components: { VueSimplemde, NcButton, NcDateTimePickerNative, ArrowLeft, Download, ExportDialog, MoodSelector, TagPicker, SymptomPicker, MedicationPicker, FileUploadZone, FileGallery },
+	components: { VueSimplemde, NcButton, NcDateTimePickerNative, ArrowLeft, CalendarEdit, Download, ExportDialog, MoodSelector, TagPicker, SymptomPicker, MedicationPicker, FileUploadZone, FileGallery },
 	props: {
 		id: {
 			type: String,
@@ -374,44 +378,57 @@ export default {
 			white-space: nowrap;
 		}
 
-		.entry-date-picker {
+		.entry-date-picker-wrap {
 			flex-shrink: 0;
+			position: relative;
+			width: 36px;
+			height: 36px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			border-radius: 50%;
 			margin-right: 8px;
 
-			label { display: none; }
+			&:hover {
+				background-color: var(--color-background-hover);
+			}
 
-			.native-datetime-picker--input {
-				width: 36px;
-				height: 36px;
-				padding: 0;
-				border: none;
-				background: transparent;
-				cursor: pointer;
-				color: transparent;
-				position: relative;
+			> .material-design-icon {
+				color: var(--color-main-text);
+				opacity: 0.6;
+				pointer-events: none;
+			}
 
-				&::-webkit-calendar-picker-indicator {
+			.entry-date-picker {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				margin: 0;
+
+				label { display: none; }
+
+				.native-datetime-picker--input {
+					width: 100%;
+					height: 100%;
+					padding: 0;
+					border: none;
+					background: transparent;
+					cursor: pointer;
+					color: transparent;
 					position: absolute;
 					top: 0;
 					left: 0;
-					width: 100%;
-					height: 100%;
-					cursor: pointer;
-					opacity: 0.6;
-				}
-
-				&:hover::-webkit-calendar-picker-indicator {
-					opacity: 1;
+					opacity: 0;
 				}
 			}
 
 			@media (max-width: 768px) {
+				width: 32px;
+				height: 32px;
 				margin-right: 4px;
-
-				.native-datetime-picker--input {
-					width: 32px;
-					height: 32px;
-				}
 			}
 		}
 	}

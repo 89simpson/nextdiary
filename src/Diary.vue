@@ -632,7 +632,7 @@ export default {
 			font-size: 12px;
 			font-weight: 700;
 			text-transform: uppercase;
-			color: #fff;
+			color: var(--color-main-text);
 			padding: 12px;
 			margin: 0;
 			cursor: pointer;
@@ -690,6 +690,12 @@ export default {
 
 .mobile-sidebar-fab {
 	display: none;
+}
+
+@media (max-width: 1024px) {
+	.app-navigation:not(.app-navigation--close) ~ .app-content .day-header > .button-vue {
+		visibility: hidden;
+	}
 }
 
 @media (max-width: 768px) {
