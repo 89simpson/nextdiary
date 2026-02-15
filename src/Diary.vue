@@ -696,6 +696,10 @@ export default {
 	.app-navigation:not(.app-navigation--close) ~ .app-content .day-header > .button-vue {
 		visibility: hidden;
 	}
+
+	.app-navigation:not(.app-navigation--close) ~ .app-content {
+		visibility: hidden !important;
+	}
 }
 
 @media (max-width: 768px) {
