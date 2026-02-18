@@ -14,7 +14,7 @@ A personal diary and health journal for Nextcloud.
 - **Calendar navigation** — jump to any date, highlighted days with entries
 - **Configurable sidebar** — show/hide sections, reorder tags/symptoms/medications
 - **Export** — download entries as Markdown or PDF (single entry, day, date range, or all)
-- **Localization** — 14 languages: English, Russian, German, French, Spanish, Italian, Japanese, Dutch, Polish, Portuguese (Brazil), Turkish, Ukrainian, Chinese (Simplified)
+- **Localization** — 88 languages with full translations included
 
 ## Requirements
 
