@@ -1,0 +1,33 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: nextdiary
+
+      - name: Read version from info.xml
+        id: version
+        run: |
+          VERSION=$(grep '<version>' nextdiary/appinfo/info.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create release archive
+        run: tar czf nextdiary-${{ steps.version.outputs.version }}.tar.gz nextdiary/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: nextdiary-${{ steps.version.outputs.version }}.tar.gz
+          generate_release_notes: true
