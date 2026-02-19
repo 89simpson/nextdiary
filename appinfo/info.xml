@@ -9,7 +9,7 @@
 Write entries for each day in a Markdown editor. Track your mood and wellbeing, log symptoms and medications, organize entries with tags, and attach files. Use the calendar to jump to any date and manage your entries.
 
 Export your diary in Markdown or PDF format — a single entry, a day, a date range, or everything.]]></description>
-    <version>0.0.5</version>
+    <version>1.0.1</version>
     <licence>AGPL-3.0-or-later</licence>
     <author homepage="https://github.com/89simpson">89simpson</author>
     <namespace>NextDiary</namespace>
