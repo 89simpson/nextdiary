@@ -23,6 +23,9 @@ jobs:
           VERSION=$(grep '<version>' nextdiary/appinfo/info.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Clean up before archiving
+        run: rm -rf nextdiary/.git nextdiary/.github
+
       - name: Create release archive
         run: tar czf nextdiary-${{ steps.version.outputs.version }}.tar.gz nextdiary/
 
