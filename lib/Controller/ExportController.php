@@ -125,4 +125,25 @@ class ExportController extends Controller
 
         return new DataDownloadResponse($pdfString, $resolved['filename'] . '.pdf', 'application/pdf');
     }
+
+    /**
+     * Get entries as one CSV file in analytical (wide, one-hot) format.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     *
+     * @throws Exception
+     */
+    public function getCsv(string $scope = 'all', ?int $entryId = null, ?string $date = null, ?string $startDate = null, ?string $endDate = null): DataDownloadResponse
+    {
+        try {
+            $resolved = $this->resolveEntries($scope, $entryId, $date, $startDate, $endDate);
+        } catch (\InvalidArgumentException $e) {
+            return new DataDownloadResponse($e->getMessage(), 'error.txt', 'text/plain');
+        }
+
+        $csvString = $this->exportService->entriesToCsv($resolved['entries']);
+
+        return new DataDownloadResponse($csvString, 'nextdiary-export.csv', 'text/csv; charset=UTF-8');
+    }
 }

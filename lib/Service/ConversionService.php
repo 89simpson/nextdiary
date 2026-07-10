@@ -137,6 +137,116 @@ class ConversionService
     }
 
     /**
+     * Convert an array of entries into one CSV file in analytical (wide, one-hot) format.
+     *
+     * Note text is not included. One row per entry; one column per unique symptom,
+     * medication and tag across all exported entries (union, sorted alphabetically).
+     *
+     * @param array|Entry[] $entries
+     */
+    public function entriesToCsv(array $entries): string
+    {
+        $rows = [];
+        $symptomUnion = [];
+        $medicationUnion = [];
+        $tagUnion = [];
+
+        foreach ($entries as $entry) {
+            $metadata = $this->collectMetadata($entry);
+            $serializedEntry = $entry->jsonSerialize();
+
+            $date = $serializedEntry['entryDate'];
+            $time = '';
+            if (!empty($serializedEntry['createdAt'])) {
+                $created = $serializedEntry['createdAt'];
+                if (is_string($created) && strlen($created) > 10) {
+                    $time = substr($created, 11, 5);
+                }
+            }
+
+            $ratings = $metadata['ratings'] ?? null;
+            $mood = $ratings['mood'] ?? '';
+            $wellbeing = $ratings['wellbeing'] ?? '';
+
+            $symptomNames = array_map(fn($s) => $s['name'], $metadata['symptoms'] ?? []);
+            $medicationNames = array_map(fn($m) => $m['name'], $metadata['medications'] ?? []);
+            $tagNames = array_map(fn($t) => $t['name'], $metadata['tags'] ?? []);
+
+            foreach ($symptomNames as $name) {
+                $symptomUnion[$name] = true;
+            }
+            foreach ($medicationNames as $name) {
+                $medicationUnion[$name] = true;
+            }
+            foreach ($tagNames as $name) {
+                $tagUnion[$name] = true;
+            }
+
+            $rows[] = [
+                'date' => $date,
+                'time' => $time,
+                'mood' => $mood,
+                'wellbeing' => $wellbeing,
+                'symptom_count' => count($symptomNames),
+                'medication_count' => count($medicationNames),
+                'tag_count' => count($tagNames),
+                'symptoms' => array_fill_keys($symptomNames, true),
+                'medications' => array_fill_keys($medicationNames, true),
+                'tags' => array_fill_keys($tagNames, true),
+            ];
+        }
+
+        $symptomList = array_keys($symptomUnion);
+        $medicationList = array_keys($medicationUnion);
+        $tagList = array_keys($tagUnion);
+        sort($symptomList, SORT_STRING);
+        sort($medicationList, SORT_STRING);
+        sort($tagList, SORT_STRING);
+
+        $header = ['date', 'time', 'mood', 'wellbeing', 'symptom_count', 'medication_count', 'tag_count'];
+        foreach ($symptomList as $name) {
+            $header[] = 'symptom:' . $name;
+        }
+        foreach ($medicationList as $name) {
+            $header[] = 'medication:' . $name;
+        }
+        foreach ($tagList as $name) {
+            $header[] = 'tag:' . $name;
+        }
+
+        $stream = fopen('php://temp', 'r+');
+        fputcsv($stream, $header);
+
+        foreach ($rows as $row) {
+            $line = [
+                $row['date'],
+                $row['time'],
+                $row['mood'],
+                $row['wellbeing'],
+                $row['symptom_count'],
+                $row['medication_count'],
+                $row['tag_count'],
+            ];
+            foreach ($symptomList as $name) {
+                $line[] = isset($row['symptoms'][$name]) ? 1 : 0;
+            }
+            foreach ($medicationList as $name) {
+                $line[] = isset($row['medications'][$name]) ? 1 : 0;
+            }
+            foreach ($tagList as $name) {
+                $line[] = isset($row['tags'][$name]) ? 1 : 0;
+            }
+            fputcsv($stream, $line);
+        }
+
+        rewind($stream);
+        $csv = stream_get_contents($stream);
+        fclose($stream);
+
+        return "\xEF\xBB\xBF" . $csv;
+    }
+
+    /**
      * Build metadata lines for markdown.
      */
     private function buildMetadataLines(array $metadata): array

@@ -70,6 +70,12 @@
 					type="radio">
 					PDF
 				</NcCheckboxRadioSwitch>
+				<NcCheckboxRadioSwitch :checked.sync="format"
+					value="csv"
+					name="format"
+					type="radio">
+					{{ t('nextdiary', 'CSV (for analysis)') }}
+				</NcCheckboxRadioSwitch>
 			</div>
 
 			<div class="export-actions">
@@ -126,7 +132,12 @@ export default {
 		},
 		download() {
 			const baseUrl = generateUrl('apps/nextdiary')
-			const exportPath = this.format === 'pdf' ? '/export/pdf' : '/export/markdown'
+			const paths = {
+				markdown: '/export/markdown',
+				pdf: '/export/pdf',
+				csv: '/export/csv',
+			}
+			const exportPath = paths[this.format] || '/export/markdown'
 			const params = new URLSearchParams()
 			params.set('scope', this.scope)
 

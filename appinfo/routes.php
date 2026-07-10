@@ -61,5 +61,6 @@ return [
         // Export
         ['name' => 'export#get_markdown', 'url' => '/export/markdown', 'verb' => 'GET'],
         ['name' => 'export#get_pdf', 'url' => '/export/pdf', 'verb' => 'GET'],
+        ['name' => 'export#get_csv', 'url' => '/export/csv', 'verb' => 'GET'],
     ]
 ];
