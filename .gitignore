@@ -4,33 +4,25 @@ js/*.js
 js/*.txt
 js/*.map
 build
+dist/
+dist-release/
+*.egg-info/
 .phpunit.result.cache
 .phpunit.cache
-
-# Editor files
+__pycache__/
+*.pyc
+.venv/
 
 .vscode/
 .idea/
 *.iml
-.claude/settings.local.json
-.claude/logs/
-.claude/.tool-counter
-CLAUDE.local.md
-.claude/dialogs/*.jsonl
-.claude/dialogs/INDEX.md
+.DS_Store
+Thumbs.db
+
 .env
 .env.local
 .env.production
-.DS_Store
-Thumbs.db
-node_modules/
-__pycache__/
-*.pyc
-.venv/
-dist/
-dist-release/
-build/
-*.egg-info/
+
 test-results/
 playwright-report/
 coverage/
@@ -38,12 +30,10 @@ coverage/
 *.db
 *.sqlite
 *.sqlite3
+
 .handoffs/local/
 .handoffs/*.local.md
 
-# >>> framework-public-ignore
-# Публичный репозиторий: рабочие файлы Claude Code Starter не коммитятся.
-# (CLAUDE.md — публичен и остаётся tracked; здесь его НЕТ намеренно.)
 .claude/
 CLAUDE.local.md
 manifest.md
@@ -51,4 +41,3 @@ methodology/
 scripts/
 SUBAGENT_EFFICIENCY_REPORT.md
 releases/
-# <<< framework-public-ignore
