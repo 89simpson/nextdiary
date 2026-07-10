@@ -6,7 +6,7 @@ on:
       - 'v.*'
 
 env:
-  APP_NAME: diary
+  APP_NAME: nextdiary
 
 jobs:
   build_and_publish:
