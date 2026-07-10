@@ -1,6 +1,7 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "CSV (for analysis)" : "CSV (untuk analisis)",
     "Diary" : "Diari",
     "A personal diary and health journal" : "Diari peribadi dan jurnal kesihatan",
     "Export" : "Eksport",

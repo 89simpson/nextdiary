@@ -1,6 +1,7 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "CSV (for analysis)" : "CSV (ანალიზისთვის)",
     "Diary" : "\u10d3\u10e6\u10d8\u10e3\u10e0\u10d8",
     "A personal diary and health journal" : "\u10de\u10d8\u10e0\u10d0\u10d3\u10d8 \u10d3\u10e6\u10d8\u10e3\u10e0\u10d8 \u10d3\u10d0 \u10ef\u10d0\u10dc\u10db\u10e0\u10d7\u10d4\u10da\u10dd\u10d1\u10d8\u10e1 \u10df\u10e3\u10e0\u10dc\u10d0\u10da\u10d8",
     "Export" : "\u10d4\u10e5\u10e1\u10de\u10dd\u10e0\u10e2\u10d8",
