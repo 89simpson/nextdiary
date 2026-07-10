@@ -44,6 +44,22 @@ class SymptomMapper extends QBMapper
     }
 
     /**
+     * Find a symptom by its ID, scoped to the owner.
+     *
+     * @throws Exception
+     */
+    public function findByIdAndUser(string $uid, int $id): Symptom
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($id)))
+            ->andWhere($qb->expr()->eq('uid', $qb->createNamedParameter($uid)));
+
+        return $this->findEntity($qb);
+    }
+
+    /**
      * @throws Exception
      */
     public function findOrCreate(string $uid, string $name): Symptom

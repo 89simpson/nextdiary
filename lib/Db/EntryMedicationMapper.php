@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Db;
 
 use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\Exception;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
 class EntryMedicationMapper extends QBMapper
@@ -116,5 +117,45 @@ class EntryMedicationMapper extends QBMapper
         $em->setEntryId($entryId);
         $em->setMedicationId($medicationId);
         $this->insert($em);
+    }
+
+    /**
+     * Move all entry associations from one medication to another.
+     *
+     * Rows that would collide with an existing association on the target medication
+     * are removed first, then the remaining rows are re-pointed to the target.
+     *
+     * @throws Exception
+     */
+    public function reassign(int $fromId, int $toId): void
+    {
+        // Entries already associated with the target medication
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('entry_id')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('medication_id', $qb->createNamedParameter($toId, IQueryBuilder::PARAM_INT)));
+
+        $result = $qb->executeQuery();
+        $existing = [];
+        while ($row = $result->fetch()) {
+            $existing[] = (int) $row['entry_id'];
+        }
+        $result->closeCursor();
+
+        // Drop source rows that would become duplicates on the target medication
+        if (!empty($existing)) {
+            $deleteQb = $this->db->getQueryBuilder();
+            $deleteQb->delete($this->getTableName())
+                ->where($deleteQb->expr()->eq('medication_id', $deleteQb->createNamedParameter($fromId, IQueryBuilder::PARAM_INT)))
+                ->andWhere($deleteQb->expr()->in('entry_id', $deleteQb->createNamedParameter($existing, IQueryBuilder::PARAM_INT_ARRAY)));
+            $deleteQb->executeStatement();
+        }
+
+        // Re-point the remaining associations to the target medication
+        $updateQb = $this->db->getQueryBuilder();
+        $updateQb->update($this->getTableName())
+            ->set('medication_id', $updateQb->createNamedParameter($toId, IQueryBuilder::PARAM_INT))
+            ->where($updateQb->expr()->eq('medication_id', $updateQb->createNamedParameter($fromId, IQueryBuilder::PARAM_INT)));
+        $updateQb->executeStatement();
     }
 }

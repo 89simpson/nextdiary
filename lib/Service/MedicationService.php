@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Service;
 
 use OCA\NextDiary\Db\EntryMedicationMapper;
 use OCA\NextDiary\Db\MedicationMapper;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
 
 class MedicationService
@@ -81,6 +82,38 @@ class MedicationService
     public function getEntryIdsByMedication(int $medicationId, int $limit = 50, int $offset = 0): array
     {
         return $this->entryMedicationMapper->findEntryIdsByMedication($medicationId, $limit, $offset);
+    }
+
+    /**
+     * Rename a medication. If a medication with the new name already exists, merge into it.
+     *
+     * @return array Array of ['id' => int, 'name' => string, 'category' => string|null, 'count' => int]
+     * @throws Exception
+     * @throws DoesNotExistException When the medication does not exist or is not owned by the user
+     * @throws \InvalidArgumentException When the new name is empty
+     */
+    public function renameMedication(string $uid, int $id, string $newName): array
+    {
+        $newName = trim($newName);
+        if ($newName === '') {
+            throw new \InvalidArgumentException('empty name');
+        }
+
+        $medication = $this->medicationMapper->findByIdAndUser($uid, $id);
+        if ($medication->getMedicationName() === $newName) {
+            return $this->getMedicationCloud($uid);
+        }
+
+        try {
+            $existing = $this->medicationMapper->findByName($uid, $newName);
+            $this->entryMedicationMapper->reassign($id, $existing->getId());
+            $this->medicationMapper->delete($medication);
+        } catch (DoesNotExistException $e) {
+            $medication->setMedicationName($newName);
+            $this->medicationMapper->update($medication);
+        }
+
+        return $this->getMedicationCloud($uid);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Service;
 
 use OCA\NextDiary\Db\EntryTagMapper;
 use OCA\NextDiary\Db\TagMapper;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
 
 class TagService
@@ -107,6 +108,38 @@ class TagService
         $this->tagMapper->deleteUnusedTags($uid);
 
         return $result;
+    }
+
+    /**
+     * Rename a tag. If a tag with the new name already exists, merge into it.
+     *
+     * @return array Array of ['id' => int, 'name' => string, 'count' => int]
+     * @throws Exception
+     * @throws DoesNotExistException When the tag does not exist or is not owned by the user
+     * @throws \InvalidArgumentException When the new name is empty
+     */
+    public function renameTag(string $uid, int $id, string $newName): array
+    {
+        $newName = trim(mb_strtolower($newName));
+        if ($newName === '') {
+            throw new \InvalidArgumentException('empty name');
+        }
+
+        $tag = $this->tagMapper->findByIdAndUser($uid, $id);
+        if ($tag->getTagName() === $newName) {
+            return $this->getTagCloud($uid);
+        }
+
+        try {
+            $existing = $this->tagMapper->findByName($uid, $newName);
+            $this->entryTagMapper->reassign($id, $existing->getId());
+            $this->tagMapper->delete($tag);
+        } catch (DoesNotExistException $e) {
+            $tag->setTagName($newName);
+            $this->tagMapper->update($tag);
+        }
+
+        return $this->getTagCloud($uid);
     }
 
     /**

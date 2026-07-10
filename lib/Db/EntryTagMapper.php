@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Db;
 
 use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\Exception;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
 class EntryTagMapper extends QBMapper
@@ -147,5 +148,45 @@ class EntryTagMapper extends QBMapper
         $entryTag->setEntryId($entryId);
         $entryTag->setTagId($tagId);
         $this->insert($entryTag);
+    }
+
+    /**
+     * Move all entry associations from one tag to another.
+     *
+     * Rows that would collide with an existing association on the target tag
+     * are removed first, then the remaining rows are re-pointed to the target.
+     *
+     * @throws Exception
+     */
+    public function reassign(int $fromId, int $toId): void
+    {
+        // Entries already associated with the target tag
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('entry_id')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('tag_id', $qb->createNamedParameter($toId, IQueryBuilder::PARAM_INT)));
+
+        $result = $qb->executeQuery();
+        $existing = [];
+        while ($row = $result->fetch()) {
+            $existing[] = (int) $row['entry_id'];
+        }
+        $result->closeCursor();
+
+        // Drop source rows that would become duplicates on the target tag
+        if (!empty($existing)) {
+            $deleteQb = $this->db->getQueryBuilder();
+            $deleteQb->delete($this->getTableName())
+                ->where($deleteQb->expr()->eq('tag_id', $deleteQb->createNamedParameter($fromId, IQueryBuilder::PARAM_INT)))
+                ->andWhere($deleteQb->expr()->in('entry_id', $deleteQb->createNamedParameter($existing, IQueryBuilder::PARAM_INT_ARRAY)));
+            $deleteQb->executeStatement();
+        }
+
+        // Re-point the remaining associations to the target tag
+        $updateQb = $this->db->getQueryBuilder();
+        $updateQb->update($this->getTableName())
+            ->set('tag_id', $updateQb->createNamedParameter($toId, IQueryBuilder::PARAM_INT))
+            ->where($updateQb->expr()->eq('tag_id', $updateQb->createNamedParameter($fromId, IQueryBuilder::PARAM_INT)));
+        $updateQb->executeStatement();
     }
 }

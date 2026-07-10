@@ -8,8 +8,46 @@
 					<ArrowLeft :size="20" />
 				</template>
 			</NcButton>
-			<h2>{{ tagName }}</h2>
+			<template v-if="isEditing">
+				<input ref="renameInput"
+					v-model="editName"
+					type="text"
+					class="rename-input"
+					:disabled="isSaving"
+					@keyup.enter="saveRename"
+					@keyup.esc="cancelEdit">
+				<NcButton type="tertiary"
+					:aria-label="t('nextdiary', 'Save')"
+					:disabled="isSaving"
+					@click="saveRename">
+					<template #icon>
+						<Check :size="20" />
+					</template>
+				</NcButton>
+				<NcButton type="tertiary"
+					:aria-label="t('nextdiary', 'Cancel')"
+					:disabled="isSaving"
+					@click="cancelEdit">
+					<template #icon>
+						<Close :size="20" />
+					</template>
+				</NcButton>
+			</template>
+			<template v-else>
+				<h2>{{ tagName }}</h2>
+				<NcButton v-if="tagName"
+					type="tertiary"
+					:aria-label="t('nextdiary', 'Rename')"
+					@click="startEdit">
+					<template #icon>
+						<Pencil :size="20" />
+					</template>
+				</NcButton>
+			</template>
 		</div>
+		<p v-if="renameError" class="rename-error">
+			{{ renameError }}
+		</p>
 		<div v-if="isLoading" class="tag-loading">
 			<i class="fa fa-spinner fa-spin fa-3x" />
 		</div>
@@ -45,13 +83,16 @@
 import { NcButton, NcEmptyContent } from '@nextcloud/vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
 import TagIcon from 'vue-material-design-icons/Tag'
+import Pencil from 'vue-material-design-icons/Pencil'
+import Check from 'vue-material-design-icons/Check'
+import Close from 'vue-material-design-icons/Close'
 import moment from '@nextcloud/moment'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 
 export default {
 	name: 'TagEntriesView',
-	components: { NcButton, NcEmptyContent, ArrowLeft, TagIcon },
+	components: { NcButton, NcEmptyContent, ArrowLeft, TagIcon, Pencil, Check, Close },
 	props: {
 		tagId: {
 			type: String,
@@ -63,6 +104,10 @@ export default {
 			entries: [],
 			tagName: '',
 			isLoading: false,
+			isEditing: false,
+			isSaving: false,
+			editName: '',
+			renameError: '',
 		}
 	},
 	watch: {
@@ -93,6 +138,57 @@ export default {
 		},
 		goBack() {
 			this.$router.push({ name: 'day', params: { date: moment().format('YYYY-MM-DD') } })
+		},
+		startEdit() {
+			this.editName = this.tagName
+			this.renameError = ''
+			this.isEditing = true
+			this.$nextTick(() => {
+				if (this.$refs.renameInput) {
+					this.$refs.renameInput.focus()
+					this.$refs.renameInput.select()
+				}
+			})
+		},
+		cancelEdit() {
+			this.isEditing = false
+			this.isSaving = false
+			this.editName = ''
+			this.renameError = ''
+		},
+		saveRename() {
+			if (this.isSaving) return
+			const newName = (this.editName || '').trim()
+			this.isSaving = true
+			this.renameError = ''
+			axios.put(generateUrl('apps/nextdiary/api/tag/' + this.tagId), { name: newName })
+				.then(response => {
+					this.isSaving = false
+					this.isEditing = false
+					this.editName = ''
+					this.$emit('entry-changed')
+					const cloud = response.data || []
+					const current = cloud.find(tag => tag.id === parseInt(this.tagId))
+					if (current) {
+						this.tagName = current.name
+						this.fetchEntries()
+						return
+					}
+					// The tag was merged into an existing one: follow it
+					const merged = cloud.find(tag => tag.name.toLowerCase() === newName.toLowerCase())
+					if (merged) {
+						this.$router.push({ name: 'tag-entries', params: { tagId: String(merged.id) } })
+					} else {
+						this.tagName = newName
+						this.fetchEntries()
+					}
+				})
+				.catch(error => {
+					this.isSaving = false
+					this.renameError = t('nextdiary', 'Could not rename')
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error renaming tag:', error)
+				})
 		},
 		openEntry(entry) {
 			this.$router.push({ name: 'entry', params: { id: String(entry.id) } })
@@ -137,6 +233,29 @@ export default {
 			margin: 0;
 			color: var(--color-primary);
 		}
+
+		.rename-input {
+			flex-grow: 1;
+			min-width: 0;
+			font-size: 20px;
+			font-weight: 700;
+			padding: 2px 8px;
+			border: 1px solid var(--color-border);
+			border-radius: 8px;
+			background-color: var(--color-main-background);
+			color: var(--color-main-text);
+			outline: none;
+
+			&:focus {
+				border-color: var(--color-primary);
+			}
+		}
+	}
+
+	.rename-error {
+		margin: -12px 0 20px;
+		color: var(--color-error, #e9322d);
+		font-size: 14px;
 	}
 
 	.tag-loading {

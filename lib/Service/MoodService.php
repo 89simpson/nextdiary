@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Service;
 
 use OCA\NextDiary\Db\EntrySymptomMapper;
 use OCA\NextDiary\Db\SymptomMapper;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
 
 class MoodService
@@ -118,6 +119,38 @@ class MoodService
     public function getEntryIdsBySymptom(int $symptomId, int $limit = 50, int $offset = 0): array
     {
         return $this->entrySymptomMapper->findEntryIdsBySymptom($symptomId, $limit, $offset);
+    }
+
+    /**
+     * Rename a symptom. If a symptom with the new name already exists, merge into it.
+     *
+     * @return array Array of ['id' => int, 'name' => string, 'category' => string|null, 'count' => int]
+     * @throws Exception
+     * @throws DoesNotExistException When the symptom does not exist or is not owned by the user
+     * @throws \InvalidArgumentException When the new name is empty
+     */
+    public function renameSymptom(string $uid, int $id, string $newName): array
+    {
+        $newName = trim($newName);
+        if ($newName === '') {
+            throw new \InvalidArgumentException('empty name');
+        }
+
+        $symptom = $this->symptomMapper->findByIdAndUser($uid, $id);
+        if ($symptom->getSymptomName() === $newName) {
+            return $this->getSymptomCloud($uid);
+        }
+
+        try {
+            $existing = $this->symptomMapper->findByName($uid, $newName);
+            $this->entrySymptomMapper->reassign($id, $existing->getId());
+            $this->symptomMapper->delete($symptom);
+        } catch (DoesNotExistException $e) {
+            $symptom->setSymptomName($newName);
+            $this->symptomMapper->update($symptom);
+        }
+
+        return $this->getSymptomCloud($uid);
     }
 
     /**

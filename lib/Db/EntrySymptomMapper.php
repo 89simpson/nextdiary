@@ -4,6 +4,7 @@ namespace OCA\NextDiary\Db;
 
 use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\Exception;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
 class EntrySymptomMapper extends QBMapper
@@ -116,5 +117,45 @@ class EntrySymptomMapper extends QBMapper
         $es->setEntryId($entryId);
         $es->setSymptomId($symptomId);
         $this->insert($es);
+    }
+
+    /**
+     * Move all entry associations from one symptom to another.
+     *
+     * Rows that would collide with an existing association on the target symptom
+     * are removed first, then the remaining rows are re-pointed to the target.
+     *
+     * @throws Exception
+     */
+    public function reassign(int $fromId, int $toId): void
+    {
+        // Entries already associated with the target symptom
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('entry_id')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('symptom_id', $qb->createNamedParameter($toId, IQueryBuilder::PARAM_INT)));
+
+        $result = $qb->executeQuery();
+        $existing = [];
+        while ($row = $result->fetch()) {
+            $existing[] = (int) $row['entry_id'];
+        }
+        $result->closeCursor();
+
+        // Drop source rows that would become duplicates on the target symptom
+        if (!empty($existing)) {
+            $deleteQb = $this->db->getQueryBuilder();
+            $deleteQb->delete($this->getTableName())
+                ->where($deleteQb->expr()->eq('symptom_id', $deleteQb->createNamedParameter($fromId, IQueryBuilder::PARAM_INT)))
+                ->andWhere($deleteQb->expr()->in('entry_id', $deleteQb->createNamedParameter($existing, IQueryBuilder::PARAM_INT_ARRAY)));
+            $deleteQb->executeStatement();
+        }
+
+        // Re-point the remaining associations to the target symptom
+        $updateQb = $this->db->getQueryBuilder();
+        $updateQb->update($this->getTableName())
+            ->set('symptom_id', $updateQb->createNamedParameter($toId, IQueryBuilder::PARAM_INT))
+            ->where($updateQb->expr()->eq('symptom_id', $updateQb->createNamedParameter($fromId, IQueryBuilder::PARAM_INT)));
+        $updateQb->executeStatement();
     }
 }

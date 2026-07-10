@@ -313,6 +313,29 @@ class PageController extends Controller
         }
     }
 
+    /**
+     * Rename a tag (merges into an existing tag if the name collides).
+     *
+     * @NoAdminRequired
+     */
+    public function renameTag(int $tagId, string $name): DataResponse
+    {
+        try {
+            return new DataResponse($this->tagService->renameTag($this->userId, $tagId, $name));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => 'invalid name'], Http::STATUS_BAD_REQUEST);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] renameTag failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'tagId' => $tagId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // ─── Mood/Symptom API endpoints (v0.0.4) ───
 
     /**
@@ -368,6 +391,29 @@ class PageController extends Controller
         }
     }
 
+    /**
+     * Rename a symptom (merges into an existing symptom if the name collides).
+     *
+     * @NoAdminRequired
+     */
+    public function renameSymptom(int $symptomId, string $name): DataResponse
+    {
+        try {
+            return new DataResponse($this->moodService->renameSymptom($this->userId, $symptomId, $name));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => 'invalid name'], Http::STATUS_BAD_REQUEST);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] renameSymptom failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'symptomId' => $symptomId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // ─── Medication API endpoints ───
 
     /**
@@ -415,6 +461,29 @@ class PageController extends Controller
             return new DataResponse($response);
         } catch (\Exception $e) {
             $this->logger->error('[NextDiary] getEntriesByMedication failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'medicationId' => $medicationId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Rename a medication (merges into an existing medication if the name collides).
+     *
+     * @NoAdminRequired
+     */
+    public function renameMedication(int $medicationId, string $name): DataResponse
+    {
+        try {
+            return new DataResponse($this->medicationService->renameMedication($this->userId, $medicationId, $name));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => 'invalid name'], Http::STATUS_BAD_REQUEST);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] renameMedication failed: ' . $e->getMessage(), [
                 'exception' => $e,
                 'userId' => $this->userId,
                 'medicationId' => $medicationId,
