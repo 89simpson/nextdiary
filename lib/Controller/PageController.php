@@ -368,7 +368,7 @@ class PageController extends Controller
         }
     }
 
-    // ─── Medication API endpoints (v0.0.5) ───
+    // ─── Medication API endpoints ───
 
     /**
      * Get all medications for the current user with entry counts.

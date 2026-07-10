@@ -34,12 +34,12 @@ return [
         ['name' => 'page#get_entries_by_symptom', 'url' => '/api/entries/symptom/{symptomId}', 'verb' => 'GET'],
         ['name' => 'page#index', 'url' => '/symptom/{symptomId}', 'verb' => 'GET', 'postfix' => 'symptomPage'],
 
-        // Medication API (v0.0.5)
+        // Medication API
         ['name' => 'page#get_medications', 'url' => '/api/medications', 'verb' => 'GET'],
         ['name' => 'page#get_entries_by_medication', 'url' => '/api/entries/medication/{medicationId}', 'verb' => 'GET'],
         ['name' => 'page#index', 'url' => '/medication/{medicationId}', 'verb' => 'GET', 'postfix' => 'medicationPage'],
 
-        // File API (v0.0.5)
+        // File API
         ['name' => 'file#upload', 'url' => '/api/entry/{entryId}/files', 'verb' => 'POST'],
         ['name' => 'file#list_files', 'url' => '/api/entry/{entryId}/files', 'verb' => 'GET'],
         ['name' => 'file#delete_file', 'url' => '/api/entry/{entryId}/files/{fileId}', 'verb' => 'DELETE'],
