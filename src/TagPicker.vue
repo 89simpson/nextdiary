@@ -28,7 +28,7 @@
 					type="text"
 					class="picker-input"
 					:placeholder="t('nextdiary', 'New tag...')"
-					@keydown.enter.prevent="addNew"
+					@keydown.enter="addNew"
 					@input="onInput">
 				<ul v-if="suggestions.length > 0" class="picker-suggestions">
 					<li v-for="s in suggestions"
@@ -101,7 +101,9 @@ export default {
 				this.$emit('input', [...this.selected, name])
 			}
 		},
-		addNew() {
+		addNew(event) {
+			if (event && event.isComposing) return
+			if (event) event.preventDefault()
 			const name = this.inputValue.trim().toLowerCase()
 			if (!name) return
 			if (!this.isSelected(name)) {
