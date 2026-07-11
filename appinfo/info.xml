@@ -21,7 +21,7 @@ A personal diary and health journal for Nextcloud.
 * **Configurable sidebar** - show/hide sections, reorder tags/symptoms/medications
 * **Export** - download entries as Markdown or PDF (single entry, day, date range, or all)
 * **Localization** - 88 languages with full translations included]]></description>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <licence>AGPL-3.0-or-later</licence>
     <author homepage="https://github.com/89simpson">89simpson</author>
     <namespace>NextDiary</namespace>

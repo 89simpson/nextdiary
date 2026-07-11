@@ -1,6 +1,6 @@
 {
   "name": "nextdiary",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "NextDiary - A personal diary and health journal",
   "main": "js/index.js",
   "directories": {
