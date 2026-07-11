@@ -11,6 +11,8 @@ env:
 jobs:
   build_and_publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     name: "Release: build, sign and upload the app"
     strategy:
       matrix:
