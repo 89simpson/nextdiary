@@ -3,20 +3,19 @@ name: Build and publish app release
 on:
   push:
     tags:
-      - 'v.*'
+      - 'v*'
 
 env:
   APP_NAME: nextdiary
 
 jobs:
   build_and_publish:
-    environment: release
     runs-on: ubuntu-latest
     name: "Release: build, sign and upload the app"
     strategy:
       matrix:
-        php-versions: [ '7.3' ]
-        nextcloud: [ 'stable22' ]
+        php-versions: [ '8.1' ]
+        nextcloud: [ 'stable28' ]
         database: [ 'sqlite' ]
     steps:
       - name: Checkout
@@ -28,6 +27,11 @@ jobs:
           php-version: ${{ matrix.php-versions }}
           extensions: pdo_sqlite,pdo_mysql,pdo_pgsql,gd,zip
           coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - name: Set up server Sqlite
         uses: SMillerDev/nextcloud-actions/setup-nextcloud@fae87e29aa7cdf1ea0b8033c67f60e75b10be2cd
