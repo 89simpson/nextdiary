@@ -4,17 +4,18 @@ A personal diary and health journal for Nextcloud.
 
 ## Features
 
-- **Markdown editor** — write diary entries with full Markdown support
-- **Multiple entries per day** — create several entries for the same date
-- **Mood & wellbeing tracking** — rate your mood and wellbeing on a 1-5 scale
-- **Tags** — organize entries with tags, auto-extracted from #hashtags
-- **Symptoms** — track health symptoms across entries
-- **Medications** — log medications linked to diary entries
-- **File attachments** — attach files to entries, stored in Nextcloud
-- **Calendar navigation** — jump to any date, highlighted days with entries
-- **Configurable sidebar** — show/hide sections, reorder tags/symptoms/medications
-- **Export** — download entries as Markdown or PDF (single entry, day, date range, or all)
-- **Localization** — 88 languages with full translations included
+* **Markdown editor** - write diary entries with full Markdown support
+* **Multiple entries per day** - create several entries for the same date
+* **Mood & wellbeing tracking** - rate your mood and wellbeing on a 1-5 scale
+* **Tags** - organize entries with tags, auto-extracted from #hashtags
+* **Symptoms** - track health symptoms across entries
+* **Medications** - log medications linked to diary entries
+* **Manage your lists** - rename or delete tags, symptoms and medications at any time
+* **File attachments** - attach files to entries, stored in Nextcloud
+* **Calendar navigation** - jump to any date, highlighted days with entries
+* **Configurable sidebar** - show/hide sections, reorder tags/symptoms/medications
+* **Export** - download entries as Markdown, PDF, or analytical CSV (single entry, day, date range, or all)
+* **Localization** - 88 languages with full translations included
 
 ## Requirements
 
