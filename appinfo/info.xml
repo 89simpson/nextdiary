@@ -4,9 +4,7 @@
     <id>nextdiary</id>
     <name>NextDiary</name>
     <summary>A personal diary and health journal</summary>
-    <description><![CDATA[# NextDiary
-
-A personal diary and health journal for Nextcloud.
+    <description><![CDATA[A personal diary and health journal for Nextcloud.
 
 ## Features
 
@@ -16,10 +14,11 @@ A personal diary and health journal for Nextcloud.
 * **Tags** - organize entries with tags, auto-extracted from #hashtags
 * **Symptoms** - track health symptoms across entries
 * **Medications** - log medications linked to diary entries
+* **Manage your lists** - rename or delete tags, symptoms and medications at any time
 * **File attachments** - attach files to entries, stored in Nextcloud
 * **Calendar navigation** - jump to any date, highlighted days with entries
 * **Configurable sidebar** - show/hide sections, reorder tags/symptoms/medications
-* **Export** - download entries as Markdown or PDF (single entry, day, date range, or all)
+* **Export** - download entries as Markdown, PDF, or analytical CSV (single entry, day, date range, or all)
 * **Localization** - 88 languages with full translations included]]></description>
     <version>1.0.4</version>
     <licence>AGPL-3.0-or-later</licence>
