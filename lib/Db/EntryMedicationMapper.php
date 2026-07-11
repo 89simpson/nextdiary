@@ -158,4 +158,17 @@ class EntryMedicationMapper extends QBMapper
             ->where($updateQb->expr()->eq('medication_id', $updateQb->createNamedParameter($fromId, IQueryBuilder::PARAM_INT)));
         $updateQb->executeStatement();
     }
+
+    /**
+     * Remove all associations for a given medication.
+     *
+     * @throws Exception
+     */
+    public function deleteByRefId(int $id): void
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where($qb->expr()->eq('medication_id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)));
+        $qb->executeStatement();
+    }
 }

@@ -189,4 +189,17 @@ class EntryTagMapper extends QBMapper
             ->where($updateQb->expr()->eq('tag_id', $updateQb->createNamedParameter($fromId, IQueryBuilder::PARAM_INT)));
         $updateQb->executeStatement();
     }
+
+    /**
+     * Remove all associations for a given tag.
+     *
+     * @throws Exception
+     */
+    public function deleteByRefId(int $id): void
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where($qb->expr()->eq('tag_id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)));
+        $qb->executeStatement();
+    }
 }

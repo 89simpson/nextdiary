@@ -143,6 +143,22 @@ class TagService
     }
 
     /**
+     * Delete a tag entirely, removing it from all entries.
+     *
+     * @return array Array of ['id' => int, 'name' => string, 'count' => int]
+     * @throws Exception
+     * @throws DoesNotExistException When the tag does not exist or is not owned by the user
+     */
+    public function deleteTag(string $uid, int $id): array
+    {
+        $tag = $this->tagMapper->findByIdAndUser($uid, $id);
+        $this->entryTagMapper->deleteByRefId($id);
+        $this->tagMapper->delete($tag);
+
+        return $this->getTagCloud($uid);
+    }
+
+    /**
      * Remove all tags from an entry and clean up unused tags.
      *
      * @throws Exception

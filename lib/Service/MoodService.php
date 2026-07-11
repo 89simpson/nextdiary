@@ -154,6 +154,22 @@ class MoodService
     }
 
     /**
+     * Delete a symptom entirely, removing it from all entries.
+     *
+     * @return array Array of ['id' => int, 'name' => string, 'category' => string|null, 'count' => int]
+     * @throws Exception
+     * @throws DoesNotExistException When the symptom does not exist or is not owned by the user
+     */
+    public function deleteSymptom(string $uid, int $id): array
+    {
+        $symptom = $this->symptomMapper->findByIdAndUser($uid, $id);
+        $this->entrySymptomMapper->deleteByRefId($id);
+        $this->symptomMapper->delete($symptom);
+
+        return $this->getSymptomCloud($uid);
+    }
+
+    /**
      * Remove all symptoms from an entry and clean up unused symptoms.
      *
      * @throws Exception

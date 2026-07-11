@@ -336,6 +336,27 @@ class PageController extends Controller
         }
     }
 
+    /**
+     * Delete a tag, removing it from all entries.
+     *
+     * @NoAdminRequired
+     */
+    public function deleteTag(int $tagId): DataResponse
+    {
+        try {
+            return new DataResponse($this->tagService->deleteTag($this->userId, $tagId));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] deleteTag failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'tagId' => $tagId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // ─── Mood/Symptom API endpoints (v0.0.4) ───
 
     /**
@@ -414,6 +435,27 @@ class PageController extends Controller
         }
     }
 
+    /**
+     * Delete a symptom, removing it from all entries.
+     *
+     * @NoAdminRequired
+     */
+    public function deleteSymptom(int $symptomId): DataResponse
+    {
+        try {
+            return new DataResponse($this->moodService->deleteSymptom($this->userId, $symptomId));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] deleteSymptom failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'symptomId' => $symptomId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // ─── Medication API endpoints ───
 
     /**
@@ -484,6 +526,27 @@ class PageController extends Controller
             return new DataResponse(['error' => 'invalid name'], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {
             $this->logger->error('[NextDiary] renameMedication failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'medicationId' => $medicationId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Delete a medication, removing it from all entries.
+     *
+     * @NoAdminRequired
+     */
+    public function deleteMedication(int $medicationId): DataResponse
+    {
+        try {
+            return new DataResponse($this->medicationService->deleteMedication($this->userId, $medicationId));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] deleteMedication failed: ' . $e->getMessage(), [
                 'exception' => $e,
                 'userId' => $this->userId,
                 'medicationId' => $medicationId,

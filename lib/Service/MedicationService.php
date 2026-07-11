@@ -117,6 +117,22 @@ class MedicationService
     }
 
     /**
+     * Delete a medication entirely, removing it from all entries.
+     *
+     * @return array Array of ['id' => int, 'name' => string, 'category' => string|null, 'count' => int]
+     * @throws Exception
+     * @throws DoesNotExistException When the medication does not exist or is not owned by the user
+     */
+    public function deleteMedication(string $uid, int $id): array
+    {
+        $medication = $this->medicationMapper->findByIdAndUser($uid, $id);
+        $this->entryMedicationMapper->deleteByRefId($id);
+        $this->medicationMapper->delete($medication);
+
+        return $this->getMedicationCloud($uid);
+    }
+
+    /**
      * Remove all medications from an entry and clean up unused medications.
      *
      * @throws Exception

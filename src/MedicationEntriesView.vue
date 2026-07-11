@@ -43,6 +43,14 @@
 						<Pencil :size="20" />
 					</template>
 				</NcButton>
+				<NcButton v-if="medicationName"
+					type="tertiary"
+					:aria-label="t('nextdiary', 'Delete')"
+					@click="confirmDelete">
+					<template #icon>
+						<Delete :size="20" />
+					</template>
+				</NcButton>
 			</template>
 		</div>
 		<p v-if="renameError" class="rename-error">
@@ -89,13 +97,14 @@ import HeartPulse from 'vue-material-design-icons/HeartPulse'
 import Pencil from 'vue-material-design-icons/Pencil'
 import Check from 'vue-material-design-icons/Check'
 import Close from 'vue-material-design-icons/Close'
+import Delete from 'vue-material-design-icons/Delete'
 import moment from '@nextcloud/moment'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 
 export default {
 	name: 'MedicationEntriesView',
-	components: { NcButton, NcEmptyContent, ArrowLeft, HeartPulse, Pencil, Check, Close },
+	components: { NcButton, NcEmptyContent, ArrowLeft, HeartPulse, Pencil, Check, Close, Delete },
 	props: {
 		medicationId: {
 			type: String,
@@ -192,6 +201,26 @@ export default {
 					this.renameError = t('nextdiary', 'Could not rename')
 					// eslint-disable-next-line no-console
 					console.error('[NextDiary] Error renaming medication:', error)
+				})
+		},
+		confirmDelete() {
+			if (this.isSaving) return
+			if (!confirm(t('nextdiary', 'Delete this medication? It will be removed from all entries.'))) {
+				return
+			}
+			this.isSaving = true
+			this.renameError = ''
+			axios.delete(generateUrl('apps/nextdiary/api/medication/' + this.medicationId))
+				.then(() => {
+					this.isSaving = false
+					this.$emit('entry-changed')
+					this.goBack()
+				})
+				.catch(error => {
+					this.isSaving = false
+					this.renameError = t('nextdiary', 'Could not delete')
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error deleting medication:', error)
 				})
 		},
 		openEntry(entry) {
