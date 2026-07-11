@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "重命名",
+    "Save" : "保存",
+    "Could not rename" : "无法重命名",
+    "Could not delete" : "无法删除",
+    "Delete this tag?" : "删除此标签？",
+    "Delete this symptom?" : "删除此症状？",
+    "Delete this medication?" : "删除此药物？",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "此标签用于{count}个条目。删除并从这些条目中移除？条目本身不会被删除。",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "此症状用于{count}个条目。删除并从这些条目中移除？条目本身不会被删除。",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "此药物用于{count}个条目。删除并从这些条目中移除？条目本身不会被删除。",
     "CSV (for analysis)" : "CSV (用于分析)",
     "Diary" : "日记",
     "A personal diary and health journal" : "个人日记和健康日志",

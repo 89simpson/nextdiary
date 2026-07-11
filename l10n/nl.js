@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Hernoemen",
+    "Save" : "Opslaan",
+    "Could not rename" : "Hernoemen mislukt",
+    "Could not delete" : "Verwijderen mislukt",
+    "Delete this tag?" : "Dit label verwijderen?",
+    "Delete this symptom?" : "Dit symptoom verwijderen?",
+    "Delete this medication?" : "Deze medicatie verwijderen?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Dit label wordt gebruikt in {count} notities. Verwijderen en uit die notities halen? De notities zelf worden niet verwijderd.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Dit symptoom wordt gebruikt in {count} notities. Verwijderen en uit die notities halen? De notities zelf worden niet verwijderd.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Deze medicatie wordt gebruikt in {count} notities. Verwijderen en uit die notities halen? De notities zelf worden niet verwijderd.",
     "CSV (for analysis)" : "CSV (voor analyse)",
     "Diary" : "Dagboek",
     "A personal diary and health journal" : "Een persoonlijk dagboek en gezondheidsjournaal",

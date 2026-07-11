@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Redenumește",
+    "Save" : "Salvează",
+    "Could not rename" : "Nu s-a putut redenumi",
+    "Could not delete" : "Nu s-a putut șterge",
+    "Delete this tag?" : "Ștergeți această etichetă?",
+    "Delete this symptom?" : "Ștergeți acest simptom?",
+    "Delete this medication?" : "Ștergeți acest medicament?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Această etichetă este folosită în {count} înregistrări. O ștergeți și o eliminați din acele înregistrări? Înregistrările în sine nu vor fi șterse.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Acest simptom este folosit în {count} înregistrări. Îl ștergeți și îl eliminați din acele înregistrări? Înregistrările în sine nu vor fi șterse.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Acest medicament este folosit în {count} înregistrări. Îl ștergeți și îl eliminați din acele înregistrări? Înregistrările în sine nu vor fi șterse.",
     "CSV (for analysis)" : "CSV (pentru analiză)",
     "Diary" : "Jurnal",
     "A personal diary and health journal" : "Un jurnal personal și un jurnal de sănătate",

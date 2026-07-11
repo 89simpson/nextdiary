@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Nimeä uudelleen",
+    "Save" : "Tallenna",
+    "Could not rename" : "Nimeäminen epäonnistui",
+    "Could not delete" : "Poistaminen epäonnistui",
+    "Delete this tag?" : "Poistetaanko tämä tunniste?",
+    "Delete this symptom?" : "Poistetaanko tämä oire?",
+    "Delete this medication?" : "Poistetaanko tämä lääke?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Tätä tunnistetta käytetään {count} merkinnässä. Poistetaanko se ja poistetaanko se näistä merkinnöistä? Itse merkintöjä ei poisteta.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Tätä oiretta käytetään {count} merkinnässä. Poistetaanko se ja poistetaanko se näistä merkinnöistä? Itse merkintöjä ei poisteta.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Tätä lääkettä käytetään {count} merkinnässä. Poistetaanko se ja poistetaanko se näistä merkinnöistä? Itse merkintöjä ei poisteta.",
     "CSV (for analysis)" : "CSV (analyysia varten)",
     "Diary" : "Päiväkirja",
     "A personal diary and health journal" : "Henkilökohtainen päiväkirja ja terveyspäiväkirja",

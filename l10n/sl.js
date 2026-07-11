@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Preimenuj",
+    "Save" : "Shrani",
+    "Could not rename" : "Preimenovanje ni uspelo",
+    "Could not delete" : "Brisanje ni uspelo",
+    "Delete this tag?" : "Izbrišem to oznako?",
+    "Delete this symptom?" : "Izbrišem ta simptom?",
+    "Delete this medication?" : "Izbrišem to zdravilo?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Ta oznaka je uporabljena v {count} vnosih. Ali jo želite izbrisati in odstraniti iz teh vnosov? Vnosi sami ne bodo izbrisani.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Ta simptom je uporabljen v {count} vnosih. Ali ga želite izbrisati in odstraniti iz teh vnosov? Vnosi sami ne bodo izbrisani.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "To zdravilo je uporabljeno v {count} vnosih. Ali ga želite izbrisati in odstraniti iz teh vnosov? Vnosi sami ne bodo izbrisani.",
     "CSV (for analysis)" : "CSV (za analizo)",
     "Diary" : "Dnevnik",
     "A personal diary and health journal" : "Osebni dnevnik in zdravstveni zapis",

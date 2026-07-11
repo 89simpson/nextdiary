@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "שינוי שם",
+    "Save" : "שמירה",
+    "Could not rename" : "שינוי השם נכשל",
+    "Could not delete" : "המחיקה נכשלה",
+    "Delete this tag?" : "למחוק את התגית הזו?",
+    "Delete this symptom?" : "למחוק את התסמין הזה?",
+    "Delete this medication?" : "למחוק את התרופה הזו?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "התגית הזו נמצאת בשימוש ב-{count} רשומות. למחוק אותה ולהסיר אותה מהרשומות האלה? הרשומות עצמן לא יימחקו.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "התסמין הזה נמצא בשימוש ב-{count} רשומות. למחוק אותו ולהסיר אותו מהרשומות האלה? הרשומות עצמן לא יימחקו.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "התרופה הזו נמצאת בשימוש ב-{count} רשומות. למחוק אותה ולהסיר אותה מהרשומות האלה? הרשומות עצמן לא יימחקו.",
     "CSV (for analysis)" : "CSV (לניתוח)",
     "Diary" : "יומן",
     "A personal diary and health journal" : "יומן אישי ויומן בריאות",

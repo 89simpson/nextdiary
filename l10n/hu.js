@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Átnevezés",
+    "Save" : "Mentés",
+    "Could not rename" : "Az átnevezés sikertelen",
+    "Could not delete" : "A törlés sikertelen",
+    "Delete this tag?" : "Törli ezt a címkét?",
+    "Delete this symptom?" : "Törli ezt a tünetet?",
+    "Delete this medication?" : "Törli ezt a gyógyszert?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Ezt a címkét {count} bejegyzés használja. Törli, és eltávolítja ezekből a bejegyzésekből? Maguk a bejegyzések nem törlődnek.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Ezt a tünetet {count} bejegyzés használja. Törli, és eltávolítja ezekből a bejegyzésekből? Maguk a bejegyzések nem törlődnek.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Ezt a gyógyszert {count} bejegyzés használja. Törli, és eltávolítja ezekből a bejegyzésekből? Maguk a bejegyzések nem törlődnek.",
     "CSV (for analysis)" : "CSV (elemzéshez)",
     "Diary" : "Napló",
     "A personal diary and health journal" : "Személyes napló és egészségügyi napló",

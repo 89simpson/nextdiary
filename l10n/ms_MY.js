@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Namakan semula",
+    "Save" : "Simpan",
+    "Could not rename" : "Tidak dapat menamakan semula",
+    "Could not delete" : "Tidak dapat memadam",
+    "Delete this tag?" : "Padam tag ini?",
+    "Delete this symptom?" : "Padam simptom ini?",
+    "Delete this medication?" : "Padam ubat ini?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Tag ini digunakan dalam {count} catatan. Padam dan buang daripada catatan tersebut? Catatan itu sendiri tidak akan dipadam.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Simptom ini digunakan dalam {count} catatan. Padam dan buang daripada catatan tersebut? Catatan itu sendiri tidak akan dipadam.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Ubat ini digunakan dalam {count} catatan. Padam dan buang daripada catatan tersebut? Catatan itu sendiri tidak akan dipadam.",
     "CSV (for analysis)" : "CSV (untuk analisis)",
     "Diary" : "Diari",
     "A personal diary and health journal" : "Diari peribadi dan jurnal kesihatan",

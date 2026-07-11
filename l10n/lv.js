@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Pārdēvēt",
+    "Save" : "Saglabāt",
+    "Could not rename" : "Neizdevās pārdēvēt",
+    "Could not delete" : "Neizdevās izdzēst",
+    "Delete this tag?" : "Dzēst šo birku?",
+    "Delete this symptom?" : "Dzēst šo simptomu?",
+    "Delete this medication?" : "Dzēst šo medikamentu?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Šī birka tiek izmantota {count} ierakstos. Vai to dzēst un noņemt no šiem ierakstiem? Paši ieraksti netiks dzēsti.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Šis simptoms tiek izmantots {count} ierakstos. Vai to dzēst un noņemt no šiem ierakstiem? Paši ieraksti netiks dzēsti.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Šis medikaments tiek izmantots {count} ierakstos. Vai to dzēst un noņemt no šiem ierakstiem? Paši ieraksti netiks dzēsti.",
     "CSV (for analysis)" : "CSV (analīzei)",
     "Diary" : "Dienasgramata",
     "A personal diary and health journal" : "Personiga dienasgramata un veselibas zurnals",

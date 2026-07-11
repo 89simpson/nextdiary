@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Nomini o'zgartirish",
+    "Save" : "Saqlash",
+    "Could not rename" : "Nomini o'zgartirib bo'lmadi",
+    "Could not delete" : "O'chirib bo'lmadi",
+    "Delete this tag?" : "Bu teg o'chirilsinmi?",
+    "Delete this symptom?" : "Bu alomat o'chirilsinmi?",
+    "Delete this medication?" : "Bu dori o'chirilsinmi?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Bu teg {count} ta yozuvda ishlatilgan. U o'chirilib, o'sha yozuvlardan olib tashlansinmi? Yozuvlarning o'zi o'chirilmaydi.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Bu alomat {count} ta yozuvda ishlatilgan. U o'chirilib, o'sha yozuvlardan olib tashlansinmi? Yozuvlarning o'zi o'chirilmaydi.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Bu dori {count} ta yozuvda ishlatilgan. U o'chirilib, o'sha yozuvlardan olib tashlansinmi? Yozuvlarning o'zi o'chirilmaydi.",
     "CSV (for analysis)" : "CSV (tahlil uchun)",
     "Diary" : "Kundalik",
     "A personal diary and health journal" : "Shaxsiy kundalik va salomatlik jurnali",

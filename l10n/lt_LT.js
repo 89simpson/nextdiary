@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Pervadinti",
+    "Save" : "Išsaugoti",
+    "Could not rename" : "Nepavyko pervadinti",
+    "Could not delete" : "Nepavyko ištrinti",
+    "Delete this tag?" : "Ištrinti šią žymą?",
+    "Delete this symptom?" : "Ištrinti šį simptomą?",
+    "Delete this medication?" : "Ištrinti šį vaistą?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Ši žyma naudojama {count} įrašuose. Ištrinti ją ir pašalinti iš tų įrašų? Patys įrašai nebus ištrinti.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Šis simptomas naudojamas {count} įrašuose. Ištrinti jį ir pašalinti iš tų įrašų? Patys įrašai nebus ištrinti.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Šis vaistas naudojamas {count} įrašuose. Ištrinti jį ir pašalinti iš tų įrašų? Patys įrašai nebus ištrinti.",
     "CSV (for analysis)" : "CSV (analizei)",
     "Diary" : "Dienorastis",
     "A personal diary and health journal" : "Asmeninis dienorastis ir sveikatos zurnalas",

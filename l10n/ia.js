@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Renominar",
+    "Save" : "Salveguardar",
+    "Could not rename" : "Non poteva renominar",
+    "Could not delete" : "Non poteva deler",
+    "Delete this tag?" : "Deler iste etiquetta?",
+    "Delete this symptom?" : "Deler iste symptoma?",
+    "Delete this medication?" : "Deler iste medicamento?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Iste etiquetta es usate in {count} entratas. Deler lo e remover lo de iste entratas? Le entratas ipse non essera delite.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Iste symptoma es usate in {count} entratas. Deler lo e remover lo de iste entratas? Le entratas ipse non essera delite.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Iste medicamento es usate in {count} entratas. Deler lo e remover lo de iste entratas? Le entratas ipse non essera delite.",
     "CSV (for analysis)" : "CSV (for analysis)",
     "Diary" : "Diario",
     "A personal diary and health journal" : "Un diario personal e un jornal de sanitate",

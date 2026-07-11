@@ -205,7 +205,11 @@ export default {
 		},
 		confirmDelete() {
 			if (this.isSaving) return
-			if (!confirm(t('nextdiary', 'Delete this medication? It will be removed from all entries.'))) {
+			const count = this.entries.length
+			const message = count > 0
+				? t('nextdiary', 'This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted.', { count })
+				: t('nextdiary', 'Delete this medication?')
+			if (!confirm(message)) {
 				return
 			}
 			this.isSaving = true

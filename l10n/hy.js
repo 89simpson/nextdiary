@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Rename",
+    "Save" : "Save",
+    "Could not rename" : "Could not rename",
+    "Could not delete" : "Could not delete",
+    "Delete this tag?" : "Delete this tag?",
+    "Delete this symptom?" : "Delete this symptom?",
+    "Delete this medication?" : "Delete this medication?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted.",
     "CSV (for analysis)" : "CSV (վերլուծության համար)",
     "Diary" : "\u0555\u0580\u0561\u0563\u056b\u0580",
     "A personal diary and health journal" : "\u0531\u0576\u0571\u0576\u0561\u056f\u0561\u0576 \u0585\u0580\u0561\u0563\u056b\u0580 \u0587 \u0561\u057c\u0578\u0572\u057b\u0578\u0582\u0569\u0575\u0561\u0576 \u0574\u0561\u057f\u0575\u0561\u0576",

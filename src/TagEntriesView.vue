@@ -201,7 +201,11 @@ export default {
 		},
 		confirmDelete() {
 			if (this.isSaving) return
-			if (!confirm(t('nextdiary', 'Delete this tag? It will be removed from all entries.'))) {
+			const count = this.entries.length
+			const message = count > 0
+				? t('nextdiary', 'This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted.', { count })
+				: t('nextdiary', 'Delete this tag?')
+			if (!confirm(message)) {
 				return
 			}
 			this.isSaving = true

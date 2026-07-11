@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "เปลี่ยนชื่อ",
+    "Save" : "บันทึก",
+    "Could not rename" : "ไม่สามารถเปลี่ยนชื่อได้",
+    "Could not delete" : "ไม่สามารถลบได้",
+    "Delete this tag?" : "ลบแท็กนี้หรือไม่?",
+    "Delete this symptom?" : "ลบอาการนี้หรือไม่?",
+    "Delete this medication?" : "ลบยานี้หรือไม่?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "แท็กนี้ถูกใช้ใน {count} บันทึก ลบและนำออกจากบันทึกเหล่านั้นหรือไม่? ตัวบันทึกเองจะไม่ถูกลบ",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "อาการนี้ถูกใช้ใน {count} บันทึก ลบและนำออกจากบันทึกเหล่านั้นหรือไม่? ตัวบันทึกเองจะไม่ถูกลบ",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "ยานี้ถูกใช้ใน {count} บันทึก ลบและนำออกจากบันทึกเหล่านั้นหรือไม่? ตัวบันทึกเองจะไม่ถูกลบ",
     "CSV (for analysis)" : "CSV (สำหรับการวิเคราะห์)",
     "Diary" : "ไดอารี่",
     "A personal diary and health journal" : "ไดอารี่ส่วนตัวและบันทึกสุขภาพ",

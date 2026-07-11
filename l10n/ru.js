@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Переименовать",
+    "Save" : "Сохранить",
+    "Could not rename" : "Не удалось переименовать",
+    "Could not delete" : "Не удалось удалить",
+    "Delete this tag?" : "Удалить этот тег?",
+    "Delete this symptom?" : "Удалить этот симптом?",
+    "Delete this medication?" : "Удалить этот препарат?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Этот тег используется в записях: {count}. Удалить его и убрать из этих записей? Сами записи удалены не будут.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Этот симптом используется в записях: {count}. Удалить его и убрать из этих записей? Сами записи удалены не будут.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Этот препарат используется в записях: {count}. Удалить его и убрать из этих записей? Сами записи удалены не будут.",
     "CSV (for analysis)" : "CSV (для анализа)",
     "Diary" : "Дневник",
     "A personal diary and health journal" : "Персональный дневник и журнал здоровья",

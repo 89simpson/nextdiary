@@ -1,6 +1,16 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Rename" : "Premenovať",
+    "Save" : "Uložiť",
+    "Could not rename" : "Nepodarilo sa premenovať",
+    "Could not delete" : "Nepodarilo sa zmazať",
+    "Delete this tag?" : "Zmazať tento štítok?",
+    "Delete this symptom?" : "Zmazať tento symptóm?",
+    "Delete this medication?" : "Zmazať tento liek?",
+    "This tag is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Tento štítok sa používa v {count} záznamoch. Zmazať ho a odstrániť z týchto záznamov? Samotné záznamy nebudú zmazané.",
+    "This symptom is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Tento symptóm sa používa v {count} záznamoch. Zmazať ho a odstrániť z týchto záznamov? Samotné záznamy nebudú zmazané.",
+    "This medication is used in {count} entries. Delete it and remove it from those entries? The entries themselves will not be deleted." : "Tento liek sa používa v {count} záznamoch. Zmazať ho a odstrániť z týchto záznamov? Samotné záznamy nebudú zmazané.",
     "CSV (for analysis)" : "CSV (na analýzu)",
     "Diary" : "Denník",
     "A personal diary and health journal" : "Osobný denník a zdravotný záznamník",
