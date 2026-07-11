@@ -30,118 +30,90 @@ class EntriesFinderTest extends TestCase
     {
         $date = '2022-01-01';
         $content = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam';
-        $entry = new Entry();
-        $entry->setId($this->userId.$date);
-        $entry->setUid($this->userId);
-        $entry->setEntryDate($date);
-        $entry->setEntryContent($content);
+        $entry = $this->makeEntry($this->userId, $date, $content);
+        $inserted = $this->mapper->insert($entry);
 
-        $this->mapper->insert($entry);
-
-        $date = '2022-01-01';
         $content2 = 'Same day, different user';
-        $entry2 = new Entry();
         $uid2 = 'dave';
-        $entry2->setId($uid2.$date);
-        $entry2->setUid($uid2);
-        $entry2->setEntryDate($date);
-        $entry2->setEntryContent($content2);
+        $entry2 = $this->makeEntry($uid2, $date, $content2);
+        $inserted2 = $this->mapper->insert($entry2);
 
-        $this->mapper->insert($entry2);
-
-        $insertedEntry = $this->mapper->find($this->userId, $date);
-        $data = $insertedEntry->jsonSerialize();
+        $found = $this->mapper->find($this->userId, $date);
+        $data = $found->jsonSerialize();
         $this->assertEquals($date, $data['entryDate']);
         $this->assertEquals($content, $data['entryContent']);
         $this->assertEquals($this->userId, $data['uid']);
-        $this->assertEquals($this->userId.$date, $data['id']);
+        $this->assertEquals($inserted->getId(), $data['id']);
 
-        $insertedEntry = $this->mapper->find($uid2, $date);
-        $data = $insertedEntry->jsonSerialize();
-        $this->assertEquals($date, $data['entryDate']);
-        $this->assertEquals($content2, $data['entryContent']);
-        $this->assertEquals($uid2, $data['uid']);
-        $this->assertEquals($uid2.$date, $data['id']);
+        $found2 = $this->mapper->find($uid2, $date);
+        $data2 = $found2->jsonSerialize();
+        $this->assertEquals($date, $data2['entryDate']);
+        $this->assertEquals($content2, $data2['entryContent']);
+        $this->assertEquals($uid2, $data2['uid']);
+        $this->assertEquals($inserted2->getId(), $data2['id']);
 
-        $this->mapper->delete($entry);
-        $this->mapper->delete($entry2);
+        $this->mapper->delete($inserted);
+        $this->mapper->delete($inserted2);
     }
 
     public function testGetExistingEntries()
     {
-        $date = '2022-02-01';
         $content = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam';
-        $entry = new Entry();
-        $entry->setId($this->userId.$date);
-        $entry->setUid($this->userId);
-        $entry->setEntryDate($date);
-        $entry->setEntryContent($content);
-
+        $entry = $this->makeEntry($this->userId, '2022-02-01', $content);
         $this->mapper->insert($entry);
 
         $content2 = 'Same day, different user';
-        $entry2 = new Entry();
-        $uid2 = 'dave';
-        $entry2->setId($uid2.$date);
-        $entry2->setUid($uid2);
-        $entry2->setEntryDate($date);
-        $entry2->setEntryContent($content2);
-
+        $entry2 = $this->makeEntry('dave', '2022-02-01', $content2);
         $this->mapper->insert($entry2);
 
-        $date2 = '2022-01-02';
         $content3 = 'Same user, different day, earlier';
-        $entry3 = new Entry();
-        $entry3->setId($this->userId.$date2);
-        $entry3->setUid($this->userId);
-        $entry3->setEntryDate($date2);
-        $entry3->setEntryContent($content3);
-
+        $entry3 = $this->makeEntry($this->userId, '2022-01-02', $content3);
         $this->mapper->insert($entry3);
 
-        $date3 = '2022-02-02';
         $content4 = 'Same user, different day, later';
-        $entry4 = new Entry();
-        $entry4->setId($this->userId.$date3);
-        $entry4->setUid($this->userId);
-        $entry4->setEntryDate($date3);
-        $entry4->setEntryContent($content4);
-
+        $entry4 = $this->makeEntry($this->userId, '2022-02-02', $content4);
         $this->mapper->insert($entry4);
 
+        // findAll() orders by entry_date ascending.
         $insertedEntries = $this->mapper->findAll($this->userId);
         $this->assertCount(3, $insertedEntries);
-        $insertedEntry = array_shift($insertedEntries);
-        $data = $insertedEntry->jsonSerialize();
-        $this->assertEquals($date2, $data['entryDate']);
-        $this->assertEquals($content3, $data['entryContent']);
-        $this->assertEquals($this->userId, $data['uid']);
-        $this->assertEquals($this->userId.$date2, $data['id']);
-        $insertedEntry = array_shift($insertedEntries);
-        $data = $insertedEntry->jsonSerialize();
-        $this->assertEquals($date, $data['entryDate']);
-        $this->assertEquals($content, $data['entryContent']);
-        $this->assertEquals($this->userId, $data['uid']);
-        $this->assertEquals($this->userId.$date, $data['id']);
-        $insertedEntry = array_shift($insertedEntries);
-        $data = $insertedEntry->jsonSerialize();
-        $this->assertEquals($date3, $data['entryDate']);
-        $this->assertEquals($content4, $data['entryContent']);
-        $this->assertEquals($this->userId, $data['uid']);
-        $this->assertEquals($this->userId.$date3, $data['id']);
-        
-        $lastInsert = $insertedEntries = $this->mapper->findLast($this->userId,1);
-        $this->assertEquals($entry4->getEntryDate(), $lastInsert[0]->getEntryDate());
+        $this->assertEquals('2022-01-02', $insertedEntries[0]->getEntryDate());
+        $this->assertEquals($content3, $insertedEntries[0]->getEntryContent());
+        $this->assertEquals('2022-02-01', $insertedEntries[1]->getEntryDate());
+        $this->assertEquals($content, $insertedEntries[1]->getEntryContent());
+        $this->assertEquals('2022-02-02', $insertedEntries[2]->getEntryDate());
+        $this->assertEquals($content4, $insertedEntries[2]->getEntryContent());
 
-        $lastThreeInserts = $insertedEntries = $this->mapper->findLast($this->userId,3);
+        // findLast() orders by created_at descending.
+        $lastInsert = $this->mapper->findLast($this->userId, 1);
+        $this->assertCount(1, $lastInsert);
+        $this->assertEquals('2022-02-02', $lastInsert[0]->getEntryDate());
+
+        $lastThreeInserts = $this->mapper->findLast($this->userId, 3);
         $this->assertCount(3, $lastThreeInserts);
-        $this->assertEquals($entry4->getEntryDate(), $lastThreeInserts[0]->getEntryDate());
-        $this->assertEquals($entry->getEntryDate(), $lastThreeInserts[1]->getEntryDate());
-        $this->assertEquals($entry3->getEntryDate(), $lastThreeInserts[2]->getEntryDate());
+        $this->assertEquals('2022-02-02', $lastThreeInserts[0]->getEntryDate());
+        $this->assertEquals('2022-02-01', $lastThreeInserts[1]->getEntryDate());
+        $this->assertEquals('2022-01-02', $lastThreeInserts[2]->getEntryDate());
 
         $this->mapper->delete($entry);
         $this->mapper->delete($entry2);
         $this->mapper->delete($entry3);
         $this->mapper->delete($entry4);
+    }
+
+    /**
+     * Build an Entry for the current schema (id is auto-incremented, so it is not set here).
+     * created_at is aligned with entry_date so created_at ordering matches date ordering.
+     */
+    private function makeEntry(string $uid, string $date, string $content): Entry
+    {
+        $entry = new Entry();
+        $entry->setUid($uid);
+        $entry->setEntryDate($date);
+        $entry->setEntryContent($content);
+        $entry->setCreatedAt(new \DateTime($date . ' 12:00:00'));
+        $entry->setUpdatedAt(new \DateTime($date . ' 12:00:00'));
+
+        return $entry;
     }
 }

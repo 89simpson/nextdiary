@@ -34,23 +34,22 @@ class EntriesManipulationTest extends TestCase
         $date = '2022-01-01';
         $content = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam';
         $entry = new Entry();
-        $entry->setId($this->userId.$date);
         $entry->setUid($this->userId);
         $entry->setEntryDate($date);
         $entry->setEntryContent($content);
-
-        $this->mapper->insert($entry);
+        $entry->setCreatedAt(new \DateTime());
+        $entry->setUpdatedAt(new \DateTime());
+        $inserted = $this->mapper->insert($entry);
 
         /** @var DataResponse $response */
         $response = $this->controller->getEntry($date);
         $this->assertEquals(200, $response->getStatus());
-        /** @var Entry $data */
         $data = $response->getData()->jsonSerialize();
         $this->assertEquals($date, $data['entryDate']);
         $this->assertEquals($content, $data['entryContent']);
         $this->assertEquals($this->userId, $data['uid']);
-        $this->assertEquals($this->userId.$date, $data['id']);
+        $this->assertEquals($inserted->getId(), $data['id']);
 
-        $this->mapper->delete($entry);
+        $this->mapper->delete($inserted);
     }
 }
