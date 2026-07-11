@@ -4,11 +4,23 @@
     <id>nextdiary</id>
     <name>NextDiary</name>
     <summary>A personal diary and health journal</summary>
-    <description><![CDATA[Keep your personal diary with mood tracking, health symptoms, medications, tags, and file attachments.
+    <description><![CDATA[# NextDiary
 
-Write entries for each day in a Markdown editor. Track your mood and wellbeing, log symptoms and medications, organize entries with tags, and attach files. Use the calendar to jump to any date and manage your entries.
+A personal diary and health journal for Nextcloud.
 
-Export your diary in Markdown or PDF format — a single entry, a day, a date range, or everything.]]></description>
+## Features
+
+* **Markdown editor** - write diary entries with full Markdown support
+* **Multiple entries per day** - create several entries for the same date
+* **Mood & wellbeing tracking** - rate your mood and wellbeing on a 1-5 scale
+* **Tags** - organize entries with tags, auto-extracted from #hashtags
+* **Symptoms** - track health symptoms across entries
+* **Medications** - log medications linked to diary entries
+* **File attachments** - attach files to entries, stored in Nextcloud
+* **Calendar navigation** - jump to any date, highlighted days with entries
+* **Configurable sidebar** - show/hide sections, reorder tags/symptoms/medications
+* **Export** - download entries as Markdown or PDF (single entry, day, date range, or all)
+* **Localization** - 88 languages with full translations included]]></description>
     <version>1.0.3</version>
     <licence>AGPL-3.0-or-later</licence>
     <author homepage="https://github.com/89simpson">89simpson</author>
@@ -18,7 +30,7 @@ Export your diary in Markdown or PDF format — a single entry, a day, a date ra
     <website>https://github.com/89simpson/nextdiary</website>
     <bugs>https://github.com/89simpson/nextdiary/issues</bugs>
     <repository type="git">https://github.com/89simpson/nextdiary.git</repository>
-    <!--<screenshot>https://raw.githubusercontent.com/89simpson/nextdiary/main/screenshots/screenshot.png</screenshot>-->
+    <screenshot>https://raw.githubusercontent.com/89simpson/nextdiary/main/screenshots/screenshot.png</screenshot>
     <dependencies>
         <php min-version="8.0" max-version="8.3" />
         <nextcloud min-version="25" max-version="32"/>
