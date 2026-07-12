@@ -125,13 +125,29 @@ export default {
 	},
 	watch: {
 		medicationId() {
+			this.fetchName()
 			this.fetchEntries()
 		},
 	},
 	mounted() {
+		this.fetchName()
 		this.fetchEntries()
 	},
 	methods: {
+		fetchName() {
+			axios.get(generateUrl('apps/nextdiary/api/medication/' + this.medicationId))
+				.then(response => {
+					this.medicationName = response.data.name || ''
+				})
+				.catch(error => {
+					if (error.response && error.response.status === 404) {
+						this.goBack()
+						return
+					}
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error fetching medication:', error)
+				})
+		},
 		fetchEntries() {
 			this.isLoading = true
 			axios.get(generateUrl('apps/nextdiary/api/entries/medication/' + this.medicationId))

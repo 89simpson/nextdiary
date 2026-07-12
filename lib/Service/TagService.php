@@ -3,6 +3,7 @@
 namespace OCA\NextDiary\Service;
 
 use OCA\NextDiary\Db\EntryTagMapper;
+use OCA\NextDiary\Db\Tag;
 use OCA\NextDiary\Db\TagMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
@@ -56,6 +57,17 @@ class TagService
     public function getTagCloud(string $uid): array
     {
         return $this->tagMapper->findByUserWithCounts($uid);
+    }
+
+    /**
+     * Get a single tag owned by the user.
+     *
+     * @throws Exception
+     * @throws DoesNotExistException When the tag does not exist or is not owned by the user
+     */
+    public function getTagById(string $uid, int $id): Tag
+    {
+        return $this->tagMapper->findByIdAndUser($uid, $id);
     }
 
     /**

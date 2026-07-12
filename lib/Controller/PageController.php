@@ -281,6 +281,29 @@ class PageController extends Controller
     }
 
     /**
+     * Get a single tag by ID.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getTag(int $tagId): DataResponse
+    {
+        try {
+            $tag = $this->tagService->getTagById($this->userId, $tagId);
+            return new DataResponse(['id' => $tag->getId(), 'name' => $tag->getTagName()]);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getTag failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'tagId' => $tagId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Get entries by tag ID.
      *
      * @NoAdminRequired
@@ -380,6 +403,29 @@ class PageController extends Controller
     }
 
     /**
+     * Get a single symptom by ID.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getSymptom(int $symptomId): DataResponse
+    {
+        try {
+            $symptom = $this->moodService->getSymptomById($this->userId, $symptomId);
+            return new DataResponse(['id' => $symptom->getId(), 'name' => $symptom->getSymptomName()]);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getSymptom failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'symptomId' => $symptomId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Get entries by symptom ID.
      *
      * @NoAdminRequired
@@ -473,6 +519,29 @@ class PageController extends Controller
             $this->logger->error('[NextDiary] getMedications failed: ' . $e->getMessage(), [
                 'exception' => $e,
                 'userId' => $this->userId,
+            ]);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get a single medication by ID.
+     *
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getMedication(int $medicationId): DataResponse
+    {
+        try {
+            $medication = $this->medicationService->getMedicationById($this->userId, $medicationId);
+            return new DataResponse(['id' => $medication->getId(), 'name' => $medication->getMedicationName()]);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('[NextDiary] getMedication failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'userId' => $this->userId,
+                'medicationId' => $medicationId,
             ]);
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }

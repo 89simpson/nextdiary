@@ -27,6 +27,7 @@ return [
         // Tag API (v0.0.3)
         ['name' => 'page#get_tags', 'url' => '/api/tags', 'verb' => 'GET'],
         ['name' => 'page#get_entries_by_tag', 'url' => '/api/entries/tag/{tagId}', 'verb' => 'GET'],
+        ['name' => 'page#get_tag', 'url' => '/api/tag/{tagId}', 'verb' => 'GET'],
         ['name' => 'page#rename_tag', 'url' => '/api/tag/{tagId}', 'verb' => 'PUT'],
         ['name' => 'page#delete_tag', 'url' => '/api/tag/{tagId}', 'verb' => 'DELETE'],
         ['name' => 'page#index', 'url' => '/tag/{tagId}', 'verb' => 'GET', 'postfix' => 'tagPage'],
@@ -34,6 +35,7 @@ return [
         // Mood/Symptom API (v0.0.4)
         ['name' => 'page#get_symptoms', 'url' => '/api/symptoms', 'verb' => 'GET'],
         ['name' => 'page#get_entries_by_symptom', 'url' => '/api/entries/symptom/{symptomId}', 'verb' => 'GET'],
+        ['name' => 'page#get_symptom', 'url' => '/api/symptom/{symptomId}', 'verb' => 'GET'],
         ['name' => 'page#rename_symptom', 'url' => '/api/symptom/{symptomId}', 'verb' => 'PUT'],
         ['name' => 'page#delete_symptom', 'url' => '/api/symptom/{symptomId}', 'verb' => 'DELETE'],
         ['name' => 'page#index', 'url' => '/symptom/{symptomId}', 'verb' => 'GET', 'postfix' => 'symptomPage'],
@@ -41,6 +43,7 @@ return [
         // Medication API
         ['name' => 'page#get_medications', 'url' => '/api/medications', 'verb' => 'GET'],
         ['name' => 'page#get_entries_by_medication', 'url' => '/api/entries/medication/{medicationId}', 'verb' => 'GET'],
+        ['name' => 'page#get_medication', 'url' => '/api/medication/{medicationId}', 'verb' => 'GET'],
         ['name' => 'page#rename_medication', 'url' => '/api/medication/{medicationId}', 'verb' => 'PUT'],
         ['name' => 'page#delete_medication', 'url' => '/api/medication/{medicationId}', 'verb' => 'DELETE'],
         ['name' => 'page#index', 'url' => '/medication/{medicationId}', 'verb' => 'GET', 'postfix' => 'medicationPage'],

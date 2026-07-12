@@ -3,6 +3,7 @@
 namespace OCA\NextDiary\Service;
 
 use OCA\NextDiary\Db\EntrySymptomMapper;
+use OCA\NextDiary\Db\Symptom;
 use OCA\NextDiary\Db\SymptomMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
@@ -108,6 +109,17 @@ class MoodService
     public function getSymptomCloud(string $uid): array
     {
         return $this->symptomMapper->findByUserWithCounts($uid);
+    }
+
+    /**
+     * Get a single symptom owned by the user.
+     *
+     * @throws Exception
+     * @throws DoesNotExistException When the symptom does not exist or is not owned by the user
+     */
+    public function getSymptomById(string $uid, int $id): Symptom
+    {
+        return $this->symptomMapper->findByIdAndUser($uid, $id);
     }
 
     /**

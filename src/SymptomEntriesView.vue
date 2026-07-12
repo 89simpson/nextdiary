@@ -125,13 +125,29 @@ export default {
 	},
 	watch: {
 		symptomId() {
+			this.fetchName()
 			this.fetchEntries()
 		},
 	},
 	mounted() {
+		this.fetchName()
 		this.fetchEntries()
 	},
 	methods: {
+		fetchName() {
+			axios.get(generateUrl('apps/nextdiary/api/symptom/' + this.symptomId))
+				.then(response => {
+					this.symptomName = response.data.name || ''
+				})
+				.catch(error => {
+					if (error.response && error.response.status === 404) {
+						this.goBack()
+						return
+					}
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error fetching symptom:', error)
+				})
+		},
 		fetchEntries() {
 			this.isLoading = true
 			axios.get(generateUrl('apps/nextdiary/api/entries/symptom/' + this.symptomId))

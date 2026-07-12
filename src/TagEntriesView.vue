@@ -121,13 +121,29 @@ export default {
 	},
 	watch: {
 		tagId() {
+			this.fetchName()
 			this.fetchEntries()
 		},
 	},
 	mounted() {
+		this.fetchName()
 		this.fetchEntries()
 	},
 	methods: {
+		fetchName() {
+			axios.get(generateUrl('apps/nextdiary/api/tag/' + this.tagId))
+				.then(response => {
+					this.tagName = response.data.name || ''
+				})
+				.catch(error => {
+					if (error.response && error.response.status === 404) {
+						this.goBack()
+						return
+					}
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error fetching tag:', error)
+				})
+		},
 		fetchEntries() {
 			this.isLoading = true
 			axios.get(generateUrl('apps/nextdiary/api/entries/tag/' + this.tagId))

@@ -3,6 +3,7 @@
 namespace OCA\NextDiary\Service;
 
 use OCA\NextDiary\Db\EntryMedicationMapper;
+use OCA\NextDiary\Db\Medication;
 use OCA\NextDiary\Db\MedicationMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
@@ -71,6 +72,17 @@ class MedicationService
     public function getMedicationCloud(string $uid): array
     {
         return $this->medicationMapper->findByUserWithCounts($uid);
+    }
+
+    /**
+     * Get a single medication owned by the user.
+     *
+     * @throws Exception
+     * @throws DoesNotExistException When the medication does not exist or is not owned by the user
+     */
+    public function getMedicationById(string $uid, int $id): Medication
+    {
+        return $this->medicationMapper->findByIdAndUser($uid, $id);
     }
 
     /**
