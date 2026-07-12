@@ -40,6 +40,16 @@
 				</div>
 			</div>
 		</div>
+		<h3>{{ t('nextdiary', 'Reference lists') }}</h3>
+		<div class="settings-section">
+			<NcCheckboxRadioSwitch :checked.sync="localSettings.auto_cleanup_unused"
+				@update:checked="updateSetting('auto_cleanup_unused', $event)">
+				{{ t('nextdiary', 'Automatically delete tags, symptoms and medications when no longer used in any entry') }}
+			</NcCheckboxRadioSwitch>
+			<p class="settings-hint">
+				{{ t('nextdiary', 'When off, unused items stay in the clouds at minimal size so you can select and delete them manually.') }}
+			</p>
+		</div>
 	</div>
 </template>
 
@@ -66,6 +76,7 @@ export default {
 				show_tags: true,
 				show_symptoms: true,
 				show_medications: true,
+				auto_cleanup_unused: true,
 				sidebar_order: ['tags', 'symptoms', 'medications'],
 			},
 		}
@@ -141,6 +152,12 @@ export default {
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+	}
+
+	.settings-hint {
+		color: var(--color-text-maxcontrast);
+		font-size: 13px;
+		margin: 4px 0 0 0;
 	}
 
 	.settings-row {

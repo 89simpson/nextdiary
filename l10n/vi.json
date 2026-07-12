@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Danh sách tham chiếu",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Tự động xóa thẻ, triệu chứng và thuốc khi không còn được sử dụng trong bất kỳ bài ghi nào",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Khi tắt, các mục không sử dụng sẽ vẫn nằm trong các đám mây ở kích thước nhỏ nhất để bạn có thể tự tay chọn và xóa chúng.",
     "Rename" : "Đổi tên",
     "Save" : "Lưu",
     "Could not rename" : "Không thể đổi tên",

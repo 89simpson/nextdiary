@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Referenzlisten",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Schlagwörter, Symptome und Medikamente automatisch löschen, wenn sie in keinem Eintrag mehr verwendet werden",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Wenn deaktiviert, bleiben ungenutzte Elemente in minimaler Größe in den Wolken, sodass Sie sie manuell auswählen und löschen können.",
     "Rename" : "Umbenennen",
     "Save" : "Speichern",
     "Could not rename" : "Umbenennen fehlgeschlagen",

@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Viiteluettelot",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Poista tunnisteet, oireet ja lääkkeet automaattisesti, kun niitä ei enää käytetä missään merkinnässä",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kun tämä on pois päältä, käyttämättömät kohteet säilyvät pilvissä pienimmässä koossa, jotta voit valita ja poistaa ne käsin.",
     "Rename" : "Nimeä uudelleen",
     "Save" : "Tallenna",
     "Could not rename" : "Nimeäminen epäonnistui",

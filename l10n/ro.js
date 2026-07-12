@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Liste de referință",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Șterge automat etichetele, simptomele și medicamentele când nu mai sunt folosite în nicio înregistrare",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Când este dezactivată, elementele nefolosite rămân în nori la dimensiunea minimă, astfel încât să le puteți selecta și șterge manual.",
     "Rename" : "Redenumește",
     "Save" : "Salvează",
     "Could not rename" : "Nu s-a putut redenumi",

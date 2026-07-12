@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Референтне листе",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Аутоматски бриши ознаке, симптоме и лекове када се више не користе ни у једном уносу",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Када је искључено, некоришћене ставке остају у облацима у најмањој величини како бисте могли ручно да их изаберете и обришете.",
     "Rename" : "Преименуј",
     "Save" : "Сачувај",
     "Could not rename" : "Није могуће преименовати",

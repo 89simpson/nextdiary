@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Elenchi di riferimento",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Elimina automaticamente etichette, sintomi e farmaci quando non sono più utilizzati in alcuna voce",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Quando è disattivata, gli elementi non utilizzati restano nelle nuvole alla dimensione minima, così puoi selezionarli ed eliminarli manualmente.",
     "Rename" : "Rinomina",
     "Save" : "Salva",
     "Could not rename" : "Impossibile rinominare",

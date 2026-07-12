@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Uzziņu saraksti",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Automātiski dzēst birkas, simptomus un medikamentus, kad tie vairs netiek izmantoti nevienā ierakstā",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kad izslēgts, neizmantotie vienumi paliek mākoņos minimālā izmērā, lai jūs varētu tos atlasīt un dzēst manuāli.",
     "Rename" : "Pārdēvēt",
     "Save" : "Saglabāt",
     "Could not rename" : "Neizdevās pārdēvēt",

@@ -16,6 +16,7 @@ class SettingsController extends Controller {
         'show_tags' => 'true',
         'show_symptoms' => 'true',
         'show_medications' => 'true',
+        'auto_cleanup_unused' => 'true',
     ];
 
     private const JSON_SETTINGS_KEYS = [

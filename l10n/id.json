@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Daftar referensi",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Hapus tag, gejala, dan obat secara otomatis saat tidak lagi digunakan dalam catatan mana pun",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Saat dinonaktifkan, item yang tidak terpakai tetap berada di dalam awan dengan ukuran minimal sehingga Anda dapat memilih dan menghapusnya secara manual.",
     "Rename" : "Ganti nama",
     "Save" : "Simpan",
     "Could not rename" : "Tidak dapat mengganti nama",

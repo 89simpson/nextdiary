@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Referentne liste",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Automatski briši oznake, simptome i lijekove kada se više ne koriste ni u jednom unosu",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kada je isključeno, nekorištene stavke ostaju u oblacima u najmanjoj veličini kako biste ih mogli ručno odabrati i obrisati.",
     "Rename" : "Preimenuj",
     "Save" : "Sačuvaj",
     "Could not rename" : "Nije moguće preimenovati",

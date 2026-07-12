@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "İstinad siyahıları",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Etiketləri, simptomları və dərmanları heç bir qeyddə istifadə olunmadıqda avtomatik sil",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Söndürüldükdə, istifadə olunmayan elementlər buludlarda minimal ölçüdə qalır ki, onları əl ilə seçib silə biləsiniz.",
     "Rename" : "Adını dəyiş",
     "Save" : "Yadda saxla",
     "Could not rename" : "Adı dəyişdirilə bilmədi",

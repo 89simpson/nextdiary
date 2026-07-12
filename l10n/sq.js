@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Lista referencash",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Fshij automatikisht etiketat, simptomat dhe barnat kur nuk përdoren më në asnjë shënim",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kur është çaktivizuar, elementet e papërdorura qëndrojnë në retë me përmasën më të vogël, që të mund t'i zgjidhni dhe t'i fshini me dorë.",
     "Rename" : "Riemërto",
     "Save" : "Ruaj",
     "Could not rename" : "Riemërtimi dështoi",

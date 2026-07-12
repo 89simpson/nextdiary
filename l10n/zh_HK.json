@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "參考清單",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "自動刪除不再用於任何日記的標籤、症狀和藥物",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "關閉後，未使用的項目會以最小尺寸保留在詞雲中，方便你手動選擇並刪除。",
     "Rename" : "重新命名",
     "Save" : "儲存",
     "Could not rename" : "無法重新命名",

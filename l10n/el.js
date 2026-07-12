@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Λίστες αναφοράς",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Αυτόματη διαγραφή ετικετών, συμπτωμάτων και φαρμάκων όταν δεν χρησιμοποιούνται πλέον σε καμία καταχώρηση",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Όταν είναι απενεργοποιημένο, τα στοιχεία που δεν χρησιμοποιούνται παραμένουν στα σύννεφα σε ελάχιστο μέγεθος, ώστε να μπορείτε να τα επιλέξετε και να τα διαγράψετε χειροκίνητα.",
     "Rename" : "Μετονομασία",
     "Save" : "Αποθήκευση",
     "Could not rename" : "Δεν ήταν δυνατή η μετονομασία",

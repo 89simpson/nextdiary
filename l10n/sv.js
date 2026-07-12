@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Referenslistor",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Radera automatiskt taggar, symtom och mediciner när de inte längre används i något inlägg",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "När det är avstängt stannar oanvända objekt kvar i molnen i minimal storlek, så att du kan markera och radera dem manuellt.",
     "Rename" : "Byt namn",
     "Save" : "Spara",
     "Could not rename" : "Kunde inte byta namn",

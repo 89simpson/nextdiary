@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Viideloendid",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Kustuta sildid, sümptomid ja ravimid automaatselt, kui neid enam üheski sissekandes ei kasutata",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kui see on väljas, jäävad kasutamata üksused pilvedesse minimaalses suuruses, et saaksite need käsitsi valida ja kustutada.",
     "Rename" : "Nimeta ümber",
     "Save" : "Salvesta",
     "Could not rename" : "Ümbernimetamine ebaõnnestus",

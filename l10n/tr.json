@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Başvuru listeleri",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Etiketleri, belirtileri ve ilaçları hiçbir girdide kullanılmadıklarında otomatik olarak sil",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kapalıyken, kullanılmayan öğeler bulutlarda en küçük boyutta kalır; böylece onları elle seçip silebilirsiniz.",
     "Rename" : "Yeniden adlandır",
     "Save" : "Kaydet",
     "Could not rename" : "Yeniden adlandırılamadı",

@@ -7,16 +7,27 @@ use OCA\NextDiary\Db\Medication;
 use OCA\NextDiary\Db\MedicationMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
+use OCP\IConfig;
 
 class MedicationService
 {
     private MedicationMapper $medicationMapper;
     private EntryMedicationMapper $entryMedicationMapper;
+    private IConfig $config;
 
-    public function __construct(MedicationMapper $medicationMapper, EntryMedicationMapper $entryMedicationMapper)
+    public function __construct(MedicationMapper $medicationMapper, EntryMedicationMapper $entryMedicationMapper, IConfig $config)
     {
         $this->medicationMapper = $medicationMapper;
         $this->entryMedicationMapper = $entryMedicationMapper;
+        $this->config = $config;
+    }
+
+    /**
+     * Whether automatic cleanup of unused medications is enabled for the user.
+     */
+    private function autoCleanupEnabled(string $uid): bool
+    {
+        return $this->config->getUserValue($uid, 'nextdiary', 'auto_cleanup_unused', 'true') === 'true';
     }
 
     /**
@@ -45,6 +56,10 @@ class MedicationService
                 'name' => $medication->getMedicationName(),
                 'category' => $medication->getCategory(),
             ];
+        }
+
+        if ($this->autoCleanupEnabled($uid)) {
+            $this->medicationMapper->deleteUnusedMedications($uid);
         }
 
         return $result;
@@ -150,5 +165,9 @@ class MedicationService
     public function removeMedicationsFromEntry(string $uid, int $entryId): void
     {
         $this->entryMedicationMapper->detachAllFromEntry($entryId);
+
+        if ($this->autoCleanupEnabled($uid)) {
+            $this->medicationMapper->deleteUnusedMedications($uid);
+        }
     }
 }

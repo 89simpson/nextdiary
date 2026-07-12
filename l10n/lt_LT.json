@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Žinynų sąrašai",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Automatiškai ištrinti žymas, simptomus ir vaistus, kai jie nebenaudojami jokiame įraše",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kai išjungta, nenaudojami elementai lieka debesyse mažiausio dydžio, kad galėtumėte juos pasirinkti ir ištrinti rankiniu būdu.",
     "Rename" : "Pervadinti",
     "Save" : "Išsaugoti",
     "Could not rename" : "Nepavyko pervadinti",

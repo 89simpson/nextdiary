@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "参考列表",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "自动删除不再用于任何条目的标签、症状和药物",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "关闭后，未使用的项目会以最小尺寸保留在词云中，以便您手动选择并删除。",
     "Rename" : "重命名",
     "Save" : "保存",
     "Could not rename" : "无法重命名",

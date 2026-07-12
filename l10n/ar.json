@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "القوائم المرجعية",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "حذف الوسوم والأعراض والأدوية تلقائيًا عند عدم استخدامها في أي إدخال",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "عند إيقاف التشغيل، تبقى العناصر غير المستخدمة في السُّحُب بأصغر حجم حتى تتمكن من تحديدها وحذفها يدويًا.",
     "Rename" : "إعادة تسمية",
     "Save" : "حفظ",
     "Could not rename" : "تعذّرت إعادة التسمية",

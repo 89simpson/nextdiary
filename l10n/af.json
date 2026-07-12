@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Verwysingslyste",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Verwyder outomaties etikette, simptome en medikasie wanneer hulle nie meer in enige inskrywing gebruik word nie",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Wanneer dit afgeskakel is, bly ongebruikte items teen minimale grootte in die wolke, sodat jy hulle met die hand kan kies en verwyder.",
     "Rename" : "Hernoem",
     "Save" : "Stoor",
     "Could not rename" : "Kon nie hernoem nie",

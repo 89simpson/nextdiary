@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Listy referencyjne",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Automatycznie usuwaj tagi, objawy i leki, gdy nie są już używane w żadnym wpisie",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Gdy opcja jest wyłączona, nieużywane elementy pozostają w chmurach w minimalnym rozmiarze, aby można je było ręcznie wybrać i usunąć.",
     "Rename" : "Zmień nazwę",
     "Save" : "Zapisz",
     "Could not rename" : "Nie udało się zmienić nazwy",

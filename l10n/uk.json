@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "Довідники",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Автоматично видаляти теги, симптоми та медикаменти, які більше не використовуються в жодному записі",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Коли вимкнено, невикористані елементи залишаються у хмарах у мінімальному розмірі, щоб ви могли вибрати та видалити їх вручну.",
     "Rename" : "Перейменувати",
     "Save" : "Зберегти",
     "Could not rename" : "Не вдалося перейменувати",

@@ -7,16 +7,27 @@ use OCA\NextDiary\Db\Tag;
 use OCA\NextDiary\Db\TagMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
+use OCP\IConfig;
 
 class TagService
 {
     private TagMapper $tagMapper;
     private EntryTagMapper $entryTagMapper;
+    private IConfig $config;
 
-    public function __construct(TagMapper $tagMapper, EntryTagMapper $entryTagMapper)
+    public function __construct(TagMapper $tagMapper, EntryTagMapper $entryTagMapper, IConfig $config)
     {
         $this->tagMapper = $tagMapper;
         $this->entryTagMapper = $entryTagMapper;
+        $this->config = $config;
+    }
+
+    /**
+     * Whether automatic cleanup of unused tags is enabled for the user.
+     */
+    private function autoCleanupEnabled(string $uid): bool
+    {
+        return $this->config->getUserValue($uid, 'nextdiary', 'auto_cleanup_unused', 'true') === 'true';
     }
 
     /**
@@ -40,6 +51,11 @@ class TagService
                 'id' => $tag->getId(),
                 'name' => $tag->getTagName(),
             ];
+        }
+
+        // Clean up unused tags
+        if ($this->autoCleanupEnabled($uid)) {
+            $this->tagMapper->deleteUnusedTags($uid);
         }
 
         return $result;
@@ -114,6 +130,10 @@ class TagService
             ];
         }
 
+        if ($this->autoCleanupEnabled($uid)) {
+            $this->tagMapper->deleteUnusedTags($uid);
+        }
+
         return $result;
     }
 
@@ -173,6 +193,10 @@ class TagService
     public function removeTagsFromEntry(string $uid, int $entryId): void
     {
         $this->entryTagMapper->detachAllFromEntry($entryId);
+
+        if ($this->autoCleanupEnabled($uid)) {
+            $this->tagMapper->deleteUnusedTags($uid);
+        }
     }
 
     /**

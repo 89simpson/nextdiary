@@ -1,4 +1,7 @@
 { "translations": {
+    "Reference lists" : "فهرست‌های مرجع",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "حذف خودکار برچسب‌ها، علائم و داروها هنگامی که دیگر در هیچ مدخلی استفاده نمی‌شوند",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "هنگامی که خاموش باشد، موارد استفاده‌نشده با کمترین اندازه در ابرها باقی می‌مانند تا بتوانید آن‌ها را به‌صورت دستی انتخاب و حذف کنید.",
     "Rename" : "تغییر نام",
     "Save" : "ذخیره",
     "Could not rename" : "تغییر نام ممکن نشد",

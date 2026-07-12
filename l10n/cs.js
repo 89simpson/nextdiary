@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Referenční seznamy",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Automaticky mazat štítky, příznaky a léky, které se již nepoužívají v žádném záznamu",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Když je vypnuto, nepoužívané položky zůstávají v oblacích v minimální velikosti, abyste je mohli vybrat a smazat ručně.",
     "Rename" : "Přejmenovat",
     "Save" : "Uložit",
     "Could not rename" : "Nepodařilo se přejmenovat",

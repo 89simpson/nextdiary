@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Referencaj listoj",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Aŭtomate forigi etikedojn, simptomojn kaj medikamentojn kiam ili ne plu estas uzataj en iu ajn enskribo",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kiam malŝaltita, neuzataj eroj restas en la nuboj je minimuma grandeco por ke vi povu elekti kaj forigi ilin permane.",
     "Rename" : "Alinomi",
     "Save" : "Konservi",
     "Could not rename" : "Ne eblis alinomi",

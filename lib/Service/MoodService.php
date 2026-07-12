@@ -7,16 +7,27 @@ use OCA\NextDiary\Db\Symptom;
 use OCA\NextDiary\Db\SymptomMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception;
+use OCP\IConfig;
 
 class MoodService
 {
     private SymptomMapper $symptomMapper;
     private EntrySymptomMapper $entrySymptomMapper;
+    private IConfig $config;
 
-    public function __construct(SymptomMapper $symptomMapper, EntrySymptomMapper $entrySymptomMapper)
+    public function __construct(SymptomMapper $symptomMapper, EntrySymptomMapper $entrySymptomMapper, IConfig $config)
     {
         $this->symptomMapper = $symptomMapper;
         $this->entrySymptomMapper = $entrySymptomMapper;
+        $this->config = $config;
+    }
+
+    /**
+     * Whether automatic cleanup of unused symptoms is enabled for the user.
+     */
+    private function autoCleanupEnabled(string $uid): bool
+    {
+        return $this->config->getUserValue($uid, 'nextdiary', 'auto_cleanup_unused', 'true') === 'true';
     }
 
     /**
@@ -82,6 +93,10 @@ class MoodService
                 'name' => $symptom->getSymptomName(),
                 'category' => $symptom->getCategory(),
             ];
+        }
+
+        if ($this->autoCleanupEnabled($uid)) {
+            $this->symptomMapper->deleteUnusedSymptoms($uid);
         }
 
         return $result;
@@ -187,5 +202,9 @@ class MoodService
     public function removeSymptomsFromEntry(string $uid, int $entryId): void
     {
         $this->entrySymptomMapper->detachAllFromEntry($entryId);
+
+        if ($this->autoCleanupEnabled($uid)) {
+            $this->symptomMapper->deleteUnusedSymptoms($uid);
+        }
     }
 }

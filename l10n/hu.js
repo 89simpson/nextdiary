@@ -1,6 +1,9 @@
 OC.L10N.register(
     "nextdiary",
     {
+    "Reference lists" : "Referencialisták",
+    "Automatically delete tags, symptoms and medications when no longer used in any entry" : "Címkék, tünetek és gyógyszerek automatikus törlése, ha már egyetlen bejegyzésben sem használatosak",
+    "When off, unused items stay in the clouds at minimal size so you can select and delete them manually." : "Kikapcsolva a nem használt elemek a legkisebb méretben megmaradnak a felhőkben, így kézzel kijelölheti és törölheti őket.",
     "Rename" : "Átnevezés",
     "Save" : "Mentés",
     "Could not rename" : "Az átnevezés sikertelen",
