@@ -88,7 +88,6 @@ class MedicationMapper extends QBMapper
             ->leftJoin('m', 'diary_entry_meds', 'em', $qb->expr()->eq('m.id', 'em.medication_id'))
             ->where($qb->expr()->eq('m.uid', $qb->createNamedParameter($uid)))
             ->groupBy('m.id', 'm.medication_name', 'm.category')
-            ->having($qb->expr()->gt($qb->func()->count('em.id'), $qb->createNamedParameter(0)))
             ->orderBy('entry_count', 'DESC');
 
         $result = $qb->executeQuery();

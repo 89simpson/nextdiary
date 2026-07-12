@@ -42,9 +42,6 @@ class TagService
             ];
         }
 
-        // Clean up unused tags
-        $this->tagMapper->deleteUnusedTags($uid);
-
         return $result;
     }
 
@@ -117,8 +114,6 @@ class TagService
             ];
         }
 
-        $this->tagMapper->deleteUnusedTags($uid);
-
         return $result;
     }
 
@@ -171,14 +166,13 @@ class TagService
     }
 
     /**
-     * Remove all tags from an entry and clean up unused tags.
+     * Remove all tags from an entry.
      *
      * @throws Exception
      */
     public function removeTagsFromEntry(string $uid, int $entryId): void
     {
         $this->entryTagMapper->detachAllFromEntry($entryId);
-        $this->tagMapper->deleteUnusedTags($uid);
     }
 
     /**

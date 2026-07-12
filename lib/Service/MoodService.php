@@ -84,8 +84,6 @@ class MoodService
             ];
         }
 
-        $this->symptomMapper->deleteUnusedSymptoms($uid);
-
         return $result;
     }
 
@@ -182,13 +180,12 @@ class MoodService
     }
 
     /**
-     * Remove all symptoms from an entry and clean up unused symptoms.
+     * Remove all symptoms from an entry.
      *
      * @throws Exception
      */
     public function removeSymptomsFromEntry(string $uid, int $entryId): void
     {
         $this->entrySymptomMapper->detachAllFromEntry($entryId);
-        $this->symptomMapper->deleteUnusedSymptoms($uid);
     }
 }

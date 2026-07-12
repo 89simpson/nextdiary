@@ -32,9 +32,12 @@ export default {
 		calculateFontSize(count) {
 			const min = 0.85
 			const max = 1.4
+			// Empty references (count 0) still render, at the base minimum size.
+			if (!count) return min + 'em'
 			if (!this.tags.length) return min + 'em'
 			const maxCount = Math.max(...this.tags.map(t => t.count))
 			const minCount = Math.min(...this.tags.map(t => t.count))
+			// Avoid division by zero when every count is equal.
 			if (maxCount === minCount) return '1em'
 			const ratio = (count - minCount) / (maxCount - minCount)
 			return (min + ratio * (max - min)).toFixed(2) + 'em'

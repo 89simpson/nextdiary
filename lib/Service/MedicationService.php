@@ -47,8 +47,6 @@ class MedicationService
             ];
         }
 
-        $this->medicationMapper->deleteUnusedMedications($uid);
-
         return $result;
     }
 
@@ -145,13 +143,12 @@ class MedicationService
     }
 
     /**
-     * Remove all medications from an entry and clean up unused medications.
+     * Remove all medications from an entry.
      *
      * @throws Exception
      */
     public function removeMedicationsFromEntry(string $uid, int $entryId): void
     {
         $this->entryMedicationMapper->detachAllFromEntry($entryId);
-        $this->medicationMapper->deleteUnusedMedications($uid);
     }
 }

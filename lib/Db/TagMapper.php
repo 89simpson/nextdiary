@@ -90,7 +90,6 @@ class TagMapper extends QBMapper
             ->leftJoin('t', 'diary_entry_tags', 'et', $qb->expr()->eq('t.id', 'et.tag_id'))
             ->where($qb->expr()->eq('t.uid', $qb->createNamedParameter($uid)))
             ->groupBy('t.id', 't.tag_name', 't.created_at')
-            ->having($qb->expr()->gt($qb->func()->count('et.id'), $qb->createNamedParameter(0)))
             ->orderBy('entry_count', 'DESC');
 
         $result = $qb->executeQuery();

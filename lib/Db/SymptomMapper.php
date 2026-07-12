@@ -88,7 +88,6 @@ class SymptomMapper extends QBMapper
             ->leftJoin('s', 'diary_entry_symptoms', 'es', $qb->expr()->eq('s.id', 'es.symptom_id'))
             ->where($qb->expr()->eq('s.uid', $qb->createNamedParameter($uid)))
             ->groupBy('s.id', 's.symptom_name', 's.category')
-            ->having($qb->expr()->gt($qb->func()->count('es.id'), $qb->createNamedParameter(0)))
             ->orderBy('entry_count', 'DESC');
 
         $result = $qb->executeQuery();
