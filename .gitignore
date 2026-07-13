@@ -35,9 +35,17 @@ coverage/
 .handoffs/*.local.md
 
 .claude/
+CLAUDE.md
 CLAUDE.local.md
 manifest.md
 methodology/
 scripts/
 SUBAGENT_EFFICIENCY_REPORT.md
 releases/
+.claude/settings.local.json
+.claude/logs/
+.claude/.tool-counter
+.claude/dialogs/*.jsonl
+.claude/dialogs/INDEX.md
+node_modules/
+build/
