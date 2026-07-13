@@ -126,9 +126,6 @@ class TagMapper extends QBMapper
      */
     public function deleteUnusedTags(string $uid): int
     {
-        $subQb = $this->db->getQueryBuilder();
-        $subQb->select('tag_id')->from('diary_entry_tags');
-
         $qb = $this->db->getQueryBuilder();
         $qb->delete($this->getTableName())
             ->where($qb->expr()->eq('uid', $qb->createNamedParameter($uid)))
