@@ -80,10 +80,15 @@ else
 	composer install --prefer-dist --no-dev
 endif
 
-# Installs npm dependencies
+# Installs npm dependencies exactly as pinned in package-lock.json (npm ci) when the
+# lock file exists, so release bundles are built from the reviewed dependency tree
 .PHONY: npm
 npm:
+ifneq (,$(wildcard $(CURDIR)/package-lock.json))
+	npm ci
+else
 	npm install
+endif
 ifeq (,$(wildcard $(CURDIR)/package.json))
 	cd js && $(npm) run build
 else
@@ -123,7 +128,8 @@ source:
         --exclude="../$(app_name)/js/*.log" \
         -czf $(source_package_name).tar.gz ../$(app_name)
 
-# Builds the source package for the app store, ignores php and js tests
+# Builds the source package for the app store, ignores php and js tests, source maps
+# (js/*.map, development only) and the FPDF manual and tutorial scripts (not used by the app)
 .PHONY: appstore
 appstore:
 	mkdir -p $(cert_dir)
@@ -157,4 +163,7 @@ appstore:
 	--exclude="../$(app_name)/protractor\.*" \
 	--exclude="../$(app_name)/.*" \
 	--exclude="../$(app_name)/js/.*" \
+	--exclude="../$(app_name)/js/*.map" \
+	--exclude="../$(app_name)/vendor/setasign/fpdf/doc" \
+	--exclude="../$(app_name)/vendor/setasign/fpdf/tutorial" \
 	../$(app_name)
