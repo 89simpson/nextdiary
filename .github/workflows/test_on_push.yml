@@ -91,4 +91,4 @@ jobs:
         run: npm run build
 
       - name: Compare with committed bundles
-        run: git diff --stat --exit-status -- js/nextdiary-main.js js/nextdiary-settings.js js/nextdiary-main.js.LICENSE.txt js/nextdiary-settings.js.LICENSE.txt
+        run: git diff --stat --exit-code -- js/nextdiary-main.js js/nextdiary-settings.js js/nextdiary-main.js.LICENSE.txt js/nextdiary-settings.js.LICENSE.txt
