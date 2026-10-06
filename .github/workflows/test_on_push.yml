@@ -9,20 +9,31 @@ jobs:
   unit_test:
     environment: development
     runs-on: ubuntu-latest
-    name: "Run unit tests"
+    name: "Tests: PHP ${{ matrix.php-versions }} / Nextcloud ${{ matrix.nextcloud }}"
     strategy:
+      fail-fast: false
       matrix:
-        php-versions: [ '8.0', '8.1', '8.2', '8.3' ]
-        nextcloud: [ 'stable25', 'stable27', 'stable28' ]
-        database: [ 'sqlite' ]
-        phpunit-version: [ '9.5' ]
-        exclude:
+        # appinfo/info.xml declares PHP 8.1-8.5 and Nextcloud 25-35. Every combination below is
+        # supported by that server branch (see lib/versioncheck.php of the branch); together they
+        # cover both edges of both ranges and every PHP minor version in between.
+        # The app is enabled WITHOUT --force, so a too narrow info.xml range fails the job.
+        include:
+          - php-versions: '8.1'   # minimum PHP, minimum Nextcloud
+            nextcloud: 'stable25'
+          - php-versions: '8.3'
+            nextcloud: 'stable28'
           - php-versions: '8.2'
-            nextcloud: 'stable25'
+            nextcloud: 'stable30'
           - php-versions: '8.3'
-            nextcloud: 'stable25'
-          - php-versions: '8.3'
-            nextcloud: 'stable27'
+            nextcloud: 'stable31'
+          - php-versions: '8.4'
+            nextcloud: 'stable32'
+          - php-versions: '8.4'   # issue #6: Nextcloud 33 + PHP 8.4
+            nextcloud: 'stable33'
+          - php-versions: '8.5'
+            nextcloud: 'stable34'
+          - php-versions: '8.5'   # maximum PHP, maximum Nextcloud
+            nextcloud: 'stable35'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -35,21 +46,22 @@ jobs:
           coverage: none
 
       - name: Set up server with sqlite
-        uses: SMillerDev/nextcloud-actions/setup-nextcloud@main
+        # SMillerDev/nextcloud-actions release 2026.09.21.1 (node24 runtime)
+        uses: SMillerDev/nextcloud-actions/setup-nextcloud@ae95709955d06dea39756101e07ec5b6134f14d7
         with:
           cron: false
           version: ${{ matrix.nextcloud }}
-          database-type: ${{ matrix.database }}
+          database-type: sqlite
 
       - name: Configure server with app
-        uses: SMillerDev/nextcloud-actions/setup-nextcloud-app@main
+        uses: SMillerDev/nextcloud-actions/setup-nextcloud-app@ae95709955d06dea39756101e07ec5b6134f14d7
         with:
           app: ${{ env.APP_NAME }}
           check-code: false
 
       - name: Run composer with dev env
         run: |
-          cd ../server/apps/${{ env.APP_NAME }} && composer install
+          cd ../server/apps/${{ env.APP_NAME }} && composer install --no-interaction
 
       - name: Run unit tests
         run: |

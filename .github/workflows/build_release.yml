@@ -36,7 +36,9 @@ jobs:
           node-version: 22
 
       - name: Set up server Sqlite
-        uses: SMillerDev/nextcloud-actions/setup-nextcloud@fae87e29aa7cdf1ea0b8033c67f60e75b10be2cd
+        # SMillerDev/nextcloud-actions release 2026.09.21.1: same main.js as the previous pin,
+        # but declares the node24 runtime instead of the deprecated node12 one.
+        uses: SMillerDev/nextcloud-actions/setup-nextcloud@ae95709955d06dea39756101e07ec5b6134f14d7
         with:
           cron: false
           version: ${{ matrix.nextcloud }}
@@ -46,7 +48,7 @@ jobs:
         run: make
 
       - name: Configure server with app
-        uses: SMillerDev/nextcloud-actions/setup-nextcloud-app@fae87e29aa7cdf1ea0b8033c67f60e75b10be2cd
+        uses: SMillerDev/nextcloud-actions/setup-nextcloud-app@ae95709955d06dea39756101e07ec5b6134f14d7
         with:
           app: ${{ env.APP_NAME }}
           check-code: false
