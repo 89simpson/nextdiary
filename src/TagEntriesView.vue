@@ -1,7 +1,7 @@
 <template>
 	<div class="tag-entries-view">
 		<div class="tag-header">
-			<NcButton type="tertiary"
+			<NcButton variant="tertiary"
 				:aria-label="t('nextdiary', 'Back')"
 				@click="goBack">
 				<template #icon>
@@ -16,7 +16,7 @@
 					:disabled="isSaving"
 					@keyup.enter="saveRename"
 					@keyup.esc="cancelEdit">
-				<NcButton type="tertiary"
+				<NcButton variant="tertiary"
 					:aria-label="t('nextdiary', 'Save')"
 					:disabled="isSaving"
 					@click="saveRename">
@@ -24,7 +24,7 @@
 						<Check :size="20" />
 					</template>
 				</NcButton>
-				<NcButton type="tertiary"
+				<NcButton variant="tertiary"
 					:aria-label="t('nextdiary', 'Cancel')"
 					:disabled="isSaving"
 					@click="cancelEdit">
@@ -36,7 +36,7 @@
 			<template v-else>
 				<h2>{{ tagName }}</h2>
 				<NcButton v-if="tagName"
-					type="tertiary"
+					variant="tertiary"
 					:aria-label="t('nextdiary', 'Rename')"
 					@click="startEdit">
 					<template #icon>
@@ -44,7 +44,7 @@
 					</template>
 				</NcButton>
 				<NcButton v-if="tagName"
-					type="tertiary"
+					variant="tertiary"
 					:aria-label="t('nextdiary', 'Delete')"
 					@click="confirmDelete">
 					<template #icon>
@@ -88,7 +88,8 @@
 </template>
 
 <script>
-import { NcButton, NcEmptyContent } from '@nextcloud/vue'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft'
 import TagIcon from 'vue-material-design-icons/Tag'
 import Pencil from 'vue-material-design-icons/Pencil'
@@ -108,6 +109,7 @@ export default {
 			required: true,
 		},
 	},
+	emits: ['entry-changed'],
 	data() {
 		return {
 			entries: [],

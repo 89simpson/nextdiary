@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { generateUrl } from '@nextcloud/router'
 import moment from '@nextcloud/moment'
 import Diary from './Diary.vue'
@@ -9,11 +8,8 @@ import TagEntriesView from './TagEntriesView.vue'
 import SymptomEntriesView from './SymptomEntriesView.vue'
 import MedicationEntriesView from './MedicationEntriesView.vue'
 
-Vue.use(VueRouter)
-
-export default new VueRouter({
-	mode: 'history',
-	base: generateUrl('apps/nextdiary'),
+export default createRouter({
+	history: createWebHistory(generateUrl('apps/nextdiary')),
 	routes: [
 		{
 			path: '/',

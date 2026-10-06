@@ -45,6 +45,7 @@ export default {
 			default: true,
 		},
 	},
+	emits: ['input'],
 	data() {
 		return {
 			moodEmojis: ['\uD83D\uDE1E', '\uD83D\uDE15', '\uD83D\uDE10', '\uD83D\uDE42', '\uD83D\uDE0A'],

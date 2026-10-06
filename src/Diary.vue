@@ -1,19 +1,12 @@
 <template>
 	<NcContent id="nextdiary-content" app-name="nextdiary">
-		<NcAppNavigation>
+		<NcAppNavigation :aria-label="t('nextdiary', 'Diary')">
 			<div class="navigation-wrapper">
 				<NcButton class="icon icon-view-previous"
 					:aria-label="t('nextdiary', 'Previous day')"
 					@click="goPrevDay" />
-				<NcDatetimePicker ref="datepicker"
-					v-model="selectedDate"
-					class="diary-datetimepicker"
-					type="date"
-					:open="calendarOpen"
-					@change="onDateChange"
-					@calendar-change="onCalendarChange"
-					@panel-change="onCalendarPanelUpdate" />
-				<NcButton class="open-calendar"
+				<NcButton ref="calendarButton"
+					class="open-calendar"
 					@click="openCalendar">
 					{{ formattedDate }}
 				</NcButton>
@@ -22,11 +15,22 @@
 					:aria-label="t('nextdiary', 'Next day')"
 					@click="goNextDay" />
 			</div>
+			<Teleport to="body">
+				<div v-if="calendarOpen"
+					ref="calendarPopup"
+					class="diary-calendar-popup"
+					:style="calendarPopupStyle">
+					<NcDateTimePicker :model-value="selectedDate"
+						type="date"
+						inline
+						@update:model-value="onCalendarSelect" />
+				</div>
+			</Teleport>
 			<template #list>
 				<ul>
 					<NcListItem v-for="entry in lastEntries"
 						:key="entry.id"
-						:title="formatEntryTitle(entry)"
+						:name="formatEntryTitle(entry)"
 						:bold="false"
 						:compact="true"
 						counter-type="highlighted"
@@ -35,7 +39,7 @@
 							<NcAppNavigationIconBullet v-if="isActiveEntry(entry)" color="0082c9" />
 							<NcAppNavigationIconBullet v-else color="FFFFFF" />
 						</template>
-						<template #subtitle>
+						<template #subname>
 							{{ stripMarkdown(entry.excerpt) }}
 						</template>
 					</NcListItem>
@@ -52,14 +56,12 @@
 			:current-date="currentDate"
 			@close="showExportDialog = false" />
 		<NcAppContent>
-			<router-view
-				@entry-changed="onEntryChanged"
+			<router-view @entry-changed="onEntryChanged"
 				@navigate-date="onDateChange" />
 		</NcAppContent>
 		<div id="nextdiary-right-sidebar" :class="{ 'mobile-open': mobileSidebarOpen }">
-			<template v-for="sectionKey in sidebarOrder">
+			<template v-for="sectionKey in sidebarOrder" :key="sectionKey">
 				<div v-if="sectionKey === 'tags' && settings.show_tags"
-					:key="sectionKey"
 					class="sidebar-section"
 					:class="{ expanded: expandedSection === 'tags' }">
 					<h4 class="sidebar-title" @click="toggleSection('tags')">
@@ -78,7 +80,6 @@
 					</template>
 				</div>
 				<div v-if="sectionKey === 'symptoms' && settings.show_symptoms"
-					:key="sectionKey"
 					class="sidebar-section"
 					:class="{ expanded: expandedSection === 'symptoms' }">
 					<h4 class="sidebar-title" @click="toggleSection('symptoms')">
@@ -97,7 +98,6 @@
 					</template>
 				</div>
 				<div v-if="sectionKey === 'medications' && settings.show_medications"
-					:key="sectionKey"
 					class="sidebar-section"
 					:class="{ expanded: expandedSection === 'medications' }">
 					<h4 class="sidebar-title" @click="toggleSection('medications')">
@@ -129,16 +129,14 @@
 </template>
 
 <script>
-import {
-	NcAppContent,
-	NcAppNavigation,
-	NcContent,
-	NcAppNavigationItem,
-	NcDatetimePicker,
-	NcButton,
-	NcAppNavigationIconBullet,
-	NcListItem,
-} from '@nextcloud/vue'
+import NcAppContent from '@nextcloud/vue/components/NcAppContent'
+import NcAppNavigation from '@nextcloud/vue/components/NcAppNavigation'
+import NcAppNavigationIconBullet from '@nextcloud/vue/components/NcAppNavigationIconBullet'
+import NcAppNavigationItem from '@nextcloud/vue/components/NcAppNavigationItem'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcContent from '@nextcloud/vue/components/NcContent'
+import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
+import NcListItem from '@nextcloud/vue/components/NcListItem'
 import moment from '@nextcloud/moment'
 import { generateUrl } from '@nextcloud/router'
 import TagCloud from './TagCloud.vue'
@@ -150,6 +148,13 @@ import ChevronDown from 'vue-material-design-icons/ChevronDown'
 import ChevronRight from 'vue-material-design-icons/ChevronRight'
 import axios from '@nextcloud/axios'
 
+const CALENDAR_OBSERVER_OPTIONS = {
+	childList: true,
+	subtree: true,
+	attributes: true,
+	attributeFilter: ['id', 'class'],
+}
+
 export default {
 	name: 'Diary',
 	components: {
@@ -157,7 +162,7 @@ export default {
 		NcContent,
 		NcAppContent,
 		NcAppNavigationItem,
-		NcDatetimePicker,
+		NcDateTimePicker,
 		NcButton,
 		NcAppNavigationIconBullet,
 		ExportDialog,
@@ -179,7 +184,7 @@ export default {
 			lastEntries: [],
 			entryDates: [],
 			calendarObserver: null,
-			calendarViewDate: null,
+			calendarPopupStyle: {},
 			tags: [],
 			tagSearchQuery: '',
 			symptomSearchQuery: '',
@@ -276,8 +281,9 @@ export default {
 		this.fetchMedications()
 		this.fetchSettings()
 	},
-	beforeDestroy() {
+	beforeUnmount() {
 		this.disconnectObserver()
+		window.removeEventListener('resize', this.positionCalendar)
 	},
 	methods: {
 		onDateChange(date) {
@@ -285,7 +291,12 @@ export default {
 			if (this.currentDate !== targetDate || this.$route.name !== 'day') {
 				this.$router.push({ name: 'day', params: { date: targetDate } })
 			}
-			this.calendarOpen = false
+			this.closeCalendar()
+		},
+		onCalendarSelect(date) {
+			if (!date) return
+			this.selectedDate = date
+			this.onDateChange(date)
 		},
 		goToEntry(entry) {
 			this.$router.push({ name: 'entry', params: { id: String(entry.id) } })
@@ -300,31 +311,36 @@ export default {
 			return false
 		},
 		openCalendar() {
-			this.calendarOpen = !this.calendarOpen
 			if (this.calendarOpen) {
-				this.$nextTick(() => {
-					setTimeout(() => {
-						this.applyHighlights()
-						this.observeCalendar()
-					}, 150)
-				})
-			} else {
-				this.disconnectObserver()
+				this.closeCalendar()
+				return
 			}
-		},
-		onCalendarChange(date) {
-			this.calendarViewDate = date
-			if (this.calendarOpen) {
-				this.$nextTick(() => {
+			this.positionCalendar()
+			this.calendarOpen = true
+			window.addEventListener('resize', this.positionCalendar)
+			this.$nextTick(() => {
+				setTimeout(() => {
 					this.applyHighlights()
-				})
-			}
+					this.observeCalendar()
+				}, 150)
+			})
 		},
-		onCalendarPanelUpdate() {
-			if (this.calendarOpen) {
-				this.$nextTick(() => {
-					this.applyHighlights()
-				})
+		closeCalendar() {
+			this.calendarOpen = false
+			this.disconnectObserver()
+			window.removeEventListener('resize', this.positionCalendar)
+		},
+		positionCalendar() {
+			// The calendar is teleported to <body> (like the former date picker popup),
+			// so it is not clipped by the scrolling navigation; place it under the date button.
+			const button = this.$refs.calendarButton?.$el
+			if (!button) return
+			const rect = button.getBoundingClientRect()
+			const width = 300
+			const left = Math.max(4, Math.min(rect.left, window.innerWidth - width - 4))
+			this.calendarPopupStyle = {
+				top: `${Math.round(rect.bottom + 2)}px`,
+				left: `${Math.round(left)}px`,
 			}
 		},
 		goPrevDay() {
@@ -384,8 +400,10 @@ export default {
 				this.searchOpen = section
 				this.$nextTick(() => {
 					const refName = 'search' + section.charAt(0).toUpperCase() + section.slice(1)
-					if (this.$refs[refName]) {
-						this.$refs[refName].focus()
+					// refs inside v-for are collected into arrays in Vue 3
+					const input = [this.$refs[refName]].flat()[0]
+					if (input) {
+						input.focus()
 					}
 				})
 			}
@@ -482,8 +500,7 @@ export default {
 				})
 		},
 		findCalendarPopup() {
-			return document.querySelector('.mx-datepicker-main.mx-datepicker-popup')
-				|| document.querySelector('.mx-datepicker-content')
+			return this.$refs.calendarPopup || null
 		},
 		observeCalendar() {
 			this.disconnectObserver()
@@ -495,10 +512,7 @@ export default {
 				clearTimeout(debounce)
 				debounce = setTimeout(() => this.applyHighlights(), 80)
 			})
-			this.calendarObserver.observe(popup, {
-				childList: true,
-				subtree: true,
-			})
+			this.calendarObserver.observe(popup, CALENDAR_OBSERVER_OPTIONS)
 		},
 		disconnectObserver() {
 			if (this.calendarObserver) {
@@ -507,70 +521,48 @@ export default {
 			}
 		},
 		applyHighlights() {
+			const popup = this.findCalendarPopup()
+			if (!popup) return
+
 			if (this.calendarObserver) {
 				this.calendarObserver.disconnect()
 			}
 
-			const panel = document.querySelector('.mx-calendar')
-			if (panel) {
-				if (panel.classList.contains('mx-calendar-panel-month')) {
-					this.highlightMonths()
-				} else if (panel.classList.contains('mx-calendar-panel-year')) {
-					this.highlightYears()
-				} else {
-					this.highlightDates()
-				}
-			}
+			this.highlightDates(popup)
+			this.highlightOverlay(popup)
 
-			const popup = this.findCalendarPopup()
-			if (this.calendarObserver && popup) {
-				this.calendarObserver.observe(popup, {
-					childList: true,
-					subtree: true,
+			if (this.calendarObserver) {
+				this.calendarObserver.observe(popup, CALENDAR_OBSERVER_OPTIONS)
+			}
+		},
+		highlightDates(popup) {
+			// Day cells carry their date in the id: "dp-YYYY-MM-DD"
+			popup.querySelectorAll('.dp__calendar_item').forEach(cell => {
+				const inner = cell.querySelector('.dp__cell_inner')
+				const date = (cell.id || '').replace(/^dp-/, '')
+				const hasEntry = !!inner
+					&& !inner.classList.contains('dp__cell_offset')
+					&& this.entryDatesSet.has(date)
+				cell.classList.toggle('has-diary-entry', hasEntry)
+			})
+		},
+		highlightOverlay(popup) {
+			// Month / year selection overlays
+			const cells = Array.from(popup.querySelectorAll('.dp__overlay [role="gridcell"]'))
+			if (cells.length === 0) return
+			const texts = cells.map(cell => cell.textContent.trim())
+			if (texts.every(text => /^\d{4}$/.test(text))) {
+				cells.forEach((cell, index) => {
+					cell.classList.toggle('has-diary-entry', this.entryYearsSet.has(texts[index]))
 				})
+				return
 			}
-		},
-		highlightDates() {
-			const viewDate = this.calendarViewDate || new Date(this.currentDate)
-			const year = viewDate.getFullYear()
-			const monthIndex = viewDate.getMonth()
-
-			const cells = document.querySelectorAll('.mx-calendar-content .cell')
-			cells.forEach(cell => {
-				cell.classList.remove('has-diary-entry')
-				if (cell.classList.contains('not-current-month')) return
-
-				const day = parseInt(cell.textContent.trim())
-				if (isNaN(day)) return
-
-				const mm = String(monthIndex + 1).padStart(2, '0')
-				const dd = String(day).padStart(2, '0')
-				if (this.entryDatesSet.has(`${year}-${mm}-${dd}`)) {
-					cell.classList.add('has-diary-entry')
-				}
-			})
-		},
-		highlightMonths() {
-			const viewDate = this.calendarViewDate || new Date(this.currentDate)
-			const year = viewDate.getFullYear()
-
-			const cells = document.querySelectorAll('.mx-table-month .cell')
+			if (cells.length !== 12) return
+			const yearButton = popup.querySelector('[data-test-id^="year-mode-btn"]')
+			const year = yearButton ? parseInt(yearButton.textContent.trim()) : NaN
 			cells.forEach((cell, index) => {
-				cell.classList.remove('has-diary-entry')
 				const mm = String(index + 1).padStart(2, '0')
-				if (this.entryMonthsSet.has(`${year}-${mm}`)) {
-					cell.classList.add('has-diary-entry')
-				}
-			})
-		},
-		highlightYears() {
-			const cells = document.querySelectorAll('.mx-table-year .cell')
-			cells.forEach(cell => {
-				cell.classList.remove('has-diary-entry')
-				const year = cell.textContent.trim()
-				if (this.entryYearsSet.has(year)) {
-					cell.classList.add('has-diary-entry')
-				}
+				cell.classList.toggle('has-diary-entry', !isNaN(year) && this.entryMonthsSet.has(`${year}-${mm}`))
 			})
 		},
 	},
@@ -578,6 +570,14 @@ export default {
 </script>
 
 <style lang="scss">
+// Vue 3 mounts inside the #vue-content placeholder instead of replacing it:
+// keep it out of the layout so the app root still sizes against #content.
+#vue-content {
+	display: contents;
+	width: inherit;
+	height: inherit;
+}
+
 #nextdiary-content {
 	margin: 0;
 	height: calc(100% - 50px);
@@ -666,13 +666,6 @@ export default {
 		justify-content: space-around;
 		padding: 12px;
 
-		.diary-datetimepicker {
-			width: 0;
-			.mx-input-wrapper {
-				display: none;
-			}
-		}
-
 		.open-calendar {
 			flex-grow: 3;
 			font-size: 14px;
@@ -693,11 +686,11 @@ export default {
 }
 
 @media (max-width: 1024px) {
-	.app-navigation:not(.app-navigation--close) ~ .app-content .day-header > .button-vue {
+	.app-navigation:not(.app-navigation--close):not(.app-navigation--closed) ~ .app-content .day-header > .button-vue {
 		visibility: hidden;
 	}
 
-	.app-navigation:not(.app-navigation--close) ~ .app-content {
+	.app-navigation:not(.app-navigation--close):not(.app-navigation--closed) ~ .app-content {
 		visibility: hidden !important;
 	}
 }
@@ -738,31 +731,35 @@ export default {
 
 }
 
-.mx-datepicker-popup .mx-calendar {
-	width: 300px !important;
-	margin: 0 auto;
-}
+.diary-calendar-popup {
+	position: fixed;
+	z-index: 2000;
+	background-color: var(--color-main-background);
+	border-radius: var(--border-radius-large);
+	box-shadow: 0 2px 8px var(--color-box-shadow);
 
-.mx-calendar-content .cell.has-diary-entry {
-	position: relative !important;
-
-	&::before {
-		content: '' !important;
-		position: absolute !important;
-		bottom: 2px !important;
-		left: 50% !important;
-		transform: translateX(-50%) !important;
-		width: 6px !important;
-		height: 6px !important;
-		background-color: #46ba61 !important;
-		border-radius: 50% !important;
-		display: block !important;
-		z-index: 10 !important;
+	// 300px wide like the former date picker popup
+	.dp__main {
+		--dp-menu-min-width: 300px;
 	}
-}
 
-.mx-calendar-content .cell.has-diary-entry.active::before,
-.mx-calendar-content .cell.has-diary-entry:hover::before {
-	background-color: #46ba61 !important;
+	.dp__calendar_item.has-diary-entry .dp__cell_inner,
+	.dp__overlay [role="gridcell"].has-diary-entry > div {
+		position: relative;
+
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: 2px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 6px;
+			height: 6px;
+			background-color: #46ba61;
+			border-radius: 50%;
+			display: block;
+			z-index: 10;
+		}
+	}
 }
 </style>

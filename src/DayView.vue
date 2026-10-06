@@ -2,7 +2,7 @@
 	<div class="day-view">
 		<div class="day-header">
 			<h2>{{ formattedDate }}</h2>
-			<NcButton type="primary" @click="createNewEntry">
+			<NcButton variant="primary" @click="createNewEntry">
 				<template #icon>
 					<Plus :size="20" />
 				</template>
@@ -72,12 +72,10 @@
 </template>
 
 <script>
-import {
-	NcButton,
-	NcActions,
-	NcActionButton,
-	NcEmptyContent,
-} from '@nextcloud/vue'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import Plus from 'vue-material-design-icons/Plus'
 import Delete from 'vue-material-design-icons/Delete'
 import Paperclip from 'vue-material-design-icons/Paperclip'
@@ -104,6 +102,7 @@ export default {
 			required: true,
 		},
 	},
+	emits: ['entry-changed'],
 	data() {
 		return {
 			entries: [],

@@ -1,9 +1,13 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import SettingsPage from './SettingsPage.vue'
+import { applyLegacyCssVariables } from './legacyCssVariables.js'
 
-Vue.mixin({ methods: { t, n } })
+applyLegacyCssVariables()
 
-new Vue({
-	el: '#nextdiary-settings',
-	render: h => h(SettingsPage),
-})
+const app = createApp(SettingsPage)
+
+// Server-provided translation helpers (OC.L10N), see main.js
+app.config.globalProperties.t = t
+app.config.globalProperties.n = n
+
+app.mount('#nextdiary-settings')

@@ -6,8 +6,6 @@
 
 export default {
 	name: 'App',
-	components: {
-	},
 	data() {
 		return {
 			loading: false,

@@ -2,7 +2,10 @@
 	<div v-if="files.length > 0" class="file-gallery">
 		<div v-for="file in files" :key="file.id" class="file-item">
 			<div v-if="file.isImage" class="file-preview">
-				<img :src="previewUrl(file.id)" :alt="file.originalName" loading="lazy" @click="openFile(file)">
+				<img :src="previewUrl(file.id)"
+					:alt="file.originalName"
+					loading="lazy"
+					@click="openFile(file)">
 			</div>
 			<div v-else class="file-icon" @click="openFile(file)">
 				<Paperclip :size="24" />
@@ -11,7 +14,7 @@
 				<span class="file-name" :title="file.originalName">{{ file.originalName }}</span>
 				<span class="file-size">{{ formatSize(file.sizeBytes) }}</span>
 			</div>
-			<NcButton type="tertiary"
+			<NcButton variant="tertiary"
 				class="file-delete"
 				:aria-label="t('nextdiary', 'Delete file')"
 				@click="$emit('delete', file)">
@@ -24,7 +27,7 @@
 </template>
 
 <script>
-import { NcButton } from '@nextcloud/vue'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import { generateUrl } from '@nextcloud/router'
 import Close from 'vue-material-design-icons/Close'
 import Paperclip from 'vue-material-design-icons/Paperclip'
@@ -38,6 +41,7 @@ export default {
 			default: () => [],
 		},
 	},
+	emits: ['delete'],
 	methods: {
 		previewUrl(fileId) {
 			return generateUrl('/apps/nextdiary/api/files/{fileId}/download', { fileId })

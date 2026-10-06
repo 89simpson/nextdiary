@@ -1,15 +1,20 @@
 import '../css/nextdiary.scss'
 
-import Vue from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router.js'
+import { applyLegacyCssVariables } from './legacyCssVariables.js'
 
-Vue.config.devtools = (process.env.NODE_ENV === 'development')
+applyLegacyCssVariables()
 
-Vue.mixin({ methods: { t, n } })
+const app = createApp(App)
 
-export default new Vue({
-	el: '#vue-content',
-	router,
-	render: h => h(App),
-})
+// `t` and `n` are the server-provided translation helpers (OC.L10N),
+// exposed to all templates exactly like the former Vue 2 global mixin.
+app.config.globalProperties.t = t
+app.config.globalProperties.n = n
+
+app.use(router)
+app.mount('#vue-content')
+
+export default app

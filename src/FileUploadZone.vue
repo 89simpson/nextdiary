@@ -10,7 +10,7 @@
 			:accept="accept"
 			class="file-input-hidden"
 			@change="onFileSelect">
-		<NcButton type="tertiary"
+		<NcButton variant="tertiary"
 			:aria-label="t('nextdiary', 'Attach file')"
 			@click="$refs.fileInput.click()">
 			<template #icon>
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { NcButton } from '@nextcloud/vue'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import Paperclip from 'vue-material-design-icons/Paperclip'
 
 export default {
@@ -40,6 +40,7 @@ export default {
 			default: 'image/*,.pdf,.doc,.docx,.txt,.md',
 		},
 	},
+	emits: ['upload'],
 	data() {
 		return {
 			isDragging: false,

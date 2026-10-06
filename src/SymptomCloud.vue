@@ -28,6 +28,7 @@ export default {
 			default: null,
 		},
 	},
+	emits: ['select-symptom'],
 	methods: {
 		calculateFontSize(count) {
 			const min = 0.85

@@ -28,6 +28,7 @@ export default {
 			default: null,
 		},
 	},
+	emits: ['select-medication'],
 	methods: {
 		calculateFontSize(count) {
 			const min = 0.85

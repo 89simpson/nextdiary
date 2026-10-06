@@ -6,25 +6,25 @@
 			<div class="export-section">
 				<label class="export-label">{{ t('nextdiary', 'What to export?') }}</label>
 				<NcCheckboxRadioSwitch v-if="entryId"
-					:checked.sync="scope"
+					v-model="scope"
 					value="single"
 					name="scope"
 					type="radio">
 					{{ t('nextdiary', 'Current entry') }}
 				</NcCheckboxRadioSwitch>
-				<NcCheckboxRadioSwitch :checked.sync="scope"
+				<NcCheckboxRadioSwitch v-model="scope"
 					value="day"
 					name="scope"
 					type="radio">
 					{{ t('nextdiary', 'Single day') }}
 				</NcCheckboxRadioSwitch>
-				<NcCheckboxRadioSwitch :checked.sync="scope"
+				<NcCheckboxRadioSwitch v-model="scope"
 					value="range"
 					name="scope"
 					type="radio">
 					{{ t('nextdiary', 'Date range') }}
 				</NcCheckboxRadioSwitch>
-				<NcCheckboxRadioSwitch :checked.sync="scope"
+				<NcCheckboxRadioSwitch v-model="scope"
 					value="all"
 					name="scope"
 					type="radio">
@@ -34,7 +34,7 @@
 
 			<div v-if="scope === 'day'" class="export-section">
 				<label class="export-label">{{ t('nextdiary', 'Change date') }}</label>
-				<NcDatetimePicker v-model="dayDate"
+				<NcDateTimePicker v-model="dayDate"
 					type="date"
 					class="export-datepicker" />
 			</div>
@@ -43,13 +43,13 @@
 				<div class="date-range-row">
 					<div class="date-field">
 						<label class="export-label">{{ t('nextdiary', 'Start date') }}</label>
-						<NcDatetimePicker v-model="rangeStart"
+						<NcDateTimePicker v-model="rangeStart"
 							type="date"
 							class="export-datepicker" />
 					</div>
 					<div class="date-field">
 						<label class="export-label">{{ t('nextdiary', 'End date') }}</label>
-						<NcDatetimePicker v-model="rangeEnd"
+						<NcDateTimePicker v-model="rangeEnd"
 							type="date"
 							class="export-datepicker" />
 					</div>
@@ -58,19 +58,19 @@
 
 			<div class="export-section">
 				<label class="export-label">{{ t('nextdiary', 'Format') }}</label>
-				<NcCheckboxRadioSwitch :checked.sync="format"
+				<NcCheckboxRadioSwitch v-model="format"
 					value="markdown"
 					name="format"
 					type="radio">
 					Markdown
 				</NcCheckboxRadioSwitch>
-				<NcCheckboxRadioSwitch :checked.sync="format"
+				<NcCheckboxRadioSwitch v-model="format"
 					value="pdf"
 					name="format"
 					type="radio">
 					PDF
 				</NcCheckboxRadioSwitch>
-				<NcCheckboxRadioSwitch :checked.sync="format"
+				<NcCheckboxRadioSwitch v-model="format"
 					value="csv"
 					name="format"
 					type="radio">
@@ -79,10 +79,10 @@
 			</div>
 
 			<div class="export-actions">
-				<NcButton type="tertiary" @click="$emit('close')">
+				<NcButton variant="tertiary" @click="$emit('close')">
 					{{ t('nextdiary', 'Cancel') }}
 				</NcButton>
-				<NcButton type="primary" @click="download">
+				<NcButton variant="primary" @click="download">
 					<template #icon>
 						<Download :size="20" />
 					</template>
@@ -94,7 +94,9 @@
 </template>
 
 <script>
-import { NcCheckboxRadioSwitch, NcButton, NcDatetimePicker } from '@nextcloud/vue'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import Download from 'vue-material-design-icons/Download'
 import { generateUrl } from '@nextcloud/router'
 import moment from '@nextcloud/moment'
@@ -104,7 +106,7 @@ export default {
 	components: {
 		NcCheckboxRadioSwitch,
 		NcButton,
-		NcDatetimePicker,
+		NcDateTimePicker,
 		Download,
 	},
 	props: {
@@ -117,6 +119,7 @@ export default {
 			default: () => moment().format('YYYY-MM-DD'),
 		},
 	},
+	emits: ['close'],
 	data() {
 		return {
 			scope: this.entryId ? 'single' : 'all',

@@ -2,12 +2,12 @@
 	<div id="nextdiary-settings-page">
 		<h2>{{ t('nextdiary', 'Diary settings') }}</h2>
 		<div class="settings-section">
-			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_mood"
-				@update:checked="updateSetting('show_mood', $event)">
+			<NcCheckboxRadioSwitch v-model="localSettings.show_mood"
+				@update:model-value="updateSetting('show_mood', $event)">
 				{{ t('nextdiary', 'Show mood') }}
 			</NcCheckboxRadioSwitch>
-			<NcCheckboxRadioSwitch :checked.sync="localSettings.show_wellbeing"
-				@update:checked="updateSetting('show_wellbeing', $event)">
+			<NcCheckboxRadioSwitch v-model="localSettings.show_wellbeing"
+				@update:model-value="updateSetting('show_wellbeing', $event)">
 				{{ t('nextdiary', 'Show wellbeing') }}
 			</NcCheckboxRadioSwitch>
 		</div>
@@ -16,12 +16,12 @@
 			<div v-for="(sectionKey, index) in localSettings.sidebar_order"
 				:key="sectionKey"
 				class="settings-row">
-				<NcCheckboxRadioSwitch :checked.sync="localSettings[showKey(sectionKey)]"
-					@update:checked="updateSetting(showKey(sectionKey), $event)">
+				<NcCheckboxRadioSwitch v-model="localSettings[showKey(sectionKey)]"
+					@update:model-value="updateSetting(showKey(sectionKey), $event)">
 					{{ sectionLabel(sectionKey) }}
 				</NcCheckboxRadioSwitch>
 				<div class="order-buttons">
-					<NcButton type="tertiary"
+					<NcButton variant="tertiary"
 						:disabled="index === 0"
 						:aria-label="t('nextdiary', 'Move up')"
 						@click="moveSection(index, -1)">
@@ -29,7 +29,7 @@
 							<ArrowUp :size="20" />
 						</template>
 					</NcButton>
-					<NcButton type="tertiary"
+					<NcButton variant="tertiary"
 						:disabled="index === localSettings.sidebar_order.length - 1"
 						:aria-label="t('nextdiary', 'Move down')"
 						@click="moveSection(index, 1)">
@@ -42,8 +42,8 @@
 		</div>
 		<h3>{{ t('nextdiary', 'Reference lists') }}</h3>
 		<div class="settings-section">
-			<NcCheckboxRadioSwitch :checked.sync="localSettings.auto_cleanup_unused"
-				@update:checked="updateSetting('auto_cleanup_unused', $event)">
+			<NcCheckboxRadioSwitch v-model="localSettings.auto_cleanup_unused"
+				@update:model-value="updateSetting('auto_cleanup_unused', $event)">
 				{{ t('nextdiary', 'Automatically delete tags, symptoms and medications when no longer used in any entry') }}
 			</NcCheckboxRadioSwitch>
 			<p class="settings-hint">
@@ -54,7 +54,8 @@
 </template>
 
 <script>
-import { NcCheckboxRadioSwitch, NcButton } from '@nextcloud/vue'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import ArrowUp from 'vue-material-design-icons/ArrowUp'
 import ArrowDown from 'vue-material-design-icons/ArrowDown'
 import axios from '@nextcloud/axios'
