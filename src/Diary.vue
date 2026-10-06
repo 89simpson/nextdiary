@@ -139,6 +139,7 @@ import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import NcListItem from '@nextcloud/vue/components/NcListItem'
 import moment from '@nextcloud/moment'
 import { generateUrl } from '@nextcloud/router'
+import { apiUrl, validId } from './apiUrl.js'
 import TagCloud from './TagCloud.vue'
 import ExportDialog from './ExportDialog.vue'
 import SymptomCloud from './SymptomCloud.vue'
@@ -429,7 +430,7 @@ export default {
 			return date
 		},
 		fetchPastEntries() {
-			axios.get(generateUrl('apps/nextdiary/api/last-entries/' + this.pastEntriesAmount))
+			axios.get(apiUrl('/last-entries/{amount}', { amount: validId(this.pastEntriesAmount) }))
 				.then(response => {
 					if (response.data) {
 						this.lastEntries = response.data

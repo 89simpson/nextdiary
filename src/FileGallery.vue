@@ -28,7 +28,7 @@
 
 <script>
 import NcButton from '@nextcloud/vue/components/NcButton'
-import { generateUrl } from '@nextcloud/router'
+import { apiUrl, validId } from './apiUrl.js'
 import Close from 'vue-material-design-icons/Close'
 import Paperclip from 'vue-material-design-icons/Paperclip'
 
@@ -44,7 +44,7 @@ export default {
 	emits: ['delete'],
 	methods: {
 		previewUrl(fileId) {
-			return generateUrl('/apps/nextdiary/api/files/{fileId}/download', { fileId })
+			return apiUrl('/files/{fileId}/download', { fileId: validId(fileId) })
 		},
 		openFile(file) {
 			window.open(this.previewUrl(file.id), '_blank')

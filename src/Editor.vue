@@ -76,18 +76,62 @@ import FileGallery from './FileGallery.vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import moment from '@nextcloud/moment'
+import { apiUrl, validId } from './apiUrl.js'
 
 const TOOLBAR = ['bold', 'italic', 'strikethrough', 'heading', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'link', '|', 'preview', '|', 'guide']
 
+// Autosave: delay after the last change
+const SAVE_DELAY = 500
+// How long a navigation waits for the pending save, so the next view shows the saved entry
+const NAVIGATION_SAVE_WAIT = 3000
+
+// A dedicated DOMPurify instance: its hooks do not affect other users of DOMPurify
+const previewPurifier = DOMPurify(window)
+
+const PREVIEW_PURIFY_CONFIG = {
+	// `target` is kept for the links EasyMDE opens in a new tab
+	ADD_ATTR: ['target'],
+	// The preview is part of the page: no page-wide styles, no (fake) forms, and
+	// no inline styles or server CSS classes (e.g. full-screen overlays).
+	// Markdown itself needs none of them.
+	FORBID_TAGS: ['style', 'form', 'button', 'textarea', 'select', 'option', 'optgroup', 'datalist'],
+	FORBID_ATTR: ['style', 'class'],
+}
+
+// <input> is only kept for the checkboxes of Markdown task lists
+previewPurifier.addHook('uponSanitizeElement', (node, data) => {
+	if (data.tagName === 'input' && (node.getAttribute('type') || '').toLowerCase() !== 'checkbox') {
+		node.remove()
+	}
+})
+
+previewPurifier.addHook('afterSanitizeAttributes', node => {
+	if (node.nodeType !== Node.ELEMENT_NODE) {
+		return
+	}
+	if (node.hasAttribute('target')) {
+		node.setAttribute('rel', 'noopener noreferrer')
+	}
+	if (node.nodeName === 'INPUT') {
+		// Read-only, as rendered by Markdown; styled by github-markdown-css instead of
+		// the inline style EasyMDE puts on the list item (added after the attribute
+		// filter, so these classes are kept)
+		node.setAttribute('disabled', '')
+		node.classList.add('task-list-item-checkbox')
+		if (node.parentElement && node.parentElement.nodeName === 'LI') {
+			node.parentElement.classList.add('task-list-item')
+		}
+	}
+})
+
 /**
  * Sanitize the Markdown preview HTML (the preview is inserted with innerHTML).
- * `target` is kept for the links EasyMDE opens in a new tab.
  *
  * @param {string} html rendered Markdown
  * @return {string}
  */
 function sanitizePreview(html) {
-	return DOMPurify.sanitize(html, { ADD_ATTR: ['target'] })
+	return previewPurifier.sanitize(html, PREVIEW_PURIFY_CONFIG)
 }
 
 /**
@@ -216,54 +260,34 @@ export default {
 		},
 	},
 	created() {
+		// Not reactive on purpose: autosave bookkeeping
+		this.saveTimeout = null
+		this.pendingSaveId = null
+		this.runningSave = null
+		this.settingEditorValue = false
+		this.fetchCount = 0
 		this.fetchEntry()
 		this.fetchSettings()
 	},
 	mounted() {
 		// Not reactive on purpose: the editor instance holds DOM / CodeMirror state.
 		this.easymde = createMarkdownEditor(this.$refs.markdownEditor)
-		this.easymde.codemirror.on('change', () => {
-			if (this.status === 'loading' || this.status === 'loaded' || this.content === this.easymde.value()) {
-				if (this.status === 'loaded') {
-					this.status = 'writing'
-				}
-				return
-			}
-			this.content = this.easymde.value()
-			this.unSavedChanges = true
-			clearTimeout(this.timeout)
-			const entryId = this.id
-			const saveFunction = () => {
-				if (this.id !== entryId) return
-				const newContent = this.editorContent()
-				axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
-					content: newContent,
-					ratings: this.ratings,
-					tags: this.tags,
-					symptoms: this.symptoms,
-					medications: this.medications,
-				})
-					.then(() => {
-						if (this.id === entryId) {
-							this.unSavedChanges = false
-						}
-						this.$emit('entry-changed')
-					})
-					.catch(error => {
-						// eslint-disable-next-line no-console
-						console.error('[NextDiary] Error saving entry:', error)
-					})
-			}
-			this.timeout = setTimeout(saveFunction, 500)
-		})
+		this.easymde.codemirror.on('change', this.onEditorChange)
 		if (this.status === 'loaded') {
 			// The entry arrived before the editor existed
-			this.easymde.value(this.content)
+			this.setEditorValue(this.content)
 		}
 	},
+	beforeRouteUpdate() {
+		// Another entry: save the changes of this one first
+		return this.saveBeforeNavigation()
+	},
+	beforeRouteLeave() {
+		return this.saveBeforeNavigation()
+	},
 	beforeUnmount() {
-		// Pending saves are not cancelled (same as before): they fall back to
-		// `content`, which always holds the latest editor text.
+		// Normally already done by the navigation guard; the request outlives the component
+		this.flushSave()
 		if (this.easymde) {
 			this.easymde.cleanup()
 			this.easymde.toTextArea()
@@ -274,12 +298,99 @@ export default {
 		editorContent() {
 			return this.easymde ? this.easymde.value() : this.content
 		},
+		/**
+		 * Replace the editor text without treating it as a user change.
+		 *
+		 * @param {string} text new editor content
+		 */
+		setEditorValue(text) {
+			this.settingEditorValue = true
+			try {
+				this.easymde.value(text)
+			} finally {
+				this.settingEditorValue = false
+			}
+			// The editor normalizes line breaks: compare later changes with its own text
+			this.content = this.easymde.value()
+		},
+		onEditorChange() {
+			// Loaded text is set programmatically; while another entry is loading the
+			// editor still shows the previous one, which is replaced when it arrives.
+			if (this.settingEditorValue || this.status === 'loading') return
+			const value = this.easymde.value()
+			if (value === this.content) return
+			this.content = value
+			this.scheduleSave()
+		},
+		scheduleSave() {
+			this.unSavedChanges = true
+			this.pendingSaveId = this.id
+			clearTimeout(this.saveTimeout)
+			this.saveTimeout = setTimeout(() => this.flushSave(), SAVE_DELAY)
+		},
+		/**
+		 * Send the pending save now, if there is one. The saved state (editor text,
+		 * ratings, tags, ...) still belongs to that entry: the save is flushed before
+		 * another entry is loaded.
+		 *
+		 * @return {Promise|null} the request (never rejects), or null if nothing was pending
+		 */
+		flushSave() {
+			clearTimeout(this.saveTimeout)
+			this.saveTimeout = null
+			const entryId = this.pendingSaveId
+			if (entryId === null) return null
+			this.pendingSaveId = null
+			const request = axios.put(apiUrl('/entry/{id}', { id: validId(entryId) }), {
+				content: this.editorContent(),
+				ratings: this.ratings,
+				tags: this.tags,
+				symptoms: this.symptoms,
+				medications: this.medications,
+			})
+				.then(() => {
+					if (this.id === entryId && this.pendingSaveId === null) {
+						this.unSavedChanges = false
+					}
+					this.$emit('entry-changed')
+				})
+				.catch(error => {
+					// eslint-disable-next-line no-console
+					console.error('[NextDiary] Error saving entry:', error)
+				})
+				.finally(() => {
+					if (this.runningSave === request) {
+						this.runningSave = null
+					}
+				})
+			this.runningSave = request
+			return request
+		},
+		/**
+		 * Save the pending changes and let the navigation wait for the request
+		 * (bounded), so the next view shows the saved entry.
+		 *
+		 * @return {Promise|undefined}
+		 */
+		saveBeforeNavigation() {
+			const request = this.flushSave() || this.runningSave
+			if (!request) return undefined
+			let timer
+			const timeout = new Promise(resolve => {
+				timer = setTimeout(resolve, NAVIGATION_SAVE_WAIT)
+			})
+			return Promise.race([request, timeout]).then(() => clearTimeout(timer))
+		},
 		fetchEntry() {
-			clearTimeout(this.timeout)
+			// Save the pending changes of the previous entry before its state is replaced
+			this.flushSave()
 			this.unSavedChanges = false
 			this.status = 'loading'
-			axios.get(generateUrl('apps/nextdiary/api/entry/' + this.id))
+			const fetchNumber = ++this.fetchCount
+			axios.get(apiUrl('/entry/{id}', { id: validId(this.id) }))
 				.then(response => {
+					// A newer entry was requested meanwhile
+					if (fetchNumber !== this.fetchCount) return
 					const data = response.data
 					this.content = data.entryContent || ''
 					this.entryDate = data.entryDate
@@ -291,10 +402,11 @@ export default {
 					this.files = data.files || []
 					this.status = 'loaded'
 					if (this.easymde) {
-						this.easymde.value(this.content)
+						this.setEditorValue(this.content)
 					}
 				})
 				.catch(error => {
+					if (fetchNumber !== this.fetchCount) return
 					// eslint-disable-next-line no-console
 					console.error('[NextDiary] Error fetching entry:', error)
 					this.status = 'error'
@@ -302,19 +414,19 @@ export default {
 		},
 		onRatingsChange(val) {
 			this.ratings = val
-			this.triggerMetaSave()
+			this.scheduleSave()
 		},
 		onTagsChange(val) {
 			this.tags = val
-			this.triggerMetaSave()
+			this.scheduleSave()
 		},
 		onSymptomsChange(val) {
 			this.symptoms = val
-			this.triggerMetaSave()
+			this.scheduleSave()
 		},
 		onMedicationsChange(val) {
 			this.medications = val
-			this.triggerMetaSave()
+			this.scheduleSave()
 		},
 		async fetchSettings() {
 			try {
@@ -327,31 +439,6 @@ export default {
 				console.error('[NextDiary] Error fetching settings:', error)
 			}
 		},
-		triggerMetaSave() {
-			this.unSavedChanges = true
-			clearTimeout(this.metaTimeout)
-			const entryId = this.id
-			this.metaTimeout = setTimeout(() => {
-				if (this.id !== entryId) return
-				axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
-					content: this.editorContent(),
-					ratings: this.ratings,
-					tags: this.tags,
-					symptoms: this.symptoms,
-					medications: this.medications,
-				})
-					.then(() => {
-						if (this.id === entryId) {
-							this.unSavedChanges = false
-						}
-						this.$emit('entry-changed')
-					})
-					.catch(error => {
-						// eslint-disable-next-line no-console
-						console.error('[NextDiary] Error saving meta:', error)
-					})
-			}, 500)
-		},
 		async onFilesUpload(fileList) {
 			this.fileUploading = true
 			for (const file of fileList) {
@@ -359,7 +446,7 @@ export default {
 				formData.append('file', file)
 				try {
 					const response = await axios.post(
-						generateUrl('/apps/nextdiary/api/entry/{entryId}/files', { entryId: this.id }),
+						apiUrl('/entry/{entryId}/files', { entryId: validId(this.id) }),
 						formData,
 						{ headers: { 'Content-Type': 'multipart/form-data' } }
 					)
@@ -374,7 +461,7 @@ export default {
 		async onFileDelete(file) {
 			try {
 				await axios.delete(
-					generateUrl('/apps/nextdiary/api/entry/{entryId}/files/{fileId}', { entryId: this.id, fileId: file.id })
+					apiUrl('/entry/{entryId}/files/{fileId}', { entryId: validId(this.id), fileId: validId(file.id) })
 				)
 				this.files = this.files.filter(f => f.id !== file.id)
 			} catch (error) {
@@ -393,7 +480,7 @@ export default {
 			if (newDate === this.entryDate && newLocalTime === oldLocalTime) return
 			const dateChanged = newDate !== this.entryDate
 			const entryId = this.id
-			axios.put(generateUrl('apps/nextdiary/api/entry/' + entryId), {
+			axios.put(apiUrl('/entry/{id}', { id: validId(entryId) }), {
 				content: this.editorContent(),
 				ratings: this.ratings,
 				tags: this.tags,

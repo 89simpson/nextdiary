@@ -1,14 +1,16 @@
 /*
  * The Vue 3 component library (nextcloud-vue 9) targets Nextcloud 31+ and
- * styles its components with CSS variables that older servers do not define
- * yet (most were added in Nextcloud 30, the `--color-*-text` ones in
- * Nextcloud 28, `--color-text-*` later). Undefined variables make buttons,
- * inputs, list items and the date picker lose their size, padding and radius
- * on Nextcloud 25-29.
+ * styles its components with CSS variables of current servers. Nextcloud 30,
+ * the oldest supported server, does not define `--color-text-error` and
+ * `--color-text-success` yet (Nextcloud 31 neither; they come with a later
+ * release): without the fallbacks the error/success helper texts of select
+ * fields would lose their color there.
  *
- * Only the variables the server does not provide are defined here, with the
- * Nextcloud 30 default values. On current servers every variable already
- * exists, so nothing is changed there.
+ * The other entries were needed by Nextcloud 25-29 (most variables were added
+ * in Nextcloud 30, the `--color-*-text` ones in Nextcloud 28) and are kept as
+ * a harmless safety net: only the variables the server does not provide are
+ * defined here, with the Nextcloud 30 default values. Where the server
+ * already defines a variable, nothing is changed.
  */
 const FALLBACKS = {
 	'--border-radius-small': '4px',

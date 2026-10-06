@@ -101,7 +101,7 @@ import Close from 'vue-material-design-icons/Close'
 import Delete from 'vue-material-design-icons/Delete'
 import moment from '@nextcloud/moment'
 import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
+import { apiUrl, validId } from './apiUrl.js'
 
 export default {
 	name: 'SymptomEntriesView',
@@ -137,7 +137,7 @@ export default {
 	},
 	methods: {
 		fetchName() {
-			axios.get(generateUrl('apps/nextdiary/api/symptom/' + this.symptomId))
+			axios.get(apiUrl('/symptom/{id}', { id: validId(this.symptomId) }))
 				.then(response => {
 					this.symptomName = response.data.name || ''
 				})
@@ -152,7 +152,7 @@ export default {
 		},
 		fetchEntries() {
 			this.isLoading = true
-			axios.get(generateUrl('apps/nextdiary/api/entries/symptom/' + this.symptomId))
+			axios.get(apiUrl('/entries/symptom/{id}', { id: validId(this.symptomId) }))
 				.then(response => {
 					this.entries = response.data || []
 					if (this.entries.length > 0 && this.entries[0].symptoms) {
@@ -192,7 +192,7 @@ export default {
 			const newName = (this.editName || '').trim()
 			this.isSaving = true
 			this.renameError = ''
-			axios.put(generateUrl('apps/nextdiary/api/symptom/' + this.symptomId), { name: newName })
+			axios.put(apiUrl('/symptom/{id}', { id: validId(this.symptomId) }), { name: newName })
 				.then(response => {
 					this.isSaving = false
 					this.isEditing = false
@@ -232,7 +232,7 @@ export default {
 			}
 			this.isSaving = true
 			this.renameError = ''
-			axios.delete(generateUrl('apps/nextdiary/api/symptom/' + this.symptomId))
+			axios.delete(apiUrl('/symptom/{id}', { id: validId(this.symptomId) }))
 				.then(() => {
 					this.isSaving = false
 					this.$emit('entry-changed')

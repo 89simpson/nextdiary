@@ -82,7 +82,7 @@ import Paperclip from 'vue-material-design-icons/Paperclip'
 import NoteEdit from 'vue-material-design-icons/NoteEditOutline'
 import moment from '@nextcloud/moment'
 import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
+import { apiUrl, validDate, validId } from './apiUrl.js'
 
 export default {
 	name: 'DayView',
@@ -125,7 +125,7 @@ export default {
 	methods: {
 		fetchEntries() {
 			this.isLoading = true
-			axios.get(generateUrl('apps/nextdiary/api/entries/' + this.date))
+			axios.get(apiUrl('/entries/{date}', { date: validDate(this.date) }))
 				.then(response => {
 					this.entries = response.data || []
 					this.isLoading = false
@@ -138,7 +138,7 @@ export default {
 		},
 		async createNewEntry() {
 			try {
-				const response = await axios.post(generateUrl('apps/nextdiary/api/entry/' + this.date), {
+				const response = await axios.post(apiUrl('/entry/{date}', { date: validDate(this.date) }), {
 					content: '',
 				})
 				this.$emit('entry-changed')
@@ -156,7 +156,7 @@ export default {
 				return
 			}
 			try {
-				await axios.delete(generateUrl('apps/nextdiary/api/entry/' + entry.id))
+				await axios.delete(apiUrl('/entry/{id}', { id: validId(entry.id) }))
 				this.entries = this.entries.filter(e => e.id !== entry.id)
 				this.$emit('entry-changed')
 			} catch (error) {
