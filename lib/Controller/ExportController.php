@@ -5,8 +5,11 @@ namespace OCA\NextDiary\Controller;
 use OCA\NextDiary\Db\EntryMapper;
 use OCA\NextDiary\Service\ConversionService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Response;
 use OCP\DB\Exception;
 use OCP\IRequest;
 
@@ -30,18 +33,26 @@ class ExportController extends Controller
     /**
      * Resolve entries based on scope parameters.
      *
-     * @return array ['entries' => Entry[], 'filename' => string]
+     * A single entry that does not exist or belongs to another user is answered
+     * like PageController::getEntryById does: 404 / 403.
+     *
+     * @return array|DataResponse ['entries' => Entry[], 'filename' => string], or the error response
+     * @throws \InvalidArgumentException on missing or malformed parameters
      */
-    private function resolveEntries(string $scope, ?int $entryId, ?string $date, ?string $startDate, ?string $endDate): array
+    private function resolveEntries(string $scope, ?int $entryId, ?string $date, ?string $startDate, ?string $endDate)
     {
         switch ($scope) {
             case 'single':
                 if ($entryId === null) {
                     throw new \InvalidArgumentException('entryId is required for single scope');
                 }
-                $entry = $this->mapper->findById($entryId);
+                try {
+                    $entry = $this->mapper->findById($entryId);
+                } catch (DoesNotExistException $e) {
+                    return new DataResponse(['error' => 'Entry not found'], Http::STATUS_NOT_FOUND);
+                }
                 if ($entry->getUid() !== $this->userId) {
-                    throw new \InvalidArgumentException('Entry does not belong to user');
+                    return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
                 }
                 return [
                     'entries' => [$entry],
@@ -88,12 +99,15 @@ class ExportController extends Controller
      *
      * @throws Exception
      */
-    public function getMarkdown(string $scope = 'all', ?int $entryId = null, ?string $date = null, ?string $startDate = null, ?string $endDate = null): DataDownloadResponse
+    public function getMarkdown(string $scope = 'all', ?int $entryId = null, ?string $date = null, ?string $startDate = null, ?string $endDate = null): Response
     {
         try {
             $resolved = $this->resolveEntries($scope, $entryId, $date, $startDate, $endDate);
         } catch (\InvalidArgumentException $e) {
             return new DataDownloadResponse($e->getMessage(), 'error.txt', 'text/plain');
+        }
+        if ($resolved instanceof Response) {
+            return $resolved;
         }
 
         $markdownString = $this->exportService->entriesToMarkdown($resolved['entries']);
@@ -109,12 +123,15 @@ class ExportController extends Controller
      *
      * @throws Exception
      */
-    public function getPdf(string $scope = 'all', ?int $entryId = null, ?string $date = null, ?string $startDate = null, ?string $endDate = null): DataDownloadResponse
+    public function getPdf(string $scope = 'all', ?int $entryId = null, ?string $date = null, ?string $startDate = null, ?string $endDate = null): Response
     {
         try {
             $resolved = $this->resolveEntries($scope, $entryId, $date, $startDate, $endDate);
         } catch (\InvalidArgumentException $e) {
             return new DataDownloadResponse($e->getMessage(), 'error.txt', 'text/plain');
+        }
+        if ($resolved instanceof Response) {
+            return $resolved;
         }
 
         if (empty($resolved['entries'])) {
@@ -134,12 +151,15 @@ class ExportController extends Controller
      *
      * @throws Exception
      */
-    public function getCsv(string $scope = 'all', ?int $entryId = null, ?string $date = null, ?string $startDate = null, ?string $endDate = null): DataDownloadResponse
+    public function getCsv(string $scope = 'all', ?int $entryId = null, ?string $date = null, ?string $startDate = null, ?string $endDate = null): Response
     {
         try {
             $resolved = $this->resolveEntries($scope, $entryId, $date, $startDate, $endDate);
         } catch (\InvalidArgumentException $e) {
             return new DataDownloadResponse($e->getMessage(), 'error.txt', 'text/plain');
+        }
+        if ($resolved instanceof Response) {
+            return $resolved;
         }
 
         $csvString = $this->exportService->entriesToCsv($resolved['entries']);
