@@ -1,14 +1,20 @@
 <?php
 /**
  * @package dompdf
- * @link    http://dompdf.github.com/
- * @author  Benj Carson <benjcarson@digitaljunkies.ca>
+ * @link    https://github.com/dompdf/dompdf
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 namespace Dompdf\FrameReflower;
 
+use Dompdf\Css\Content\Attr;
+use Dompdf\Css\Content\CloseQuote;
+use Dompdf\Css\Content\Counter;
+use Dompdf\Css\Content\Counters;
+use Dompdf\Css\Content\NoCloseQuote;
+use Dompdf\Css\Content\NoOpenQuote;
+use Dompdf\Css\Content\OpenQuote;
+use Dompdf\Css\Content\StringPart;
 use Dompdf\Dompdf;
-use Dompdf\Helpers;
 use Dompdf\Frame;
 use Dompdf\Frame\Factory;
 use Dompdf\FrameDecorator\AbstractFrameDecorator;
@@ -57,10 +63,6 @@ abstract class AbstractFrameReflower
         $this->_min_max_cache = null;
     }
 
-    function dispose()
-    {
-    }
-
     /**
      * @return Dompdf
      */
@@ -87,7 +89,7 @@ abstract class AbstractFrameReflower
 
         switch ($style->position) {
             case "absolute":
-                $parent = $frame->find_positionned_parent();
+                $parent = $frame->find_positioned_parent();
                 if ($parent !== $frame->get_root()) {
                     $parent_style = $parent->get_style();
                     $parent_padding_box = $parent->get_padding_box();
@@ -111,7 +113,16 @@ abstract class AbstractFrameReflower
                     break;
                 }
             case "fixed":
-                $initial_cb = $frame->get_root()->get_first_child()->get_containing_block();
+                $root = $frame->get_root();
+                $parent = $frame->get_parent();
+                do {
+                    $parents_parent = $parent->get_parent();
+                    if ($parents_parent == $root) {
+                        break;
+                    }
+                    $parent = $parents_parent;
+                } while ($parent);
+                $initial_cb = $parent->get_containing_block();
                 $frame->set_containing_block($initial_cb["x"], $initial_cb["y"], $initial_cb["w"], $initial_cb["h"]);
                 break;
             default:
@@ -124,7 +135,7 @@ abstract class AbstractFrameReflower
      * Collapse frames margins
      * http://www.w3.org/TR/CSS21/box.html#collapsing-margins
      */
-    protected function _collapse_margins()
+    protected function _collapse_margins(): void
     {
         $frame = $this->_frame;
 
@@ -143,13 +154,13 @@ abstract class AbstractFrameReflower
 
         // Handle 'auto' values
         if ($t === "auto") {
-            $style->margin_top = 0;
-            $t = 0;
+            $style->set_used("margin_top", 0.0);
+            $t = 0.0;
         }
 
         if ($b === "auto") {
-            $style->margin_bottom = 0;
-            $b = 0;
+            $style->set_used("margin_bottom", 0.0);
+            $b = 0.0;
         }
 
         // Collapse vertical margins:
@@ -171,9 +182,9 @@ abstract class AbstractFrameReflower
             $n_style = $n->get_style();
             $n_t = (float)$n_style->length_in_pt($n_style->margin_top, $cb["w"]);
 
-            $b = $this->_get_collapsed_margin_length($b, $n_t);
-            $style->margin_bottom = $b;
-            $n_style->margin_top = 0;
+            $b = $this->get_collapsed_margin_length($b, $n_t);
+            $style->set_used("margin_bottom", $b);
+            $n_style->set_used("margin_top", 0.0);
         }
 
         // Collapse our first child's margin, if there is no border or padding
@@ -197,9 +208,9 @@ abstract class AbstractFrameReflower
                 $f_style = $f->get_style();
                 $f_t = (float)$f_style->length_in_pt($f_style->margin_top, $cb["w"]);
 
-                $t = $this->_get_collapsed_margin_length($t, $f_t);
-                $style->margin_top = $t;
-                $f_style->margin_top = 0;
+                $t = $this->get_collapsed_margin_length($t, $f_t);
+                $style->set_used("margin_top", $t);
+                $f_style->set_used("margin_top", 0.0);
             }
         }
 
@@ -224,9 +235,9 @@ abstract class AbstractFrameReflower
                 $l_style = $l->get_style();
                 $l_b = (float)$l_style->length_in_pt($l_style->margin_bottom, $cb["w"]);
 
-                $b = $this->_get_collapsed_margin_length($b, $l_b);
-                $style->margin_bottom = $b;
-                $l_style->margin_bottom = 0;
+                $b = $this->get_collapsed_margin_length($b, $l_b);
+                $style->set_used("margin_bottom", $b);
+                $l_style->set_used("margin_bottom", 0.0);
             }
         }
     }
@@ -236,21 +247,22 @@ abstract class AbstractFrameReflower
      *
      * See http://www.w3.org/TR/CSS21/box.html#collapsing-margins.
      *
-     * @param float $length1
-     * @param float $length2
+     * @param float $l1
+     * @param float $l2
+     *
      * @return float
      */
-    private function _get_collapsed_margin_length($length1, $length2)
+    private function get_collapsed_margin_length(float $l1, float $l2): float
     {
-        if ($length1 < 0 && $length2 < 0) {
-            return min($length1, $length2); // min(x, y) = - max(abs(x), abs(y)), if x < 0 && y < 0
+        if ($l1 < 0 && $l2 < 0) {
+            return min($l1, $l2); // min(x, y) = - max(abs(x), abs(y)), if x < 0 && y < 0
         }
         
-        if ($length1 < 0 || $length2 < 0) {
-            return $length1 + $length2; // x + y = x - abs(y), if y < 0
+        if ($l1 < 0 || $l2 < 0) {
+            return $l1 + $l2; // x + y = x - abs(y), if y < 0
         }
         
-        return max($length1, $length2);
+        return max($l1, $l2);
     }
 
     /**
@@ -275,23 +287,23 @@ abstract class AbstractFrameReflower
             if ($left === "auto" && $right === "auto") {
                 $left = 0;
             } elseif ($left === "auto") {
-                $left = -(float) $right;
+                $left = -$right;
             }
 
             if ($top === "auto" && $bottom === "auto") {
                 $top = 0;
             } elseif ($top === "auto") {
-                $top = -(float) $bottom;
+                $top = -$bottom;
             }
 
-            $frame->move((float) $left, (float) $top);
+            $frame->move($left, $top);
         }
     }
 
     /**
      * @param Block|null $block
      */
-    abstract function reflow(Block $block = null);
+    abstract function reflow(?Block $block = null);
 
     /**
      * Resolve the `min-width` property.
@@ -308,7 +320,7 @@ abstract class AbstractFrameReflower
         $style = $this->_frame->get_style();
         $min_width = $style->min_width;
 
-        return $min_width !== "auto" && $min_width !== "none"
+        return $min_width !== "auto"
             ? $style->length_in_pt($min_width, $cbw ?? 0)
             : 0.0;
     }
@@ -328,7 +340,7 @@ abstract class AbstractFrameReflower
         $style = $this->_frame->get_style();
         $max_width = $style->max_width;
 
-        return $max_width !== "none" && $max_width !== "auto"
+        return $max_width !== "none"
             ? $style->length_in_pt($max_width, $cbw ?? INF)
             : INF;
     }
@@ -348,7 +360,7 @@ abstract class AbstractFrameReflower
         $style = $this->_frame->get_style();
         $min_height = $style->min_height;
 
-        return $min_height !== "auto" && $min_height !== "none"
+        return $min_height !== "auto"
             ? $style->length_in_pt($min_height, $cbh ?? 0)
             : 0.0;
     }
@@ -368,7 +380,7 @@ abstract class AbstractFrameReflower
         $style = $this->_frame->get_style();
         $max_height = $style->max_height;
 
-        return $max_height !== "none" && $max_height !== "auto"
+        return $max_height !== "none"
             ? $style->length_in_pt($style->max_height, $cbh ?? INF)
             : INF;
     }
@@ -388,12 +400,13 @@ abstract class AbstractFrameReflower
         $low = [];
         $high = [];
 
-        for ($iter = $this->_frame->get_children()->getIterator(); $iter->valid(); $iter->next()) {
+        for ($iter = $this->_frame->get_children(); $iter->valid(); $iter->next()) {
             $inline_min = 0;
             $inline_max = 0;
 
             // Add all adjacent inline widths together to calculate max width
             while ($iter->valid() && ($iter->current()->is_inline_level() || $iter->current()->get_style()->display === "-dompdf-image")) {
+                /** @var AbstractFrameDecorator */
                 $child = $iter->current();
                 $child->get_reflower()->_set_content();
                 $minmax = $child->get_min_max_width();
@@ -416,10 +429,13 @@ abstract class AbstractFrameReflower
             }
 
             // Skip children with absolute position
-            if ($iter->valid() && !$iter->current()->is_absolute()) {
+            if ($iter->valid()) {
+                /** @var AbstractFrameDecorator */
                 $child = $iter->current();
                 $child->get_reflower()->_set_content();
-                list($low[], $high[]) = $child->get_min_max_width();
+                if (!$iter->current()->is_absolute()) {
+                    list($low[], $high[]) = $child->get_min_max_width();
+                }
             }
         }
 
@@ -478,186 +494,69 @@ abstract class AbstractFrameReflower
     }
 
     /**
-     * Parses a CSS string containing quotes and escaped hex characters
-     *
-     * @param $string string The CSS string to parse
-     * @param $single_trim
-     * @return string
-     */
-    protected function _parse_string($string, $single_trim = false)
-    {
-        if ($single_trim) {
-            $string = preg_replace('/^[\"\']/', "", $string);
-            $string = preg_replace('/[\"\']$/', "", $string);
-        } else {
-            $string = trim($string, "'\"");
-        }
-
-        $string = str_replace(["\\\n", '\\"', "\\'"],
-            ["", '"', "'"], $string);
-
-        // Convert escaped hex characters into ascii characters (e.g. \A => newline)
-        $string = preg_replace_callback("/\\\\([0-9a-fA-F]{0,6})/",
-            function ($matches) { return \Dompdf\Helpers::unichr(hexdec($matches[1])); },
-            $string);
-        return $string;
-    }
-
-    /**
-     * Parses a CSS "quotes" property
-     *
-     * https://www.w3.org/TR/css-content-3/#quotes
-     *
-     * @return array An array of pairs of quotes
-     */
-    protected function _parse_quotes(): array
-    {
-        $quotes = $this->_frame->get_style()->quotes;
-
-        if ($quotes === "none") {
-            return [];
-        }
-
-        if ($quotes === "auto") {
-            // TODO: Use typographically appropriate quotes for the current
-            // language here
-            return [['"', '"'], ["'", "'"]];
-        }
-
-        // Matches quote types
-        $re = '/(\'[^\']*\')|(\"[^\"]*\")/';
-
-        // Split on spaces, except within quotes
-        if (!preg_match_all($re, $quotes, $matches, PREG_SET_ORDER)) {
-            return [];
-        }
-
-        $quotes_array = [];
-        foreach ($matches as $_quote) {
-            $quotes_array[] = $this->_parse_string($_quote[0], true);
-        }
-
-        return array_chunk($quotes_array, 2);
-    }
-
-    /**
-     * Parses the CSS "content" property
+     * Resolves the `content` property to string.
      *
      * https://www.w3.org/TR/CSS21/generate.html#content
      *
      * @return string The resulting string
      */
-    protected function _parse_content(): string
+    protected function resolve_content(): ?string
     {
-        // The `content` property will be returned parsed into its components
-        $style = $this->_frame->get_style();
+        $frame = $this->_frame;
+        $style = $frame->get_style();
         $content = $style->content;
 
         if ($content === "normal" || $content === "none") {
-            return "";
+            return null;
         }
 
-        $quotes = $this->_parse_quotes();
+        $quotes = $style->quotes;
         $text = "";
 
         foreach ($content as $val) {
-            // String
-            if (in_array(mb_substr($val, 0, 1), ['"', "'"], true)) {
-                $text .= $this->_parse_string($val);
-                continue;
+            if ($val instanceof StringPart) {
+                $text .= $val->string;
             }
 
-            $val = mb_strtolower($val);
-
-            // Keywords
-            if ($val === "open-quote") {
+            elseif ($val instanceof OpenQuote) {
                 // FIXME: Take quotation depth into account
-                if (isset($quotes[0][0])) {
+                if ($quotes !== "none" && isset($quotes[0][0])) {
                     $text .= $quotes[0][0];
                 }
-                continue;
-            } elseif ($val === "close-quote") {
+            }
+
+            elseif ($val instanceof CloseQuote) {
                 // FIXME: Take quotation depth into account
-                if (isset($quotes[0][1])) {
+                if ($quotes !== "none" && isset($quotes[0][1])) {
                     $text .= $quotes[0][1];
                 }
-                continue;
-            } elseif ($val === "no-open-quote") {
+            }
+            
+            elseif ($val instanceof NoOpenQuote) {
                 // FIXME: Increment quotation depth
-                continue;
-            } elseif ($val === "no-close-quote") {
+            }
+
+            elseif ($val instanceof NoCloseQuote) {
                 // FIXME: Decrement quotation depth
-                continue;
             }
 
-            // attr()
-            if (mb_substr($val, 0, 5) === "attr(") {
-                $i = mb_strpos($val, ")");
-                if ($i === false) {
-                    continue;
-                }
-
-                $attr = trim(mb_substr($val, 5, $i - 5));
-                if ($attr === "") {
-                    continue;
-                }
-
-                $text .= $this->_frame->get_parent()->get_node()->getAttribute($attr);
-                continue;
+            elseif ($val instanceof Attr) {
+                $text .= $frame->get_parent()->get_node()->getAttribute($val->attribute);
             }
 
-            // counter()/counters()
-            if (mb_substr($val, 0, 7) === "counter") {
-                // Handle counter() references:
-                // http://www.w3.org/TR/CSS21/generate.html#content
+            elseif ($val instanceof Counter) {
+                $p = $frame->lookup_counter_frame($val->name, true);
+                $text .= $p->counter_value($val->name, $val->style);
+            }
 
-                $i = mb_strpos($val, ")");
-                if ($i === false) {
-                    continue;
+            elseif ($val instanceof Counters) {
+                $p = $frame->lookup_counter_frame($val->name, true);
+                $tmp = [];
+                while ($p) {
+                    array_unshift($tmp, $p->counter_value($val->name, $val->style));
+                    $p = $p->lookup_counter_frame($val->name);
                 }
-
-                preg_match('/(counters?)(^\()*?\(\s*([^\s,]+)\s*(,\s*["\']?([^"\'\)]*)["\']?\s*(,\s*([^\s)]+)\s*)?)?\)/i', $val, $args);
-                $counter_id = $args[3];
-
-                if (strtolower($args[1]) === "counter") {
-                    // counter(name [,style])
-                    if (isset($args[5])) {
-                        $type = trim($args[5]);
-                    } else {
-                        $type = "decimal";
-                    }
-                    $p = $this->_frame->lookup_counter_frame($counter_id);
-
-                    $text .= $p->counter_value($counter_id, $type);
-                } elseif (strtolower($args[1]) === "counters") {
-                    // counters(name, string [,style])
-                    if (isset($args[5])) {
-                        $string = $this->_parse_string($args[5]);
-                    } else {
-                        $string = "";
-                    }
-
-                    if (isset($args[7])) {
-                        $type = trim($args[7]);
-                    } else {
-                        $type = "decimal";
-                    }
-
-                    $p = $this->_frame->lookup_counter_frame($counter_id);
-                    $tmp = [];
-                    while ($p) {
-                        // We only want to use the counter values when they actually increment the counter
-                        if (array_key_exists($counter_id, $p->_counters)) {
-                            array_unshift($tmp, $p->counter_value($counter_id, $type));
-                        }
-                        $p = $p->lookup_counter_frame($counter_id);
-                    }
-                    $text .= implode($string, $tmp);
-                } else {
-                    // countertops?
-                }
-
-                continue;
+                $text .= implode($val->string, $tmp);
             }
         }
 
@@ -687,9 +586,9 @@ abstract class AbstractFrameReflower
         }
 
         if ($frame->get_node()->nodeName === "dompdf_generated") {
-            $content = $this->_parse_content();
+            $content = $this->resolve_content();
 
-            if ($content !== "") {
+            if ($content !== null) {
                 $node = $frame->get_node()->ownerDocument->createTextNode($content);
 
                 $new_style = $style->get_stylesheet()->create_style();

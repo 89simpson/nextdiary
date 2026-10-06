@@ -2,7 +2,7 @@
     "name": "89simpson/nc-nextdiary",
     "description": "NextDiary - A personal diary and health journal",
     "type": "project",
-    "license": "AGPL",
+    "license": "AGPL-3.0-or-later",
     "authors": [
         {
             "name": "89simpson"
@@ -10,16 +10,15 @@
     ],
     "config": {
         "platform": {
-            "php": "8.0"
+            "php": "8.1"
         }
     },
     "require": {
-        "league/commonmark": "1.6.7",
-        "dompdf/dompdf": "^1.2",
-        "iio/libmergepdf": "^4.0"
+        "php": "^8.1",
+        "dompdf/dompdf": "^3.1",
+        "league/commonmark": "^2.7"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5.11",
-        "friendsofphp/php-cs-fixer": "v3.18.0"
+        "phpunit/phpunit": "^9.6.38"
     }
 }

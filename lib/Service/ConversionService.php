@@ -3,9 +3,13 @@
 namespace OCA\NextDiary\Service;
 
 use Dompdf\Dompdf;
-use iio\libmergepdf\Merger;
-use League\CommonMark\CommonMarkConverter;
+use Dompdf\Options;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
+use League\CommonMark\MarkdownConverter;
 use OCA\NextDiary\Db\Entry;
+use OCA\NextDiary\Service\Markdown\ImageAltTextRenderer;
 use OCP\IL10N;
 
 /**
@@ -57,17 +61,21 @@ class ConversionService
     /**
      * Convert an array of entries into one PDF encoded as string.
      *
+     * All entries are rendered into a single HTML document in one dompdf pass; every
+     * entry after the first starts on a new page, so short entries take one page each.
+     *
      * @param array|Entry[] $entries
      */
     public function entriesToPdf(array $entries): string
     {
-        $pdfMerger = new Merger();
+        $sections = [];
         foreach ($entries as $entry) {
             $metadata = $this->collectMetadata($entry);
-            $pdfMerger->addRaw($this->entryToPDF($entry, $metadata));
+            $class = empty($sections) ? 'entry' : 'entry entry-page-break';
+            $sections[] = '<div class="' . $class . '">' . $this->entryToHTML($entry, $metadata) . '</div>';
         }
 
-        return $pdfMerger->merge();
+        return (string)$this->htmlToPDF(implode("\n", $sections));
     }
 
     /**
@@ -79,9 +87,9 @@ class ConversionService
             $metadata = $this->collectMetadata($entry);
         }
 
-        $html = $this->entryToHTML($entry, $metadata);
+        $html = '<div class="entry">' . $this->entryToHTML($entry, $metadata) . '</div>';
 
-        return $this->htmlToPDF($html);
+        return (string)$this->htmlToPDF($html);
     }
 
     /**
@@ -215,7 +223,10 @@ class ConversionService
         }
 
         $stream = fopen('php://temp', 'r+');
-        fputcsv($stream, $header);
+        // Separator, enclosure and escape are passed explicitly (PHP 8.4 deprecates relying on
+        // the default escape character); the values equal the previous defaults, so the output
+        // is unchanged.
+        fputcsv($stream, $header, ',', '"', '\\');
 
         foreach ($rows as $row) {
             $line = [
@@ -236,7 +247,7 @@ class ConversionService
             foreach ($tagList as $name) {
                 $line[] = isset($row['tags'][$name]) ? 1 : 0;
             }
-            fputcsv($stream, $line);
+            fputcsv($stream, $line, ',', '"', '\\');
         }
 
         rewind($stream);
@@ -316,14 +327,10 @@ class ConversionService
             $html .= '<div class="entry-meta">' . $metaHtml . '</div>';
         }
 
-        // Content: markdown to HTML (escape raw HTML for safety)
+        // Content: markdown to HTML (raw HTML escaped, unsafe links and images neutralised)
         $content = $serializedEntry['entryContent'] ?? '';
         if (!empty(trim($content))) {
-            $converter = new CommonMarkConverter([
-                'html_input' => 'escape',
-                'allow_unsafe_links' => false,
-            ]);
-            $html .= $converter->convertToHtml($content);
+            $html .= $this->markdownToHTML($content);
         }
 
         return $html;
@@ -382,13 +389,47 @@ class ConversionService
     }
 
     /**
-     * Convert markdown into HTML.
+     * Convert user-provided markdown into HTML that is safe to hand to the PDF renderer.
+     *
+     * - raw HTML in the markdown is escaped, not passed through;
+     * - links with unsafe protocols (javascript:, vbscript:, file:, data:) are dropped;
+     * - images are rendered as their alt text (see ImageAltTextRenderer), so no image source
+     *   (remote URL, local path or data: URI) ever reaches dompdf;
+     * - nesting depth and delimiters per line are capped to bound parser work on hostile input.
      */
     public function markdownToHTML(string $markdown): string
     {
-        $converter = new CommonMarkConverter();
+        $environment = new Environment([
+            'html_input' => 'escape',
+            'allow_unsafe_links' => false,
+            'max_nesting_level' => 100,
+            'max_delimiters_per_line' => 1000,
+        ]);
+        $environment->addExtension(new CommonMarkCoreExtension());
+        $environment->addRenderer(Image::class, new ImageAltTextRenderer(), 100);
 
-        return $converter->convertToHtml($markdown);
+        $converter = new MarkdownConverter($environment);
+
+        return $converter->convert($markdown)->getContent();
+    }
+
+    /**
+     * Build the dompdf options used for every export.
+     *
+     * Only local files inside dompdf's own directory (its chroot, e.g. the bundled fonts) may be
+     * read. Remote fetching, data: URIs, embedded PHP and PDF JavaScript are disabled.
+     */
+    private function createPdfOptions(): Options
+    {
+        $options = new Options();
+        $options->setIsRemoteEnabled(false);
+        $options->setIsPhpEnabled(false);
+        $options->setIsJavascriptEnabled(false);
+        // Keeps the default chroot check for file:// and removes data://, http:// and https://.
+        $options->setAllowedProtocols(['file://']);
+        $options->setDefaultFont('DejaVu Sans');
+
+        return $options;
     }
 
     /**
@@ -396,7 +437,7 @@ class ConversionService
      */
     public function htmlToPDF(string $html): ?string
     {
-        $pdf = new Dompdf();
+        $pdf = new Dompdf($this->createPdfOptions());
         $pdf->setPaper('A4', 'portrait');
 
         $styledHtml = '
@@ -416,6 +457,9 @@ class ConversionService
                     }
                     p {
                         margin-bottom: 8pt;
+                    }
+                    .entry-page-break {
+                        page-break-before: always;
                     }
                     .entry-meta {
                         background: #f5f5f5;
@@ -445,7 +489,7 @@ class ConversionService
             </html>
         ';
 
-        $pdf->loadHtml($styledHtml);
+        $pdf->loadHtml($styledHtml, 'UTF-8');
         $pdf->render();
 
         return $pdf->output();
