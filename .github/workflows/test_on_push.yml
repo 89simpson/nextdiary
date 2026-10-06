@@ -13,21 +13,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # appinfo/info.xml declares PHP 8.1-8.5 and Nextcloud 25-35. Every combination below is
+        # appinfo/info.xml declares PHP 8.1-8.5 and Nextcloud 30-35. Every combination below is
         # supported by that server branch (see lib/versioncheck.php of the branch); together they
         # cover both edges of both ranges and every PHP minor version in between.
         # The app is enabled WITHOUT --force, so a too narrow info.xml range fails the job.
         include:
           - php-versions: '8.1'   # minimum PHP, minimum Nextcloud
-            nextcloud: 'stable25'
+            nextcloud: 'stable30'
           - php-versions: '8.3'
-            nextcloud: 'stable28'
-          - php-versions: '8.2'
             nextcloud: 'stable30'
           - php-versions: '8.3'
             nextcloud: 'stable31'
           - php-versions: '8.4'
             nextcloud: 'stable32'
+          - php-versions: '8.2'
+            nextcloud: 'stable33'
           - php-versions: '8.4'   # issue #6: Nextcloud 33 + PHP 8.4
             nextcloud: 'stable33'
           - php-versions: '8.5'
@@ -70,3 +70,25 @@ jobs:
       - name: Run integration tests
         run: |
           cd ../server/apps/${{ env.APP_NAME }} && vendor/bin/phpunit --testsuite integration
+
+  frontend_build:
+    runs-on: ubuntu-latest
+    name: "Frontend: release build matches committed bundles"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Same steps as `make npm` in the release workflow
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Compare with committed bundles
+        run: git diff --stat --exit-status -- js/nextdiary-main.js js/nextdiary-settings.js js/nextdiary-main.js.LICENSE.txt js/nextdiary-settings.js.LICENSE.txt

@@ -19,8 +19,8 @@ A personal diary and health journal for Nextcloud.
 
 ## Requirements
 
-- Nextcloud 25–32
-- PHP 8.0–8.3
+- Nextcloud 30–35
+- PHP 8.1–8.5
 
 ## Installation
 
@@ -35,7 +35,7 @@ A personal diary and health journal for Nextcloud.
 
 ### Building from source
 
-1. Install PHP 8 with `xml` and `mbstring` extensions
+1. Install PHP 8.1 or newer with `xml`, `mbstring` and `gd` extensions
 2. Install Node.js via [nvm](https://github.com/nvm-sh/nvm)
 3. Install dependencies and build:
    ```bash
