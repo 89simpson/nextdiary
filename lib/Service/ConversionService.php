@@ -10,6 +10,7 @@ use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
 use League\CommonMark\MarkdownConverter;
 use OCA\NextDiary\Db\Entry;
 use OCA\NextDiary\Service\Markdown\ImageAltTextRenderer;
+use OCA\NextDiary\Service\Pdf\PdfMerger;
 use OCP\IL10N;
 
 /**
@@ -17,11 +18,33 @@ use OCP\IL10N;
  */
 class ConversionService
 {
+    /**
+     * Maximum number of entries rendered in one dompdf pass.
+     *
+     * dompdf keeps the layout of every page of a document in memory until the document is
+     * finished, so a single pass over a whole diary grows by roughly 0.4-0.6 MB per entry and
+     * runs out of memory at several hundred entries. Larger exports are therefore rendered in
+     * chunks that are merged afterwards, which keeps peak memory almost flat (about 44 MB for
+     * 200 and 54 MB for 800 short entries, against 112 MB for 200 in one pass). 25 balances
+     * memory against file size: every chunk embeds its own font subsets.
+     */
+    public const PDF_CHUNK_MAX_ENTRIES = 25;
+
+    /**
+     * Maximum amount of entry text (in characters) rendered in one dompdf pass, so a chunk of
+     * unusually long entries (several pages each) stays bounded too. Roughly ten pages of text.
+     * A single entry always gets a chunk of its own, however long it is.
+     */
+    public const PDF_CHUNK_MAX_CHARACTERS = 30000;
+
     private IL10N $l;
     private TagService $tagService;
     private MoodService $moodService;
     private MedicationService $medicationService;
     private FileService $fileService;
+    private int $pdfChunkMaxEntries = self::PDF_CHUNK_MAX_ENTRIES;
+    private int $pdfChunkMaxCharacters = self::PDF_CHUNK_MAX_CHARACTERS;
+    private ?MarkdownConverter $markdownConverter = null;
 
     public function __construct(
         IL10N $l,
@@ -59,14 +82,83 @@ class ConversionService
     }
 
     /**
+     * Override the PDF chunk limits (PDF_CHUNK_MAX_*), e.g. to exercise the merge path in tests.
+     */
+    public function setPdfChunkLimits(int $maxEntries, int $maxCharacters = self::PDF_CHUNK_MAX_CHARACTERS): void
+    {
+        if ($maxEntries < 1 || $maxCharacters < 1) {
+            throw new \InvalidArgumentException('PDF chunk limits must be positive');
+        }
+        $this->pdfChunkMaxEntries = $maxEntries;
+        $this->pdfChunkMaxCharacters = $maxCharacters;
+    }
+
+    /**
      * Convert an array of entries into one PDF encoded as string.
      *
-     * All entries are rendered into a single HTML document in one dompdf pass; every
-     * entry after the first starts on a new page, so short entries take one page each.
+     * Every entry starts on a new page. Small exports are rendered in a single dompdf pass.
+     * Larger ones are rendered chunk by chunk (see PDF_CHUNK_MAX_*): each chunk's dompdf
+     * document is released before the next one is rendered, and the finished chunk pages are
+     * merged unchanged (see PdfMerger). Chunks always end at an entry boundary, which is a page
+     * boundary anyway, so the result looks exactly like a single pass.
      *
      * @param array|Entry[] $entries
      */
     public function entriesToPdf(array $entries): string
+    {
+        $chunks = $this->splitIntoPdfChunks(array_values($entries));
+        if (count($chunks) <= 1) {
+            return $this->renderEntriesToPdf($chunks[0] ?? []);
+        }
+
+        $merger = new PdfMerger();
+        foreach ($chunks as $chunk) {
+            $chunkPdf = $this->renderEntriesToPdf($chunk);
+            // The dompdf document tree contains reference cycles: collect it now, so at most
+            // one chunk's layout is ever held in memory (the merger keeps only finished pages).
+            gc_collect_cycles();
+            $merger->appendDocument($chunkPdf);
+            unset($chunkPdf);
+        }
+
+        return $merger->getMergedPdf();
+    }
+
+    /**
+     * Group entries into chunks that respect both chunk limits (entry count and text size).
+     *
+     * @param Entry[] $entries
+     * @return Entry[][]
+     */
+    private function splitIntoPdfChunks(array $entries): array
+    {
+        $chunks = [];
+        $chunk = [];
+        $characters = 0;
+        foreach ($entries as $entry) {
+            $length = mb_strlen((string)$entry->getEntryContent());
+            if (!empty($chunk)
+                && (count($chunk) >= $this->pdfChunkMaxEntries || $characters + $length > $this->pdfChunkMaxCharacters)) {
+                $chunks[] = $chunk;
+                $chunk = [];
+                $characters = 0;
+            }
+            $chunk[] = $entry;
+            $characters += $length;
+        }
+        if (!empty($chunk)) {
+            $chunks[] = $chunk;
+        }
+
+        return $chunks;
+    }
+
+    /**
+     * Render entries into one PDF in a single dompdf pass, one entry per page (at least).
+     *
+     * @param Entry[] $entries
+     */
+    private function renderEntriesToPdf(array $entries): string
     {
         $sections = [];
         foreach ($entries as $entry) {
@@ -399,18 +491,20 @@ class ConversionService
      */
     public function markdownToHTML(string $markdown): string
     {
-        $environment = new Environment([
-            'html_input' => 'escape',
-            'allow_unsafe_links' => false,
-            'max_nesting_level' => 100,
-            'max_delimiters_per_line' => 1000,
-        ]);
-        $environment->addExtension(new CommonMarkCoreExtension());
-        $environment->addRenderer(Image::class, new ImageAltTextRenderer(), 100);
+        // Built once per service instance and reused for every entry of an export.
+        if ($this->markdownConverter === null) {
+            $environment = new Environment([
+                'html_input' => 'escape',
+                'allow_unsafe_links' => false,
+                'max_nesting_level' => 100,
+                'max_delimiters_per_line' => 1000,
+            ]);
+            $environment->addExtension(new CommonMarkCoreExtension());
+            $environment->addRenderer(Image::class, new ImageAltTextRenderer(), 100);
+            $this->markdownConverter = new MarkdownConverter($environment);
+        }
 
-        $converter = new MarkdownConverter($environment);
-
-        return $converter->convert($markdown)->getContent();
+        return $this->markdownConverter->convert($markdown)->getContent();
     }
 
     /**
@@ -491,7 +585,9 @@ class ConversionService
 
         $pdf->loadHtml($styledHtml, 'UTF-8');
         $pdf->render();
+        $output = $pdf->output();
+        unset($pdf);
 
-        return $pdf->output();
+        return $output;
     }
 }

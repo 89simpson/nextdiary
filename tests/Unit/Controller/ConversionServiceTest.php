@@ -12,6 +12,8 @@ use OCA\NextDiary\Service\TagService;
 use OCP\IL10N;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use setasign\Fpdi\Fpdi;
+use setasign\Fpdi\PdfParser\StreamReader;
 
 class ConversionServiceTest extends TestCase
 {
@@ -218,6 +220,73 @@ class ConversionServiceTest extends TestCase
         $this->assertMatchesRegularExpression('/\/BaseFont\s*\/[A-Z]{6}\+DejaVuSans/', $pdf);
     }
 
+    /**
+     * Large exports are rendered in chunks that are merged afterwards. A tiny chunk size forces
+     * the merge path: the result must still be one valid PDF with one page per entry, in order,
+     * with the Cyrillic text, the embedded DejaVu fonts, the links and the dompdf producer.
+     */
+    public function testEntriesToPdfMergesChunks()
+    {
+        $this->stubMetadataByEntryId([
+            1 => ['ratings' => ['mood' => 4], 'tags' => [['id' => 1, 'name' => 'здоровье']]],
+            4 => ['symptoms' => [['id' => 2, 'name' => 'головная боль']]],
+        ]);
+        $words = ['один', 'два', 'три', 'четыре', 'пять'];
+        $entries = [];
+        foreach ($words as $index => $word) {
+            $id = $index + 1;
+            $content = "# Запись $word\n\nПривет, дневник! Сегодня **хорошо**.";
+            if ($id === 3) {
+                $content .= ' [ссылка](https://example.com/three)';
+            }
+            $entries[] = $this->createEntry('2026-10-0' . $id, $content, $id, '2026-10-0' . $id . ' 09:09:00');
+        }
+        $this->conversionService->setPdfChunkLimits(2);
+
+        $pdf = $this->conversionService->entriesToPdf($entries);
+
+        $this->assertStringStartsWith('%PDF-', $pdf);
+        $this->assertSame(5, $this->countPdfPages($pdf));
+        // An independent parser reads the merged document back.
+        $this->assertSame(5, (new Fpdi())->setSourceFile(StreamReader::createByString($pdf)));
+        $this->assertMatchesRegularExpression('/\/BaseFont\s*\/[A-Z]{6}\+DejaVuSans\b/', $pdf);
+        $this->assertMatchesRegularExpression('/\/BaseFont\s*\/[A-Z]{6}\+DejaVuSans-Bold\b/', $pdf);
+        $this->assertPdfContainsTextInOrder(array_map(fn($word) => "Запись $word", $words), $pdf);
+        $this->assertPdfContainsTextInOrder(['здоровье', 'Запись один', 'Запись два'], $pdf);
+        $this->assertPdfContainsTextInOrder(['Запись три', 'головная боль', 'Запись пять'], $pdf);
+        $this->assertStringContainsString('/URI (https://example.com/three)', $pdf);
+        $this->assertMatchesRegularExpression('/\/Producer \(dompdf [^)]+\)/', $pdf);
+        $this->assertStringNotContainsString('/Subtype /Image', $pdf);
+    }
+
+    /**
+     * Chunks are also limited by the amount of entry text; an entry longer than the limit
+     * still gets a chunk of its own.
+     */
+    public function testEntriesToPdfSplitsChunksByTextLength()
+    {
+        $this->stubEmptyMetadata();
+        $entries = [
+            $this->createEntry('2026-10-01', 'Короткая запись.', 1),
+            $this->createEntry('2026-10-02', str_repeat('Длинная запись. ', 10), 2),
+            $this->createEntry('2026-10-03', 'Ещё одна.', 3),
+        ];
+        $this->conversionService->setPdfChunkLimits(25, 40);
+
+        $pdf = $this->conversionService->entriesToPdf($entries);
+
+        $this->assertStringStartsWith('%PDF-', $pdf);
+        $this->assertSame(3, $this->countPdfPages($pdf));
+        $this->assertPdfContainsTextInOrder(['Короткая запись.', 'Длинная запись.', 'Ещё одна.'], $pdf);
+    }
+
+    public function testSetPdfChunkLimitsRejectsNonPositiveValues()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->conversionService->setPdfChunkLimits(0);
+    }
+
     public function testEntriesToPdfDoesNotEmbedImages()
     {
         $this->stubEmptyMetadata();
@@ -384,6 +453,41 @@ class ConversionServiceTest extends TestCase
         $file->setFilePath($filePath);
 
         return $file;
+    }
+
+    /**
+     * Assert that the given strings occur in the decompressed content streams of the PDF, in
+     * this order. dompdf writes text with the embedded TrueType fonts as UTF-16BE strings.
+     *
+     * @param string[] $texts
+     */
+    private function assertPdfContainsTextInOrder(array $texts, string $pdf): void
+    {
+        $this->assertGreaterThan(
+            0,
+            preg_match_all('/\bstream\r?\n(.*?)\nendstream\b/s', $pdf, $matches),
+            'No content streams found'
+        );
+        $content = '';
+        foreach ($matches[1] as $stream) {
+            $inflated = @gzuncompress($stream);
+            if ($inflated === false) {
+                $inflated = @gzuncompress(rtrim($stream, "\r"));
+            }
+            if ($inflated !== false) {
+                $content .= $inflated . "\n";
+            }
+        }
+
+        $positions = [];
+        foreach ($texts as $text) {
+            $position = strpos($content, mb_convert_encoding($text, 'UTF-16BE', 'UTF-8'));
+            $this->assertNotFalse($position, 'Text not found in PDF: ' . $text);
+            $positions[] = $position;
+        }
+        $sorted = $positions;
+        sort($sorted);
+        $this->assertSame($sorted, $positions, 'Texts appear in the wrong order');
     }
 
     /**
