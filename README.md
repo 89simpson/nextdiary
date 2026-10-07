@@ -19,8 +19,8 @@ A personal diary and health journal for Nextcloud.
 
 ## Requirements
 
-- Nextcloud 30–35
-- PHP 8.1–8.5
+- Nextcloud 30-35
+- PHP 8.1-8.5
 
 ## Installation
 
