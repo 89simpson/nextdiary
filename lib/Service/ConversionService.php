@@ -53,6 +53,11 @@ class ConversionService
         MedicationService $medicationService,
         FileService $fileService
     ) {
+        // The bundled libraries (dompdf, CommonMark, FPDI, ...) are registered lazily, only when the
+        // export code is actually instantiated. Registering Composer's autoloader on every request
+        // (it prepends itself) would let our copies shadow the same libraries of other apps (issue #7).
+        require_once __DIR__ . '/../../vendor/autoload.php';
+
         $this->l = $l;
         $this->tagService = $tagService;
         $this->moodService = $moodService;
