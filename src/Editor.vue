@@ -139,14 +139,18 @@ function sanitizePreview(html) {
  * double-space -> ". ", autocorrect, auto-capitalization, spell checking.
  *
  * CodeMirror 5 turns all of this off on its input field (`disableBrowserMagic`),
- * and EasyMDE only forwards `spellcheck`. On mobile CodeMirror edits through a
- * contenteditable element, where the keyboard features work reliably, so they
- * are enabled there only; the desktop (hidden textarea input) stays unchanged.
+ * and EasyMDE only forwards `spellcheck`. On mobile the editor uses a real
+ * <textarea> input (see `createMarkdownEditor`) so iOS applies its native text
+ * substitutions; these options/attributes are (re-)enabled on that textarea only,
+ * while the desktop input stays unchanged.
  *
  * @param {object} cm CodeMirror instance
  */
 function enableMobileKeyboardFeatures(cm) {
-	if (cm.getOption('inputStyle') !== 'contenteditable') {
+	// CodeMirror's own device detection: a stable global default (see `createMarkdownEditor`).
+	// Keyed off the device, not the input style, because on mobile the input is now a textarea.
+	const isMobile = CodeMirror.defaults.inputStyle === 'contenteditable'
+	if (!isMobile) {
 		return
 	}
 	// Keep the options in sync, so a re-created input field gets them too
@@ -164,15 +168,20 @@ function enableMobileKeyboardFeatures(cm) {
  * @return {EasyMDE}
  */
 function createMarkdownEditor(element) {
-	// CodeMirror's own default: "contenteditable" on mobile devices (incl. iPadOS)
-	const inputStyle = CodeMirror.defaults.inputStyle
+	// CodeMirror's own default is "contenteditable" on mobile devices (incl. iPadOS)
+	// and "textarea" on desktop; detect mobile from it before overriding.
+	const isMobile = CodeMirror.defaults.inputStyle === 'contenteditable'
+	// Force a real <textarea> input on mobile too: in contenteditable mode CodeMirror
+	// manages the DOM itself, so iOS's native text substitutions (double-space -> ". ",
+	// autocorrect, auto-capitalization) do not apply. Desktop keeps CodeMirror's default.
+	const inputStyle = isMobile ? 'textarea' : CodeMirror.defaults.inputStyle
 	const editor = new EasyMDE({
 		element,
 		toolbar: TOOLBAR,
 		autoDownloadFontAwesome: false,
 		placeholder: t('nextdiary', 'Write your entry here'),
 		spellChecker: false,
-		nativeSpellcheck: inputStyle === 'contenteditable',
+		nativeSpellcheck: isMobile,
 		inputStyle,
 		styleSelectedText: false,
 		status: false,
